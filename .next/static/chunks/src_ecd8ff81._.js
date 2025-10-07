@@ -930,14 +930,15 @@ var { g: global, __dirname, k: __turbopack_refresh__, m: module } = __turbopack_
 __turbopack_context__.s({
     "firebaseConfig": (()=>firebaseConfig)
 });
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$polyfills$2f$process$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/build/polyfills/process.js [app-client] (ecmascript)");
 const firebaseConfig = {
-    "projectId": "studio-7778498060-d5b43",
-    "appId": "1:3680439879:web:43e3fac30fcc93f87e2b62",
-    "apiKey": "AIzaSyAUe12LIyIxGwFl1wlq_mNC0usgNKwQrrc",
-    "authDomain": "studio-7778498060-d5b43.firebaseapp.com",
-    "storageBucket": "studio-7778498060-d5b43.firebasestorage.app",
-    "measurementId": "",
-    "messagingSenderId": "3680439879"
+    apiKey: ("TURBOPACK compile-time value", "AIzaSyAUe12LIyIxGwFl1wlq_mNC0usgNKwQrrc"),
+    authDomain: ("TURBOPACK compile-time value", "studio-7778498060-d5b43.firebaseapp.com"),
+    projectId: ("TURBOPACK compile-time value", "studio-7778498060-d5b43"),
+    storageBucket: ("TURBOPACK compile-time value", "studio-7778498060-d5b43.firebasestorage.app"),
+    appId: ("TURBOPACK compile-time value", "1:3680439879:web:43e3fac30fcc93f87e2b62"),
+    messagingSenderId: ("TURBOPACK compile-time value", "3680439879"),
+    measurementId: ("TURBOPACK compile-time value", "")
 };
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(module, globalThis.$RefreshHelpers$);

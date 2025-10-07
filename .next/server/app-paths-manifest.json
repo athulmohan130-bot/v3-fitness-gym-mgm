@@ -1,11 +1,8 @@
 {
+  "/(auth)/login/page": "app/(auth)/login/page.js",
   "/_not-found/page": "app/_not-found/page.js",
   "/dashboard/attendance/page": "app/dashboard/attendance/page.js",
-  "/dashboard/members/edit/[id]/page": "app/dashboard/members/edit/[id]/page.js",
-  "/dashboard/members/new/page": "app/dashboard/members/new/page.js",
   "/dashboard/members/page": "app/dashboard/members/page.js",
-  "/dashboard/members/view/[id]/page": "app/dashboard/members/view/[id]/page.js",
   "/dashboard/overview/page": "app/dashboard/overview/page.js",
-  "/dashboard/plans/page": "app/dashboard/plans/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js"
 }
