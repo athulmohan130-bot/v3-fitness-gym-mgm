@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+
+# Build output
+.next/
+out/
+
+# Testing coverage
+coverage/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Production
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# VSCode settings
+.vscode/
+
+# Vercel
+.vercel/
+
+# Optional: IDEs
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Optional: Mac system files
+.AppleDouble
+.LSOverride
+
+# Optional: Docker
+docker-compose.override.yml
+
+# Optional: Next.js export output
+out/
+
+# Optional: type check cache (e.g., for SWC or tsc)
+*.tsbuildinfo

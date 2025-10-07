@@ -1,0 +1,60 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+  
+    // Helper Functions
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuth() && request.auth.uid == userId;
+    }
+    
+    function getUserRole(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.role;
+    }
+
+    function isAdmin() {
+      return isAuth() && getUserRole(request.auth.uid) == 'admin';
+    }
+
+    function isTrainer() {
+       return isAuth() && getUserRole(request.auth.uid) == 'trainer';
+    }
+
+    // User Collection
+    match /users/{userId} {
+      allow read: if isAuth() && (isOwner(userId) || isAdmin() || isTrainer());
+      allow create: if isAuth() && isAdmin();
+      allow update: if isAuth() && (isOwner(userId) || isAdmin());
+      allow delete: if isAuth() && isAdmin();
+    }
+    
+    // User Subcollections (e.g., Payments)
+    match /users/{userId}/{collection}/{docId} {
+      allow read, write: if isAuth() && (isOwner(userId) || isAdmin());
+    }
+
+    // Membership Plans
+    match /membershipPlans/{planId} {
+      // Admins can create, update, and delete plans.
+      // Any authenticated user can view the plans (e.g., to select one).
+      allow read: if isAuth();
+      allow write: if isAuth() && isAdmin();
+    }
+
+    // Attendance Records
+    match /attendance/{date}/records/{userId} {
+      allow read, write: if isAuth() && (isAdmin() || isTrainer());
+    }
+    
+    // Stats collections
+    match /stats/{summaryDoc}/{doc=**} {
+        allow read: if isAuth() && isAdmin();
+        // Writes to stats should be handled by secure backend functions, not clients.
+        allow write: if false;
+    }
+  }
+}
