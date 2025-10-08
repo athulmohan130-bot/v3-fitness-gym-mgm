@@ -25,14 +25,24 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const LoadingScreen = () => (
-  <div className="flex h-screen w-full items-center justify-center">
-    <div className="flex flex-col items-center gap-4">
-      <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent" />
-      <p className="mt-4 text-muted-foreground">Loading application...</p>
+const LoadingScreen = () => {
+  return (
+    <div className="fixed inset-0 z-50 flex h-screen w-full flex-col items-center justify-center bg-background transition-opacity duration-500 animate-fadeIn">
+      {/* Logo / App name */}
+      <div className="flex items-center space-x-2 mb-8 scale-100 sm:scale-110 md:scale-125">
+        <span className="text-3xl md:text-4xl font-bold text-primary">V3</span>
+        <span className="text-3xl md:text-4xl font-bold text-white bg-primary px-2 py-1 rounded">
+          Fitness
+        </span>
+      </div>
+
+      {/* Progress bar */}
+      <div className="relative w-40 sm:w-56 h-1.5 bg-muted rounded-full overflow-hidden">
+        <div className="absolute inset-y-0 left-0 w-1/3 bg-primary rounded-full animate-loading-bar" />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
   const { auth, firestore, user: firebaseUser, isUserLoading } = useFirebase();
@@ -41,61 +51,57 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchUserProfile = async () => {
-      if (!firebaseUser) {
-        if(isMounted) {
+useEffect(() => {
+  let isMounted = true;
+
+  const fetchUserProfile = async () => {
+    if (!firebaseUser) {
+      if (isMounted) {
+        setUser(null);
+        setLoading(false);
+      }
+      return;
+    }
+
+    if (!firestore) return;
+
+    try {
+      const userDocRef = doc(firestore, 'users', firebaseUser.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (isMounted) {
+        if (userDocSnap.exists()) {
+          const data = userDocSnap.data() as GymUser;
+          setUser({
+            id: firebaseUser.uid,
+            name: data.name,
+            email: data.email,
+            role: data.role,
+            profileImageUrl: data.profileImageUrl,
+          });
+        } else {
+          console.warn(`No Firestore profile for user ${firebaseUser.uid}, logging out.`);
+          if (auth) await signOut(auth);
           setUser(null);
-          setLoading(false);
         }
-        return;
       }
-      
-      if (!firestore) {
-        // Firestore is not ready yet, wait for it.
-        return;
-      }
-
-      try {
-        const userDocRef = doc(firestore, 'users', firebaseUser.uid);
-        const userDocSnap = await getDoc(userDocRef);
-
-        if (isMounted) {
-          if (userDocSnap.exists()) {
-            const data = userDocSnap.data() as GymUser;
-            setUser({
-              id: firebaseUser.uid,
-              name: data.name,
-              email: data.email,
-              role: data.role,
-              profileImageUrl: data.profileImageUrl,
-            });
-          } else {
-            console.warn(`No Firestore profile for user ${firebaseUser.uid}, logging out.`);
-            if (auth) {
-              await signOut(auth);
-            }
-            setUser(null);
-          }
-        }
-      } catch (err) {
-        console.error('Error fetching Firestore profile:', err);
-        if(isMounted) setUser(null);
-      } finally {
-        if(isMounted) setLoading(false);
-      }
-    };
-    
-    if(!isUserLoading) {
-      fetchUserProfile();
+    } catch (err) {
+      console.error('Error fetching Firestore profile:', err);
+      if (isMounted) setUser(null);
+    } finally {
+      if (isMounted) setLoading(false);
     }
-    
-    return () => {
-      isMounted = false;
-    }
+  };
 
-  }, [firebaseUser, isUserLoading, firestore, auth]);
+  // 🔥 Make sure to run this *after* Firebase finishes checking auth
+  if (isUserLoading) return;
+  setLoading(true);
+  fetchUserProfile();
+
+  return () => {
+    isMounted = false;
+  };
+}, [firebaseUser, isUserLoading, firestore, auth]);
   
   useEffect(() => {
     if (loading) return; // Don't perform redirects until all loading is complete
@@ -108,6 +114,12 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       router.replace('/dashboard/overview');
     }
   }, [user, loading, pathname, router]);
+
+  useEffect(() => {
+  if (!loading) return;
+  const timer = setTimeout(() => setLoading(false), 400);
+  return () => clearTimeout(timer);
+}, [user]);
 
   const login = useCallback(async (email: string, password: string) => {
     if (!auth) throw new Error('Auth service not initialized');
@@ -124,11 +136,29 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   }, [auth]);
 
   const value = { user, loading, login, logout };
-
   const isAuthPage = pathname === '/login';
-  
-  // Show loading screen until we're done, OR if we're about to redirect.
-  if (loading || (!user && !isAuthPage) || (user && isAuthPage)) {
+
+  // If we are still loading user state, show shimmer
+  if (loading || isUserLoading) {
+    return (
+      <AuthContext.Provider value={value}>
+        <LoadingScreen />
+      </AuthContext.Provider>
+    );
+  }
+
+  // ✅ Prevent flicker:
+  // If the user is authenticated and we are on the login page, show loading until redirect happens
+  if (user && isAuthPage) {
+    return (
+      <AuthContext.Provider value={value}>
+        <LoadingScreen />
+      </AuthContext.Provider>
+    );
+  }
+
+  // If the user is not logged in and we’re not on the login page, show loading while redirecting
+  if (!user && !isAuthPage) {
     return (
       <AuthContext.Provider value={value}>
         <LoadingScreen />

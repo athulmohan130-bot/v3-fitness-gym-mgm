@@ -309,7 +309,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$firebase$2f$index$2e$
 ;
 ;
 const metadata = {
-    title: 'GymFlex',
+    title: 'V3 Fitness',
     description: 'The ultimate gym management system.'
 };
 function RootLayout({ children }) {

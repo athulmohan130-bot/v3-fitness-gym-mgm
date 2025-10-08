@@ -1,14 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  HeartPulse,
   LayoutDashboard,
   Users,
+  HeartPulse,
   Dumbbell,
-  CreditCard,
   Settings,
+  CreditCard,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import {
@@ -22,88 +26,138 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/lib/auth-provider";
 
-const menuItems = [
+const menuGroups = [
   {
-    href: "/dashboard/overview",
-    label: "Overview",
-    icon: LayoutDashboard,
-    roles: ["admin", "trainer", "member"],
+    title: "Main",
+    items: [
+      { href: "/dashboard/overview", label: "Overview", icon: LayoutDashboard, roles: ["admin", "trainer", "member"] },
+      { href: "/dashboard/members", label: "Members", icon: Users, roles: ["admin", "trainer"] },
+      { href: "/dashboard/attendance", label: "Attendance", icon: HeartPulse, roles: ["admin", "trainer"] },
+    ],
   },
   {
-    href: "/dashboard/members",
-    label: "Members",
-    icon: Users,
-    roles: ["admin", "trainer"],
-  },
-  {
-    href: "/dashboard/attendance",
-    label: "Attendance",
-    icon: HeartPulse,
-    roles: ["admin", "trainer"],
-  },
-  {
-    href: "/dashboard/plans",
-    label: "Plans",
-    icon: Dumbbell,
-    roles: ["admin"],
+    title: "Management",
+    items: [
+      { href: "/dashboard/plans", label: "Plans", icon: Dumbbell, roles: ["admin"] },
+      { href: "/dashboard/billing", label: "Billing", icon: CreditCard, roles: ["admin"] },
+      { href: "/dashboard/settings", label: "Settings", icon: Settings, roles: ["admin", "trainer", "member"] },
+    ],
   },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { user } = useAuth();
-  const userRole = user?.role || 'member';
+  const { user, logout } = useAuth();
+  const userRole = user?.role || "member";
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <Sidebar className="hidden lg:flex lg:flex-col lg:border-r">
-      <SidebarHeader className="p-4">
-        <Link href="/dashboard/overview" className="flex items-center gap-2 font-bold font-headline text-xl">
-           <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-6 w-6 text-primary"
-            >
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
-          <span>GymFlex</span>
+    <Sidebar
+      className={`hidden lg:flex lg:flex-col bg-background text-foreground border-r border-border font-sans 
+      transition-[width] duration-300 ease-in-out ${collapsed ? "w-16 items-center" : "w-64"}`}
+    >
+      {/* --- Header --- */}
+      <SidebarHeader className="p-4 flex items-center justify-center w-full">
+        <Link
+          href="/dashboard/overview"
+          className="flex items-center gap-2 font-bold font-headline text-xl"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            viewBox="0 0 24 24"
+            className="h-6 w-6 text-primary shrink-0"
+          >
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+          {!collapsed && <span>V3 Fitness</span>}
         </Link>
       </SidebarHeader>
-      <SidebarContent className="flex-1 p-2">
-        <SidebarMenu>
-          {menuItems.map((item) =>
-            item.roles.includes(userRole) ? (
-              <SidebarMenuItem key={item.href}>
-                <Link href={item.href} passHref>
-                  <SidebarMenuButton
-                    isActive={pathname.startsWith(item.href)}
-                    className="w-full justify-start"
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span className="ml-2">{item.label}</span>
-                  </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
-            ) : null
-          )}
-        </SidebarMenu>
+
+      {/* --- Menu --- */}
+      <SidebarContent className="flex-1 px-2 py-3 overflow-y-auto">
+        {menuGroups.map((group) => {
+          const visibleItems = group.items.filter((item) =>
+            item.roles.includes(userRole)
+          );
+          if (!visibleItems.length) return null;
+
+          return (
+            <SidebarMenu key={group.title} className="mb-4">
+              {!collapsed && (
+                <p className="px-3 mb-2 text-xs font-semibold uppercase text-muted-foreground tracking-wide">
+                  {group.title}
+                </p>
+              )}
+              {visibleItems.map((item) => {
+                const active = pathname.startsWith(item.href);
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <Link href={item.href}>
+                      <SidebarMenuButton
+                        aria-current={active ? "page" : undefined}
+                        aria-label={collapsed ? item.label : undefined}
+                        title={collapsed ? item.label : undefined}
+                        className={`w-full flex items-center rounded-lg px-3 py-2 transition-all duration-200 
+                        ${active
+                            ? "bg-primary/10 text-primary font-semibold border-l-4 border-primary"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                          }`}
+                      >
+                        <item.icon
+                          className={`h-5 w-5 ${active ? "text-primary" : "text-muted-foreground"}`}
+                        />
+                        {!collapsed && <span className="ml-2">{item.label}</span>}
+                      </SidebarMenuButton>
+                    </Link>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          );
+        })}
       </SidebarContent>
-      <SidebarFooter className="p-2">
-        <SidebarMenu>
-            <SidebarMenuItem>
-                 <Link href="/dashboard/settings" passHref>
-                  <SidebarMenuButton isActive={pathname === "/dashboard/settings"} className="w-full justify-start">
-                    <Settings className="h-5 w-5" />
-                    <span className="ml-2">Settings</span>
-                  </SidebarMenuButton>
-                </Link>
-            </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+
+      {/* --- Footer (Collapse + Logout) --- */}
+<SidebarFooter className="border-t border-border px-3 py-3 w-full">
+  <div
+    className={`flex items-center justify-between ${
+      collapsed ? "flex-col gap-2" : "flex-row"
+    }`}
+  >
+    {/* Logout Button */}
+    <button
+      onClick={logout}
+      className={`flex items-center gap-2 rounded-lg px-3 py-2 w-full justify-start 
+        text-destructive hover:bg-destructive/10 hover:text-destructive transition-all duration-200`}
+      aria-label="Logout"
+      title="Logout"
+    >
+      <LogOut className="h-5 w-5" />
+      {!collapsed && <span className="font-medium">Logout</span>}
+    </button>
+
+    {/* Collapse Button */}
+    <button
+      onClick={() => setCollapsed(!collapsed)}
+      className={`flex items-center justify-center rounded-lg p-2 transition-colors
+        ${collapsed ? "w-8 h-8" : "ml-2"}
+        hover:bg-muted text-muted-foreground hover:text-foreground`}
+      aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+    >
+      {collapsed ? (
+        <ChevronRight className="h-5 w-5" />
+      ) : (
+        <ChevronLeft className="h-5 w-5" />
+      )}
+    </button>
+  </div>
+</SidebarFooter>
     </Sidebar>
   );
 }

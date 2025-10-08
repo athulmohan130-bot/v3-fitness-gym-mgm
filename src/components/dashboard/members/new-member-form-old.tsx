@@ -95,7 +95,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
 
     toast({
       title: "Member Created!",
-      description: `${values.name} has been successfully added to GymFlex.`,
+      description: `${values.name} has been successfully added to V3 Fitness.`,
     });
     router.push("/dashboard/members");
     setIsLoading(false);

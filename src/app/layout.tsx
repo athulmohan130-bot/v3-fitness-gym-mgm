@@ -5,7 +5,7 @@ import AuthProvider from '@/lib/auth-provider';
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'GymFlex',
+  title: 'V3 Fitness',
   description: 'The ultimate gym management system.',
 };
 
