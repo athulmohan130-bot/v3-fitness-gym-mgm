@@ -7,7 +7,13 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { format, differenceInDays, parseISO } from "date-fns";
+import {
+  format,
+  differenceInDays,
+  parseISO,
+  isBefore,
+  isAfter,
+} from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
@@ -32,18 +38,29 @@ const DetailItem = ({
 export function ViewMemberDetails({ member, plan }: ViewMemberDetailsProps) {
   const membershipStartDate = parseISO(member.membershipStart);
   const membershipEndDate = parseISO(member.membershipEnd);
+  const today = new Date();
+  let computedStatus: string;
+  console.log(today, membershipEndDate);
+  if (isBefore(today, membershipStartDate)) {
+    computedStatus = "pending";
+  } else if (isAfter(today, membershipEndDate)) {
+    computedStatus = "expired";
+  } else {
+    computedStatus = "active";
+  }
   const totalDuration = differenceInDays(
     membershipEndDate,
     membershipStartDate
   );
   const daysCompleted = differenceInDays(new Date(), membershipStartDate);
+  console.log(new Date(),membershipStartDate)
   const progress = Math.min(
     Math.max((daysCompleted / totalDuration) * 100, 0),
     100
   );
 
   const getStatusClasses = (status: string) => {
-    const statusMap: { [key: string]: string } = {
+    const statusMap: Record<string, string> = {
       active: "bg-green-500/20 text-green-700 border-green-500/30",
       expired: "bg-red-500/20 text-red-700 border-red-500/30",
       pending: "bg-yellow-500/20 text-yellow-700 border-yellow-500/30",
@@ -135,31 +152,12 @@ export function ViewMemberDetails({ member, plan }: ViewMemberDetailsProps) {
             <CardTitle>{member.name}</CardTitle>
             <CardDescription>{member.email}</CardDescription>
           </CardHeader>
-          {/* <CardContent className="space-y-6">
-                    <div>
-                        <div className="flex justify-between items-center mb-1">
-                            <p className="text-sm font-medium">Membership Status</p>
-                            <Badge className={getStatusClasses(member.membershipStatus)}>{member.membershipStatus}</Badge>
-                        </div>
-                        <DetailItem label="Plan" value={plan?.name || 'N/A'} />
-                    </div>
-                    <div>
-                        <p className="text-sm font-medium mb-2 text-muted-foreground">Membership Period</p>
-                        <Progress value={progress} className="h-2"/>
-                        <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                            <span>{format(membershipStartDate, 'do MMM yyyy')}</span>
-                            <span>{format(membershipEndDate, 'do MMM yyyy')}</span>
-                        </div>
-                    </div>
-                    <DetailItem label="Join Date" value={format(parseISO(member.joinDate), 'PPP')} />
-                    <DetailItem label="Renewal Date" value={format(parseISO(member.renewalDate), 'PPP')} />
-                </CardContent> */}
           <CardContent className="space-y-6">
             <div>
               <div className="flex justify-between items-center mb-1">
                 <p className="text-sm font-medium">Membership Status</p>
-                <Badge className={getStatusClasses(member.membershipStatus)}>
-                  {member.membershipStatus}
+                <Badge className={getStatusClasses(computedStatus)}>
+                  {computedStatus}
                 </Badge>
               </div>
 

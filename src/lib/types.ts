@@ -84,3 +84,5 @@ export interface UserSummary {
   activeMembers: number;
   lastUpdated: string;
 }
+
+export type UserWithPlan = GymUser & { planName: string };

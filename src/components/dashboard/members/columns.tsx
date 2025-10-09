@@ -1,6 +1,5 @@
-"use client";
-
-import type { ColumnDef } from "@tanstack/react-table";
+// columns.tsx
+import { ColumnDef } from "@tanstack/react-table";
 import type { GymUser } from "@/lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -14,8 +13,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { format } from "date-fns";
 import Link from "next/link";
+import { format } from "date-fns";
+import { RenewPlanDialog } from "./renew-plan-dialogue";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { deleteDocumentNonBlocking, useFirestore } from "@/firebase";
+import { doc } from "firebase/firestore";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,10 +31,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useToast } from "@/hooks/use-toast";
-import { useFirestore, deleteDocumentNonBlocking } from "@/firebase";
-import { doc } from "firebase/firestore";
-import { cn } from "@/lib/utils";
 
 type UserWithPlan = GymUser & { planName: string };
 
@@ -80,29 +80,27 @@ const DeleteMemberDialog = ({ user }: { user: UserWithPlan }) => {
   );
 };
 
-export const columns: ColumnDef<UserWithPlan>[] = [
+export const getColumns = (
+  setRenewOpen: React.Dispatch<React.SetStateAction<boolean>>,
+  setSelectedMember: React.Dispatch<React.SetStateAction<UserWithPlan | null>>,
+  availablePlans: any[]
+): ColumnDef<UserWithPlan>[] => [
   {
     accessorKey: "biometricDeviceId",
     header: "Member ID",
-    cell: ({ row }) => (
-      <span className="font-medium text-foreground">
-        {row.getValue("biometricDeviceId") || "—"}
-      </span>
-    ),
+    cell: ({ row }) => <span>{row.getValue("biometricDeviceId") || "—"}</span>,
   },
   {
     accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Member
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Member
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => {
       const user = row.original;
       return (
@@ -121,29 +119,31 @@ export const columns: ColumnDef<UserWithPlan>[] = [
   },
   {
     accessorKey: "membershipStatus",
-    header: "Status",
+    header: "Membership Status",
     cell: ({ row }) => {
+      const original = row.original as any;
       const status = row.getValue("membershipStatus") as string;
-      const statusClasses: { [key: string]: string } = {
-        active:
-          "bg-green-500/20 text-green-700 border-green-500/30 hover:bg-green-500/30 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20",
-        expired:
-          "bg-red-500/20 text-red-700 border-red-500/30 hover:bg-red-500/30 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20",
-        pending:
-          "bg-yellow-500/20 text-yellow-700 border-yellow-500/30 hover:bg-yellow-500/30 dark:bg-yellow-500/10 dark:text-yellow-400 dark:border-yellow-500/20",
+      const membershipEnd = original.membershipEnd
+        ? new Date(original.membershipEnd)
+        : null;
+      const today = new Date();
+      let displayStatus = status;
+      if (membershipEnd && membershipEnd < today) {
+        displayStatus = "expired";
+      }
+      const statusClasses: Record<string, string> = {
+        active: "bg-green-500/20 text-green-700 ...",
+        expired: "bg-red-500/20 text-red-700 ...",
+        pending: "bg-yellow-500/20 text-yellow-700 ...",
       };
-
       return (
         <Badge
-          className={cn("capitalize", statusClasses[status])}
+          className={cn("capitalize", statusClasses[displayStatus] || "")}
           variant="outline"
         >
-          {status}
+          {displayStatus || "N/A"}
         </Badge>
       );
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
     },
   },
   {
@@ -152,38 +152,28 @@ export const columns: ColumnDef<UserWithPlan>[] = [
   },
   {
     accessorKey: "joinDate",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Join Date
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      return (
-        <span>{format(new Date(row.getValue("joinDate")), "dd MMM yyyy")}</span>
-      );
-    },
+    header: "Join Date",
+    cell: ({ row }) => (
+      <span>{format(new Date(row.getValue("joinDate")), "dd MMM yyyy")}</span>
+    ),
   },
   {
     accessorKey: "renewalDate",
     header: "Renewal Date",
-    cell: ({ row }) => {
-      return (
-        <span>
-          {format(new Date(row.getValue("renewalDate")), "dd MMM yyyy")}
-        </span>
-      );
-    },
+    cell: ({ row }) => (
+      <span>
+        {format(new Date(row.getValue("renewalDate")), "dd MMM yyyy")}
+      </span>
+    ),
   },
   {
     id: "actions",
     cell: ({ row }) => {
       const user = row.original;
+      const membershipEnd = user.membershipEnd
+        ? new Date(user.membershipEnd)
+        : null;
+      const isExpired = membershipEnd && membershipEnd < new Date();
 
       return (
         <DropdownMenu>
@@ -211,6 +201,18 @@ export const columns: ColumnDef<UserWithPlan>[] = [
                 Edit member
               </Link>
             </DropdownMenuItem>
+            {isExpired && (
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectedMember(user);
+                  setRenewOpen(true);
+                }}
+              >
+                <span className="flex items-center gap-2 font-medium text-yellow-700 hover:text-white">
+                  Renew Plan
+                </span>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DeleteMemberDialog user={user} />
           </DropdownMenuContent>

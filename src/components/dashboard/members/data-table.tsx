@@ -37,8 +37,6 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
 }
 
-type globalFilter = "";
-
 export function DataTable<TData, TValue>({
   columns,
   data,
