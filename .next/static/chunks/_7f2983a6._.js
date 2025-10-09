@@ -226,22 +226,22 @@ const DetailItem = ({ label, value })=>/*#__PURE__*/ (0, __TURBOPACK__imported__
                 children: label
             }, void 0, false, {
                 fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                lineNumber: 16,
-                columnNumber: 9
+                lineNumber: 27,
+                columnNumber: 5
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                 className: "text-base font-semibold",
-                children: value || 'N/A'
+                children: value || "N/A"
             }, void 0, false, {
                 fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                lineNumber: 17,
-                columnNumber: 9
+                lineNumber: 28,
+                columnNumber: 5
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-        lineNumber: 15,
-        columnNumber: 5
+        lineNumber: 26,
+        columnNumber: 3
     }, this);
 _c = DetailItem;
 function ViewMemberDetails({ member, plan }) {
@@ -272,13 +272,13 @@ function ViewMemberDetails({ member, plan }) {
                                     children: "Personal Information"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                    lineNumber: 44,
-                                    columnNumber: 21
+                                    lineNumber: 61,
+                                    columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                lineNumber: 43,
-                                columnNumber: 17
+                                lineNumber: 60,
+                                columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
                                 className: "grid grid-cols-1 md:grid-cols-2 gap-6",
@@ -288,48 +288,48 @@ function ViewMemberDetails({ member, plan }) {
                                         value: member.name
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                        lineNumber: 47,
-                                        columnNumber: 21
+                                        lineNumber: 64,
+                                        columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DetailItem, {
                                         label: "Email Address",
                                         value: member.email
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                        lineNumber: 48,
-                                        columnNumber: 21
+                                        lineNumber: 65,
+                                        columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DetailItem, {
                                         label: "Phone Number",
                                         value: member.phone
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                        lineNumber: 49,
-                                        columnNumber: 21
+                                        lineNumber: 66,
+                                        columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DetailItem, {
                                         label: "Date of Birth",
-                                        value: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$parseISO$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["parseISO"])(member.dateOfBirth), 'PPP')
+                                        value: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$parseISO$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["parseISO"])(member.dateOfBirth), "PPP")
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                        lineNumber: 50,
-                                        columnNumber: 21
+                                        lineNumber: 67,
+                                        columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DetailItem, {
                                         label: "Gender",
                                         value: member.gender
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                        lineNumber: 51,
-                                        columnNumber: 21
+                                        lineNumber: 71,
+                                        columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DetailItem, {
                                         label: "Age",
                                         value: `${member.age} years`
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                        lineNumber: 52,
-                                        columnNumber: 21
+                                        lineNumber: 72,
+                                        columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "md:col-span-2",
@@ -338,25 +338,25 @@ function ViewMemberDetails({ member, plan }) {
                                             value: member.address
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                            lineNumber: 54,
-                                            columnNumber: 26
+                                            lineNumber: 74,
+                                            columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                        lineNumber: 53,
-                                        columnNumber: 21
+                                        lineNumber: 73,
+                                        columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                lineNumber: 46,
-                                columnNumber: 17
+                                lineNumber: 63,
+                                columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                        lineNumber: 42,
-                        columnNumber: 13
+                        lineNumber: 59,
+                        columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
                         children: [
@@ -365,13 +365,13 @@ function ViewMemberDetails({ member, plan }) {
                                     children: "Health & Fitness"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                    lineNumber: 61,
-                                    columnNumber: 21
+                                    lineNumber: 81,
+                                    columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                lineNumber: 60,
-                                columnNumber: 17
+                                lineNumber: 80,
+                                columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
                                 className: "grid grid-cols-1 md:grid-cols-2 gap-6",
@@ -381,59 +381,59 @@ function ViewMemberDetails({ member, plan }) {
                                         value: `${member.heightCm} cm`
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                        lineNumber: 64,
-                                        columnNumber: 21
+                                        lineNumber: 84,
+                                        columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DetailItem, {
                                         label: "Weight",
                                         value: `${member.weightKg} kg`
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                        lineNumber: 65,
-                                        columnNumber: 21
+                                        lineNumber: 85,
+                                        columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DetailItem, {
                                         label: "BMI",
-                                        value: !isNaN(bmiValue) ? bmiValue.toFixed(1) : 'N/A'
+                                        value: !isNaN(bmiValue) ? bmiValue.toFixed(1) : "N/A"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                        lineNumber: 66,
-                                        columnNumber: 21
+                                        lineNumber: 86,
+                                        columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DetailItem, {
                                         label: "Primary Fitness Goal",
                                         value: member.fitnessGoal
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                        lineNumber: 67,
-                                        columnNumber: 21
+                                        lineNumber: 90,
+                                        columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "md:col-span-2",
                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DetailItem, {
                                             label: "Medical Conditions",
-                                            value: member.medicalConditions.join(', ') || 'None'
+                                            value: member.medicalConditions.join(", ") || "None"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                            lineNumber: 69,
-                                            columnNumber: 25
+                                            lineNumber: 95,
+                                            columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                        lineNumber: 68,
-                                        columnNumber: 22
+                                        lineNumber: 94,
+                                        columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                lineNumber: 63,
-                                columnNumber: 17
+                                lineNumber: 83,
+                                columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                        lineNumber: 59,
-                        columnNumber: 13
+                        lineNumber: 79,
+                        columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
                         children: [
@@ -442,13 +442,13 @@ function ViewMemberDetails({ member, plan }) {
                                     children: "Emergency Contact"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                    lineNumber: 76,
-                                    columnNumber: 21
+                                    lineNumber: 105,
+                                    columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                lineNumber: 75,
-                                columnNumber: 17
+                                lineNumber: 104,
+                                columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
                                 className: "grid grid-cols-1 md:grid-cols-2 gap-6",
@@ -458,42 +458,42 @@ function ViewMemberDetails({ member, plan }) {
                                         value: member.emergencyContact.name
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                        lineNumber: 79,
-                                        columnNumber: 21
+                                        lineNumber: 108,
+                                        columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DetailItem, {
                                         label: "Contact Phone",
                                         value: member.emergencyContact.phone
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                        lineNumber: 80,
-                                        columnNumber: 21
+                                        lineNumber: 112,
+                                        columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DetailItem, {
                                         label: "Relationship",
                                         value: member.emergencyContact.relation
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                        lineNumber: 81,
-                                        columnNumber: 21
+                                        lineNumber: 116,
+                                        columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                lineNumber: 78,
-                                columnNumber: 17
+                                lineNumber: 107,
+                                columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                        lineNumber: 74,
-                        columnNumber: 14
+                        lineNumber: 103,
+                        columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                lineNumber: 41,
-                columnNumber: 9
+                lineNumber: 58,
+                columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "space-y-8",
@@ -510,41 +510,41 @@ function ViewMemberDetails({ member, plan }) {
                                             alt: member.name
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                            lineNumber: 90,
-                                            columnNumber: 25
+                                            lineNumber: 127,
+                                            columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$avatar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AvatarFallback"], {
-                                            children: member.name.split(' ').map((n)=>n[0]).join('')
+                                            children: member.name.split(" ").map((n)=>n[0]).join("")
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                            lineNumber: 91,
-                                            columnNumber: 25
+                                            lineNumber: 128,
+                                            columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                    lineNumber: 89,
-                                    columnNumber: 21
+                                    lineNumber: 126,
+                                    columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardTitle"], {
                                     children: member.name
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                    lineNumber: 93,
-                                    columnNumber: 21
+                                    lineNumber: 135,
+                                    columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardDescription"], {
                                     children: member.email
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                    lineNumber: 94,
-                                    columnNumber: 21
+                                    lineNumber: 136,
+                                    columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                            lineNumber: 88,
-                            columnNumber: 17
+                            lineNumber: 125,
+                            columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
                             className: "space-y-6",
@@ -559,36 +559,36 @@ function ViewMemberDetails({ member, plan }) {
                                                     children: "Membership Status"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                                    lineNumber: 99,
-                                                    columnNumber: 29
+                                                    lineNumber: 160,
+                                                    columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
                                                     className: getStatusClasses(member.membershipStatus),
                                                     children: member.membershipStatus
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                                    lineNumber: 100,
-                                                    columnNumber: 29
+                                                    lineNumber: 161,
+                                                    columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                            lineNumber: 98,
-                                            columnNumber: 25
+                                            lineNumber: 159,
+                                            columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DetailItem, {
                                             label: "Plan",
-                                            value: plan?.name || 'N/A'
+                                            value: plan?.name || "N/A"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                            lineNumber: 102,
-                                            columnNumber: 25
+                                            lineNumber: 166,
+                                            columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                    lineNumber: 97,
-                                    columnNumber: 21
+                                    lineNumber: 158,
+                                    columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     children: [
@@ -597,83 +597,116 @@ function ViewMemberDetails({ member, plan }) {
                                             children: "Membership Period"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                            lineNumber: 105,
-                                            columnNumber: 25
+                                            lineNumber: 170,
+                                            columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$progress$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Progress"], {
                                             value: progress,
                                             className: "h-2"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                            lineNumber: 106,
-                                            columnNumber: 25
+                                            lineNumber: 173,
+                                            columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: "flex justify-between text-xs text-muted-foreground mt-2",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                    children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])(membershipStartDate, 'do MMM yyyy')
+                                                    children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])(membershipStartDate, "do MMM yyyy")
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                                    lineNumber: 108,
-                                                    columnNumber: 29
+                                                    lineNumber: 175,
+                                                    columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                    children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])(membershipEndDate, 'do MMM yyyy')
+                                                    children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])(membershipEndDate, "do MMM yyyy")
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                                    lineNumber: 109,
-                                                    columnNumber: 29
+                                                    lineNumber: 176,
+                                                    columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                            lineNumber: 107,
-                                            columnNumber: 25
+                                            lineNumber: 174,
+                                            columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                    lineNumber: 104,
-                                    columnNumber: 21
+                                    lineNumber: 169,
+                                    columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DetailItem, {
                                     label: "Join Date",
-                                    value: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$parseISO$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["parseISO"])(member.joinDate), 'PPP')
+                                    value: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$parseISO$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["parseISO"])(member.joinDate), "PPP")
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                    lineNumber: 112,
-                                    columnNumber: 21
+                                    lineNumber: 179,
+                                    columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DetailItem, {
                                     label: "Renewal Date",
-                                    value: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$parseISO$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["parseISO"])(member.renewalDate), 'PPP')
+                                    value: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$parseISO$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["parseISO"])(member.renewalDate), "PPP")
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                                    lineNumber: 113,
-                                    columnNumber: 21
+                                    lineNumber: 183,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DetailItem, {
+                                    label: "Biometric Device ID",
+                                    value: member.biometricDeviceId || "N/A"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
+                                    lineNumber: 187,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "flex justify-between gap-2",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                            className: "text-sm font-medium",
+                                            children: "Payment Status"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
+                                            lineNumber: 192,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
+                                            className: member.paymentStatus === "paid" ? "bg-green-500/20 text-green-700 border-green-500/30" : member.paymentStatus === "pending" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "bg-red-500/20 text-red-700 border-red-500/30",
+                                            children: member.paymentStatus || "N/A"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
+                                            lineNumber: 193,
+                                            columnNumber: 15
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
+                                    lineNumber: 191,
+                                    columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                            lineNumber: 96,
-                            columnNumber: 17
+                            lineNumber: 157,
+                            columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                    lineNumber: 87,
-                    columnNumber: 13
+                    lineNumber: 124,
+                    columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-                lineNumber: 86,
-                columnNumber: 9
+                lineNumber: 123,
+                columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/dashboard/members/view-member-details.tsx",
-        lineNumber: 40,
+        lineNumber: 57,
         columnNumber: 5
     }, this);
 }

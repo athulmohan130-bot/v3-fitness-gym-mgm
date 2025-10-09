@@ -213,12 +213,12 @@ const DeleteMemberDialog = ({ user })=>{
     const firestore = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$firebase$2f$provider$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useFirestore"])();
     const handleDelete = ()=>{
         if (!firestore) return;
-        const userDocRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["doc"])(firestore, 'users', user.id);
+        const userDocRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["doc"])(firestore, "users", user.id);
         (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$firebase$2f$non$2d$blocking$2d$updates$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["deleteDocumentNonBlocking"])(userDocRef);
         toast({
             title: "Member Deletion Initiated",
             description: `${user.name} will be removed from the system.`,
-            variant: 'destructive'
+            variant: "destructive"
         });
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AlertDialog"], {
@@ -230,13 +230,13 @@ const DeleteMemberDialog = ({ user })=>{
                     children: "Delete member"
                 }, void 0, false, {
                     fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                    lineNumber: 58,
-                    columnNumber: 11
+                    lineNumber: 56,
+                    columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                lineNumber: 57,
-                columnNumber: 9
+                lineNumber: 55,
+                columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AlertDialogContent"], {
                 children: [
@@ -246,8 +246,8 @@ const DeleteMemberDialog = ({ user })=>{
                                 children: "Are you absolutely sure?"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                lineNumber: 64,
-                                columnNumber: 13
+                                lineNumber: 62,
+                                columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AlertDialogDescription"], {
                                 children: [
@@ -257,21 +257,22 @@ const DeleteMemberDialog = ({ user })=>{
                                         children: user.name
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                        lineNumber: 67,
-                                        columnNumber: 19
+                                        lineNumber: 65,
+                                        columnNumber: 32
                                     }, this),
-                                    " and remove their data from our servers."
+                                    " ",
+                                    "and remove their data from our servers."
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                lineNumber: 65,
-                                columnNumber: 13
+                                lineNumber: 63,
+                                columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                        lineNumber: 63,
-                        columnNumber: 11
+                        lineNumber: 61,
+                        columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AlertDialogFooter"], {
                         children: [
@@ -279,8 +280,8 @@ const DeleteMemberDialog = ({ user })=>{
                                 children: "Cancel"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                lineNumber: 71,
-                                columnNumber: 13
+                                lineNumber: 70,
+                                columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AlertDialogAction"], {
                                 onClick: handleDelete,
@@ -288,29 +289,41 @@ const DeleteMemberDialog = ({ user })=>{
                                 children: "Yes, delete member"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                lineNumber: 72,
-                                columnNumber: 13
+                                lineNumber: 71,
+                                columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                        lineNumber: 70,
-                        columnNumber: 11
+                        lineNumber: 69,
+                        columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                lineNumber: 62,
-                columnNumber: 9
+                lineNumber: 60,
+                columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/dashboard/members/columns.tsx",
-        lineNumber: 56,
-        columnNumber: 9
+        lineNumber: 54,
+        columnNumber: 5
     }, this);
 };
 const columns = [
+    {
+        accessorKey: "biometricDeviceId",
+        header: "Member ID",
+        cell: ({ row })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                className: "font-medium text-foreground",
+                children: row.getValue("biometricDeviceId") || "—"
+            }, void 0, false, {
+                fileName: "[project]/src/components/dashboard/members/columns.tsx",
+                lineNumber: 88,
+                columnNumber: 7
+            }, this)
+    },
     {
         accessorKey: "name",
         header: ({ column })=>{
@@ -323,13 +336,13 @@ const columns = [
                         className: "ml-2 h-4 w-4"
                     }, void 0, false, {
                         fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                        lineNumber: 91,
+                        lineNumber: 102,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                lineNumber: 86,
+                lineNumber: 97,
                 columnNumber: 9
             }, this);
         },
@@ -346,20 +359,20 @@ const columns = [
                                 alt: user.name
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                lineNumber: 100,
+                                lineNumber: 111,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$avatar$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AvatarFallback"], {
                                 children: user.name.charAt(0)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                lineNumber: 101,
+                                lineNumber: 112,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                        lineNumber: 99,
+                        lineNumber: 110,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -370,7 +383,7 @@ const columns = [
                                 children: user.name
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                lineNumber: 104,
+                                lineNumber: 115,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -378,19 +391,19 @@ const columns = [
                                 children: user.email
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                lineNumber: 105,
+                                lineNumber: 116,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                        lineNumber: 103,
+                        lineNumber: 114,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                lineNumber: 98,
+                lineNumber: 109,
                 columnNumber: 9
             }, this);
         }
@@ -411,8 +424,8 @@ const columns = [
                 children: status
             }, void 0, false, {
                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                lineNumber: 122,
-                columnNumber: 14
+                lineNumber: 137,
+                columnNumber: 9
             }, this);
         },
         filterFn: (row, id, value)=>{
@@ -435,14 +448,14 @@ const columns = [
                         className: "ml-2 h-4 w-4"
                     }, void 0, false, {
                         fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                        lineNumber: 141,
-                        columnNumber: 13
+                        lineNumber: 162,
+                        columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                lineNumber: 136,
-                columnNumber: 11
+                lineNumber: 157,
+                columnNumber: 9
             }, this);
         },
         cell: ({ row })=>{
@@ -450,8 +463,8 @@ const columns = [
                 children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])(new Date(row.getValue("joinDate")), "dd MMM yyyy")
             }, void 0, false, {
                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                lineNumber: 146,
-                columnNumber: 16
+                lineNumber: 168,
+                columnNumber: 9
             }, this);
         }
     },
@@ -463,8 +476,8 @@ const columns = [
                 children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])(new Date(row.getValue("renewalDate")), "dd MMM yyyy")
             }, void 0, false, {
                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                lineNumber: 153,
-                columnNumber: 16
+                lineNumber: 177,
+                columnNumber: 9
             }, this);
         }
     },
@@ -485,25 +498,25 @@ const columns = [
                                     children: "Open menu"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                    lineNumber: 165,
+                                    lineNumber: 192,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$ellipsis$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__MoreHorizontal$3e$__["MoreHorizontal"], {
                                     className: "h-4 w-4"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                    lineNumber: 166,
+                                    lineNumber: 193,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                            lineNumber: 164,
+                            lineNumber: 191,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                        lineNumber: 163,
+                        lineNumber: 190,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dropdown$2d$menu$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DropdownMenuContent"], {
@@ -513,7 +526,7 @@ const columns = [
                                 children: "Actions"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                lineNumber: 170,
+                                lineNumber: 197,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dropdown$2d$menu$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DropdownMenuItem"], {
@@ -521,12 +534,12 @@ const columns = [
                                 children: "Copy member ID"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                lineNumber: 171,
+                                lineNumber: 198,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dropdown$2d$menu$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DropdownMenuSeparator"], {}, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                lineNumber: 176,
+                                lineNumber: 203,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dropdown$2d$menu$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DropdownMenuItem"], {
@@ -536,12 +549,12 @@ const columns = [
                                     children: "View details"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                    lineNumber: 178,
-                                    columnNumber: 17
+                                    lineNumber: 205,
+                                    columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                lineNumber: 177,
+                                lineNumber: 204,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dropdown$2d$menu$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DropdownMenuItem"], {
@@ -551,36 +564,36 @@ const columns = [
                                     children: "Edit member"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                    lineNumber: 181,
-                                    columnNumber: 17
+                                    lineNumber: 210,
+                                    columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                lineNumber: 180,
+                                lineNumber: 209,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dropdown$2d$menu$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DropdownMenuSeparator"], {}, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                lineNumber: 183,
+                                lineNumber: 214,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(DeleteMemberDialog, {
                                 user: user
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                                lineNumber: 184,
+                                lineNumber: 215,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                        lineNumber: 169,
+                        lineNumber: 196,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/dashboard/members/columns.tsx",
-                lineNumber: 162,
+                lineNumber: 189,
                 columnNumber: 9
             }, this);
         }
@@ -726,6 +739,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 function DataTable({ columns, data }) {
     const [sorting, setSorting] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
     const [columnFilters, setColumnFilters] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [globalFilter, setGlobalFilter] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("");
     const [columnVisibility, setColumnVisibility] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])({});
     const table = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$table$2f$build$2f$lib$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["useReactTable"])({
         data,
@@ -737,10 +751,21 @@ function DataTable({ columns, data }) {
         onColumnFiltersChange: setColumnFilters,
         getFilteredRowModel: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$table$2d$core$2f$build$2f$lib$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getFilteredRowModel"])(),
         onColumnVisibilityChange: setColumnVisibility,
+        onGlobalFilterChange: setGlobalFilter,
         state: {
             sorting,
             columnFilters,
-            columnVisibility
+            columnVisibility,
+            globalFilter
+        },
+        globalFilterFn: (row, columnId, filterValue)=>{
+            const search = String(filterValue).toLowerCase();
+            const original = row.original;
+            const name = (original.name || "").toLowerCase();
+            const bioId = (original.biometricDeviceId || "").toLowerCase();
+            const email = original.email || "";
+            const phone = original.phone || "";
+            return name.includes(search) || bioId.includes(search) || email.includes(search) || phone.includes(search);
         }
     });
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -750,13 +775,15 @@ function DataTable({ columns, data }) {
                 className: "flex items-center p-4",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
-                        placeholder: "Filter members...",
-                        value: table.getColumn("name")?.getFilterValue() ?? "",
-                        onChange: (event)=>table.getColumn("name")?.setFilterValue(event.target.value),
+                        placeholder: "Search members...",
+                        value: globalFilter ?? "",
+                        onChange: (event)=>{
+                            setGlobalFilter(event.target.value);
+                        },
                         className: "max-w-sm"
                     }, void 0, false, {
                         fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                        lineNumber: 68,
+                        lineNumber: 90,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dropdown$2d$menu$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DropdownMenu"], {
@@ -772,18 +799,18 @@ function DataTable({ columns, data }) {
                                             className: "ml-2 h-4 w-4"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                                            lineNumber: 79,
+                                            lineNumber: 101,
                                             columnNumber: 23
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                                    lineNumber: 78,
+                                    lineNumber: 100,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                                lineNumber: 77,
+                                lineNumber: 99,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dropdown$2d$menu$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DropdownMenuContent"], {
@@ -796,25 +823,25 @@ function DataTable({ columns, data }) {
                                         children: column.id
                                     }, column.id, false, {
                                         fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                                        lineNumber: 88,
+                                        lineNumber: 110,
                                         columnNumber: 19
                                     }, this);
                                 })
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                                lineNumber: 82,
+                                lineNumber: 104,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                        lineNumber: 76,
+                        lineNumber: 98,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                lineNumber: 67,
+                lineNumber: 89,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -828,18 +855,18 @@ function DataTable({ columns, data }) {
                                             children: header.isPlaceholder ? null : (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$table$2f$build$2f$lib$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["flexRender"])(header.column.columnDef.header, header.getContext())
                                         }, header.id, false, {
                                             fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                                            lineNumber: 110,
+                                            lineNumber: 132,
                                             columnNumber: 21
                                         }, this);
                                     })
                                 }, headerGroup.id, false, {
                                     fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                                    lineNumber: 107,
+                                    lineNumber: 129,
                                     columnNumber: 15
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                            lineNumber: 105,
+                            lineNumber: 127,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableBody"], {
@@ -849,12 +876,12 @@ function DataTable({ columns, data }) {
                                             children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$table$2f$build$2f$lib$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["flexRender"])(cell.column.columnDef.cell, cell.getContext())
                                         }, cell.id, false, {
                                             fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                                            lineNumber: 131,
+                                            lineNumber: 153,
                                             columnNumber: 21
                                         }, this))
                                 }, row.id, false, {
                                     fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                                    lineNumber: 126,
+                                    lineNumber: 148,
                                     columnNumber: 17
                                 }, this)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableRow"], {
                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableCell"], {
@@ -863,28 +890,28 @@ function DataTable({ columns, data }) {
                                     children: "No results."
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                                    lineNumber: 139,
+                                    lineNumber: 164,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                                lineNumber: 138,
+                                lineNumber: 163,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                            lineNumber: 123,
+                            lineNumber: 145,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                    lineNumber: 104,
+                    lineNumber: 126,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                lineNumber: 103,
+                lineNumber: 125,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -898,7 +925,7 @@ function DataTable({ columns, data }) {
                         children: "Previous"
                     }, void 0, false, {
                         fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                        lineNumber: 148,
+                        lineNumber: 176,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -909,19 +936,19 @@ function DataTable({ columns, data }) {
                         children: "Next"
                     }, void 0, false, {
                         fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                        lineNumber: 156,
+                        lineNumber: 184,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-                lineNumber: 147,
+                lineNumber: 175,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/dashboard/members/data-table.tsx",
-        lineNumber: 66,
+        lineNumber: 88,
         columnNumber: 5
     }, this);
 }

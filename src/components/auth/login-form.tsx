@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -17,7 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -26,15 +25,12 @@ const formSchema = z.object({
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "member@gymflex.com",
-      password: "password",
-    },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -48,7 +44,7 @@ export function LoginForm() {
         title: "Login Failed",
         description: "Invalid credentials. Please check your email and password.",
       });
-       setIsLoading(false);
+      setIsLoading(false);
     }
   }
 
@@ -56,7 +52,7 @@ export function LoginForm() {
     <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
       <div className="flex flex-col space-y-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight font-headline">
-          Welcome Back to GymFlex
+          Welcome Back to V3Fitness
         </h1>
         <p className="text-sm text-muted-foreground">
           Enter your credentials to access your account.
@@ -64,6 +60,7 @@ export function LoginForm() {
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {/* Email Field */}
           <FormField
             control={form.control}
             name="email"
@@ -81,6 +78,8 @@ export function LoginForm() {
               </FormItem>
             )}
           />
+
+          {/* Password Field with Toggle */}
           <FormField
             control={form.control}
             name="password"
@@ -88,32 +87,39 @@ export function LoginForm() {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="••••••••"
-                    {...field}
-                    autoComplete="current-password"
-                  />
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      {...field}
+                      autoComplete="current-password"
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground focus:outline-none"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+
+          {/* Submit Button */}
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Sign In
           </Button>
         </form>
       </Form>
-       <div className="px-8 text-center text-sm text-muted-foreground">
-        Go to your Firebase Console to create users:
-        <ul className="list-disc list-inside text-left">
-            <li>admin@gymflex.com</li>
-            <li>trainer@gymflex.com</li>
-            <li>member@gymflex.com</li>
-        </ul>
-        (Use a password of at least 6 characters). Then use the in-app "Add Member" form to create their database profile.
-      </div>
     </div>
   );
 }

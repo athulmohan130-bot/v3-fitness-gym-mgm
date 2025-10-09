@@ -107,7 +107,7 @@ export function NewPlanForm() {
                     name="price"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Price (₹)</FormLabel>
+                        <FormLabel>Price ({String.fromCharCode(8377)})</FormLabel>
                         <FormControl>
                             <Input type="number" placeholder="12000" {...field} />
                         </FormControl>

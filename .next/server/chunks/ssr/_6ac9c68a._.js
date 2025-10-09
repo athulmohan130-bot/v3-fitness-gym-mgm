@@ -32,8 +32,8 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$placeholder$2d
 ;
 ;
 function AuthLayout({ children }) {
-    const bgImage = __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$placeholder$2d$images$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["PlaceHolderImages"].find((img)=>img.id === 'login-background');
-    const imageUrl = bgImage?.imageUrl || 'https://picsum.photos/seed/login/1920/1080';
+    const bgImage = __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$placeholder$2d$images$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["PlaceHolderImages"].find((img)=>img.id === "login-background");
+    const imageUrl = bgImage?.imageUrl || "https://picsum.photos/seed/login/1920/1080";
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "relative flex min-h-screen w-full flex-col items-center justify-center lg:grid lg:grid-cols-2",
         children: [
@@ -42,20 +42,20 @@ function AuthLayout({ children }) {
                 children: [
                     imageUrl && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"], {
                         src: imageUrl,
-                        alt: bgImage?.description || 'Gym background',
+                        alt: bgImage?.description || "Gym background",
                         fill: true,
                         className: "object-cover",
                         "data-ai-hint": bgImage?.imageHint
                     }, void 0, false, {
                         fileName: "[project]/src/app/(auth)/layout.tsx",
-                        lineNumber: 14,
+                        lineNumber: 16,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "absolute inset-0 bg-black/60"
                     }, void 0, false, {
                         fileName: "[project]/src/app/(auth)/layout.tsx",
-                        lineNumber: 22,
+                        lineNumber: 24,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -74,19 +74,19 @@ function AuthLayout({ children }) {
                                     d: "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(auth)/layout.tsx",
-                                    lineNumber: 34,
-                                    columnNumber: 15
+                                    lineNumber: 36,
+                                    columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(auth)/layout.tsx",
-                                lineNumber: 24,
-                                columnNumber: 12
+                                lineNumber: 26,
+                                columnNumber: 11
                             }, this),
-                            "GymFlex"
+                            "V3Fitness"
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(auth)/layout.tsx",
-                        lineNumber: 23,
+                        lineNumber: 25,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -99,7 +99,7 @@ function AuthLayout({ children }) {
                                     children: "“The only bad workout is the one that didn't happen. Step in and make it count.”"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(auth)/layout.tsx",
-                                    lineNumber: 40,
+                                    lineNumber: 42,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("footer", {
@@ -107,24 +107,24 @@ function AuthLayout({ children }) {
                                     children: "GymFlex Motto"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(auth)/layout.tsx",
-                                    lineNumber: 43,
+                                    lineNumber: 46,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(auth)/layout.tsx",
-                            lineNumber: 39,
+                            lineNumber: 41,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/(auth)/layout.tsx",
-                        lineNumber: 38,
+                        lineNumber: 40,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(auth)/layout.tsx",
-                lineNumber: 12,
+                lineNumber: 14,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -132,13 +132,13 @@ function AuthLayout({ children }) {
                 children: children
             }, void 0, false, {
                 fileName: "[project]/src/app/(auth)/layout.tsx",
-                lineNumber: 47,
+                lineNumber: 50,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(auth)/layout.tsx",
-        lineNumber: 11,
+        lineNumber: 13,
         columnNumber: 5
     }, this);
 }

@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'trainer' | 'member';
+export type UserRole = "admin" | "trainer" | "member";
 
 export interface EmergencyContact {
   name: string;
@@ -11,7 +11,7 @@ export interface GymUser {
   name: string;
   email: string;
   phone: string;
-  gender: 'Male' | 'Female' | 'Other';
+  gender: "Male" | "Female" | "Other";
   dateOfBirth: string;
   age: number;
   joinDate: string;
@@ -19,7 +19,7 @@ export interface GymUser {
   emergencyContact: EmergencyContact;
   role: UserRole;
   membershipPlanId: string;
-  membershipStatus: 'active' | 'expired' | 'pending';
+  membershipStatus: "active" | "expired" | "pending";
   membershipStart: string;
   membershipEnd: string;
   renewalDate: string;
@@ -32,6 +32,8 @@ export interface GymUser {
   createdAt: string;
   updatedAt: string;
   profileImageUrl: string;
+  biometricDeviceId: string;
+  paymentStatus: "paid" | "unpaid" | "pending";
 }
 
 export interface Payment {
@@ -40,8 +42,8 @@ export interface Payment {
   planId: string;
   amount: number;
   paymentDate: string;
-  mode: 'UPI' | 'Card' | 'Cash';
-  status: 'success' | 'failed' | 'pending';
+  mode: "UPI" | "Card" | "Cash";
+  status: "success" | "failed" | "pending";
   month: string; // "YYYY-MM"
   transactionId: string;
   handledBy: string; // adminUserId
@@ -53,7 +55,7 @@ export interface MembershipPlan {
   durationInDays: number;
   price: number;
   features: string[];
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   createdBy: string; // adminUserId
   createdAt: string;
 }
@@ -63,14 +65,15 @@ export interface AttendanceRecord {
   name: string;
   userId: string;
   checkInTime: string;
-  status: 'present' | 'absent';
+  status: "present" | "absent";
   handledBy: string; // adminUserId or trainerId
   membershipPlanId: string;
   remarks: string;
 }
 
 export interface MonthlyPaymentSummary {
-  [month: string]: { // "YYYY-MM"
+  [month: string]: {
+    // "YYYY-MM"
     totalReceived: number;
     totalTransactions: number;
   };
