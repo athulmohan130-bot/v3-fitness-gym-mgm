@@ -1,157 +1,232 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, Plus, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth-provider";
-import { useFirestore, addDocumentNonBlocking } from "@/firebase";
-import { collection, serverTimestamp } from "firebase/firestore";
-
-const formSchema = z.object({
-  name: z.string().min(3, { message: "Plan name must be at least 3 characters." }),
-  price: z.coerce.number().positive({ message: "Price must be a positive number." }),
-  durationInDays: z.coerce.number().positive().int({ message: "Duration must be a positive integer." }),
-  features: z.string().min(10, { message: "Please list at least one feature." }),
-});
+import { useFirestore } from "@/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { planSchema, PlanFormData } from "@/lib/validators/plan";
 
 export function NewPlanForm() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const { user } = useAuth();
   const firestore = useFirestore();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<PlanFormData>({
+    resolver: zodResolver(planSchema),
     defaultValues: {
       name: "",
       price: 0,
       durationInDays: 30,
-      features: "",
+      features: [{ value: "" }],
+      status: "active",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "features",
+  });
+
+  const onSubmit = async (data: PlanFormData) => {
     if (!firestore || !user) {
-        toast({ variant: "destructive", title: "Error", description: "Not authenticated or database not available." });
-        return;
+      toast({
+        title: "Error",
+        description: "Not authenticated or database connection not available.",
+        variant: "destructive",
+      });
+      return;
     }
-    setIsLoading(true);
-    
-    const newPlanData = {
-        ...values,
-        features: values.features.split('\\n').map(f => f.trim()).filter(f => f),
-        status: 'active', // New plans are active by default
+
+    try {
+      setIsSubmitting(true);
+
+      const newPlanData = {
+        ...data,
         createdBy: user.id,
         createdAt: serverTimestamp(),
-    };
+        updatedAt: serverTimestamp(),
+      };
 
-    const plansCollectionRef = collection(firestore, 'membershipPlans');
-    addDocumentNonBlocking(plansCollectionRef, newPlanData)
-        .then(() => {
-            toast({
-              title: "Plan Created!",
-              description: `${values.name} has been successfully added.`,
-            });
-            router.push("/dashboard/plans");
-        })
-        .catch(() => {
-            // Error is handled by the global error emitter
-        })
-        .finally(() => {
-            setIsLoading(false);
-        });
-  }
+      const plansCollectionRef = collection(firestore, "membershipPlans");
+      await addDoc(plansCollectionRef, newPlanData);
+
+      toast({
+        title: "Success!",
+        description: `${data.name} has been created successfully.`,
+        variant: "default",
+      });
+
+      router.push("/dashboard/plans");
+    } catch (error) {
+      console.error("Error creating plan:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create plan. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Plan Details</CardTitle>
+        <CardTitle>Create New Plan</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <Label>Plan Name</Label>
+                    <FormControl>
+                      <Input placeholder="e.g., Premium Membership" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Label>Price (₹)</Label>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(parseFloat(e.target.value) || 0)
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="durationInDays"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Label>Duration (days)</Label>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(parseInt(e.target.value, 10) || 0)
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Features</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => append({ value: "" })}
+                    aria-label="Add feature"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Feature
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {fields.map((field, index) => (
+                    <FormField
+                      control={form.control}
+                      key={field.id}
+                      name={`features.${index}.value`}
+                      render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Plan Name</FormLabel>
-                        <FormControl>
-                            <Input placeholder="e.g., Premium Yearly" {...field} />
-                        </FormControl>
-                        <FormMessage />
+                          <div className="flex items-center gap-2">
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="e.g., 24/7 Gym Access"
+                                aria-label={`Feature ${index + 1}`}
+                              />
+                            </FormControl>
+                            {fields.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => remove(index)}
+                                className="text-destructive hover:bg-destructive/10"
+                                aria-label={`Remove feature ${index + 1}`}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                          <FormMessage />
                         </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="price"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Price ({String.fromCharCode(8377)})</FormLabel>
-                        <FormControl>
-                            <Input type="number" placeholder="12000" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="durationInDays"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Duration (in days)</FormLabel>
-                        <FormControl>
-                            <Input type="number" placeholder="365" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="features"
-                    render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                        <FormLabel>Features</FormLabel>
-                        <FormControl>
-                            <Textarea placeholder="List each feature on a new line." {...field} />
-                        </FormControl>
-                         <FormDescription>
-                            Enter each feature on a new line. They will be displayed as a list.
-                        </FormDescription>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                      )}
+                    />
+                  ))}
+                  {form.formState.errors.features && (
+                    <p className="text-sm text-destructive mt-1">
+                      {form.formState.errors.features.root?.message}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
-                <Button type="submit" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Create Plan
-                </Button>
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push("/dashboard/plans")}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Plus className="mr-2 h-4 w-4" />
+                )}
+                Create Plan
+              </Button>
             </div>
           </form>
         </Form>

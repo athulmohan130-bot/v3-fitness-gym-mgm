@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import {
   Card,
@@ -16,68 +16,98 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DollarSign, Users, Activity, CreditCard } from "lucide-react";
+import { DollarSign, Users, Activity, CreditCard, ArrowUp } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useCollection, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, where, limit, orderBy, doc } from "firebase/firestore";
-import type { GymUser, MembershipPlan, UserSummary } from "@/lib/types";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useFirestore } from "@/firebase";
+import { doc, getDoc, query, collection, orderBy, limit, getDocs } from "firebase/firestore";
 import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { GymUser } from "@/lib/types";
+import { useQuery } from "@tanstack/react-query";
+
+// Define types for your summary documents
+interface UserSummary {
+  totalMembers: number;
+  activeMembers: number;
+  newMembersThisMonth: number;
+}
+
+interface RevenueSummary {
+  totalRevenueAllTime: number;
+  monthlyRevenue: { [key: string]: number };
+}
+
+const CACHE_TIME = 1000 * 60 * 5; // 5 minutes
 
 export function AdminDashboard() {
   const firestore = useFirestore();
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
 
-  const recentUsersQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, "users"), orderBy("joinDate", "desc"), limit(5));
-  }, [firestore]);
+  const { data: userSummary, isLoading: userSummaryLoading } = useQuery<UserSummary | null>({
+    queryKey: ['userSummary'],
+    queryFn: async () => {
+      if (!firestore) return null;
+      const docRef = doc(firestore, 'stats/userSummary');
+      const docSnap = await getDoc(docRef);
+      return docSnap.exists() ? docSnap.data() as UserSummary : null;
+    },
+    enabled: !!firestore,
+    staleTime: CACHE_TIME,
+  });
 
-  const plansQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, "membershipPlans"));
-  }, [firestore]);
+  const { data: revenueSummary, isLoading: revenueLoading } = useQuery<RevenueSummary | null>({
+    queryKey: ['revenueSummary'],
+    queryFn: async () => {
+      if (!firestore) return null;
+      const docRef = doc(firestore, 'stats/revenueSummary');
+      const docSnap = await getDoc(docRef);
+      return docSnap.exists() ? docSnap.data() as RevenueSummary : null;
+    },
+    enabled: !!firestore,
+    staleTime: CACHE_TIME,
+  });
 
-  const paymentStatsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, "stats/paymentsSummary/months"));
-  }, [firestore]);
+  const { data: recentUsersData, isLoading: recentUsersLoading } = useQuery<GymUser[]> ({
+    queryKey: ['recentUsersDashboard'],
+    queryFn: async () => {
+      if (!firestore) return [];
+      const q = query(collection(firestore, "users"), orderBy("joinDate", "desc"), limit(5));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GymUser));
+    },
+    enabled: !!firestore,
+    staleTime: CACHE_TIME,
+  });
 
-  const userSummaryRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return doc(firestore, "stats/userSummary");
-  }, [firestore]);
-
-  const { data: recentUsersData, isLoading: recentUsersLoading } = useCollection<GymUser>(recentUsersQuery);
-  const { data: plansData, isLoading: plansLoading } = useCollection<MembershipPlan>(plansQuery);
-  const { data: paymentStatsData, isLoading: paymentStatsLoading } = useCollection<any>(paymentStatsQuery);
-  const { data: userSummaryData, isLoading: userSummaryLoading } = useDoc<UserSummary>(userSummaryRef);
+  // Derive data from the summary documents
+  const totalRevenue = revenueSummary?.totalRevenueAllTime || 0;
+  const activeSubscriptions = userSummary?.activeMembers || 0;
+  const totalMembers = userSummary?.totalMembers || 0;
+  const newMembersData = { count: userSummary?.newMembersThisMonth || 0, percentageChange: 0 };
 
   const availableYears = useMemo(() => {
-    if (!paymentStatsData) return [new Date().getFullYear().toString()];
-    const years = new Set(paymentStatsData.map(stat => stat.id.split('-')[0]));
+    if (!revenueSummary?.monthlyRevenue) return [new Date().getFullYear().toString()];
+    const years = new Set(Object.keys(revenueSummary.monthlyRevenue).map(key => key.replace(/\D/g, '').substring(0, 4)));
     return [...years].sort().reverse();
-  }, [paymentStatsData]);
+  }, [revenueSummary?.monthlyRevenue]);
 
   const chartData = useMemo(() => {
-    if (!paymentStatsData) return [];
-    return Object.values(paymentStatsData)
-      .filter((stat: any) => stat.id.startsWith(selectedYear))
-      .map((stat: any) => ({
-        name: new Date(stat.id).toLocaleString('default', { month: 'short' }),
-        total: stat.totalReceived,
+    if (!revenueSummary?.monthlyRevenue) return [];
+    return Object.entries(revenueSummary.monthlyRevenue)
+      .filter(([key]) => key.replace(/\D/g, '').startsWith(selectedYear))
+      .map(([key, value]) => ({
+        name: new Date(key).toLocaleString('default', { month: 'short' }),
+        total: value,
       }));
-  }, [paymentStatsData, selectedYear]);
+  }, [revenueSummary, selectedYear]);
 
-  const totalRevenue = useMemo(() => {
-    if (!paymentStatsData) return 0;
-    return paymentStatsData.reduce((acc: number, curr: any) => acc + curr.totalReceived, 0);
-  }, [paymentStatsData]);
+  useEffect(() => {
+    if (availableYears.length > 0 && !availableYears.includes(selectedYear)) {
+      setSelectedYear(availableYears[0]);
+    }
+  }, [availableYears, selectedYear]);
 
-  const activeSubscriptions = userSummaryData?.activeMembers || 0;
-  const totalMembers = userSummaryData?.totalMembers || 0;
-
-  const isLoading = recentUsersLoading || plansLoading || paymentStatsLoading || userSummaryLoading;
+  const isLoading = userSummaryLoading || revenueLoading || recentUsersLoading;
 
   if (isLoading) {
     return (
@@ -142,7 +172,7 @@ export function AdminDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{totalRevenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold">₹{(totalRevenue || 0).toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">Across all time</p>
           </CardContent>
         </Card>
@@ -161,11 +191,16 @@ export function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">New Members</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+...</div>
-            <p className="text-xs text-muted-foreground">this month (coming soon)</p>
+            <div className="text-2xl font-bold">+{newMembersData?.count || 0}</div>
+            {newMembersData?.percentageChange !== undefined && (
+              <p className="text-xs text-muted-foreground flex items-center">
+                <ArrowUp className={`h-4 w-4 mr-1 ${newMembersData.percentageChange >= 0 ? 'text-green-500' : 'text-red-500 rotate-180'}`} />
+                {newMembersData.percentageChange.toFixed(1)}% from last month
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -191,7 +226,7 @@ export function AdminDashboard() {
                 <SelectValue placeholder="Select Year" />
               </SelectTrigger>
               <SelectContent>
-                {availableYears.map(year => (
+                {availableYears.map((year: string) => (
                   <SelectItem key={year} value={year}>
                     {year}
                   </SelectItem>

@@ -888,12 +888,14 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$a
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/image.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$firebase$2f$index$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$module__evaluation$3e$__ = __turbopack_context__.i("[project]/src/firebase/index.ts [app-ssr] (ecmascript) <module evaluation>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$firebase$2f$provider$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/firebase/provider.tsx [app-ssr] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$firebase$2f$non$2d$blocking$2d$updates$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/firebase/non-blocking-updates.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$firebase$2f$firestore$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$module__evaluation$3e$__ = __turbopack_context__.i("[project]/node_modules/firebase/firestore/dist/index.mjs [app-ssr] (ecmascript) <module evaluation>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@firebase/firestore/dist/index.node.mjs [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useMutation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@tanstack/react-query/build/modern/useMutation.js [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$QueryClientProvider$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$firebase$2f$storage$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$module__evaluation$3e$__ = __turbopack_context__.i("[project]/node_modules/firebase/storage/dist/index.mjs [app-ssr] (ecmascript) <module evaluation>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$storage$2f$dist$2f$node$2d$esm$2f$index$2e$node$2e$esm$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@firebase/storage/dist/node-esm/index.node.esm.js [app-ssr] (ecmascript)");
 "use client";
+;
 ;
 ;
 ;
@@ -947,9 +949,7 @@ const formSchema = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modu
         "trainer",
         "admin"
     ]),
-    membershipPlanId: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$types$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["string"])({
-        required_error: "Please select a plan."
-    }),
+    //   membershipPlanId: z.string({ required_error: "Please select a plan." }),
     membershipStatus: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$types$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["enum"])([
         "active",
         "expired",
@@ -958,18 +958,14 @@ const formSchema = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modu
     emergencyContactName: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$types$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["string"])().min(2),
     emergencyContactPhone: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$types$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["string"])().min(10),
     emergencyContactRelation: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$types$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["string"])().min(2),
-    paymentStatus: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$types$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["enum"])([
-        "paid",
-        "unpaid",
-        "pending"
-    ])
+    biometricDeviceId: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$types$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["string"])()
 });
 function EditMemberForm({ plans, member }) {
-    const [isLoading, setIsLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useToast"])();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
     const firestore = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$firebase$2f$provider$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useFirestore"])();
     const storage = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$storage$2f$dist$2f$node$2d$esm$2f$index$2e$node$2e$esm$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getStorage"])();
+    const queryClient = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$QueryClientProvider$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useQueryClient"])();
     const placeholderImageUrl = "https://picsum.photos/seed/defaultuser/400/225";
     const initialProfilePicture = member.profileImageUrl || placeholderImageUrl;
     const form = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hook$2d$form$2f$dist$2f$index$2e$esm$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useForm"])({
@@ -987,12 +983,12 @@ function EditMemberForm({ plans, member }) {
             medicalConditions: member.medicalConditions.join("\\n"),
             profilePicture: initialProfilePicture,
             role: member.role,
-            membershipPlanId: member.membershipPlanId,
+            //   membershipPlanId: member.membershipPlanId,
             membershipStatus: member.membershipStatus,
             emergencyContactName: member.emergencyContact.name,
             emergencyContactPhone: member.emergencyContact.phone,
             emergencyContactRelation: member.emergencyContact.relation,
-            paymentStatus: member.paymentStatus
+            biometricDeviceId: member.biometricDeviceId
         }
     });
     const videoRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
@@ -1060,26 +1056,21 @@ function EditMemberForm({ plans, member }) {
             setStream(null);
         }
     };
-    async function onSubmit(values) {
-        if (!firestore) return;
-        setIsLoading(true);
-        try {
+    const { mutate: updateMember, isPending } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useMutation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMutation"])({
+        mutationFn: async (values)=>{
+            if (!firestore) throw new Error("Firestore not available");
             let profileImageUrl = member.profileImageUrl;
-            // Check if the profile picture has been changed (it will be a data URI)
             if (values.profilePicture && values.profilePicture.startsWith("data:image")) {
-                // Delete old image if it exists and is not a placeholder
                 if (member.profileImageUrl && !member.profileImageUrl.includes("picsum.photos")) {
                     try {
                         const oldImageRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$storage$2f$dist$2f$node$2d$esm$2f$index$2e$node$2e$esm$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ref"])(storage, member.profileImageUrl);
                         await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$storage$2f$dist$2f$node$2d$esm$2f$index$2e$node$2e$esm$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["deleteObject"])(oldImageRef);
                     } catch (error) {
-                        // Ignore not-found errors, as the file may have been deleted manually
                         if (error.code !== "storage/object-not-found") {
                             console.warn("Could not delete old profile image:", error);
                         }
                     }
                 }
-                // Upload new image
                 const newImageRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$storage$2f$dist$2f$node$2d$esm$2f$index$2e$node$2e$esm$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ref"])(storage, `profile_images/${member.id}_${new Date().getTime()}.png`);
                 await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$storage$2f$dist$2f$node$2d$esm$2f$index$2e$node$2e$esm$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["uploadString"])(newImageRef, values.profilePicture, "data_url");
                 profileImageUrl = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$storage$2f$dist$2f$node$2d$esm$2f$index$2e$node$2e$esm$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getDownloadURL"])(newImageRef);
@@ -1087,7 +1078,7 @@ function EditMemberForm({ plans, member }) {
             const updatedUserData = {
                 ...values,
                 dateOfBirth: values.dateOfBirth.toISOString(),
-                medicalConditions: values.medicalConditions ? values.medicalConditions.split("\\n") : [],
+                medicalConditions: values.medicalConditions ? values.medicalConditions.split("\n") : [],
                 bmi: values.weightKg / (values.heightCm / 100) ** 2,
                 emergencyContact: {
                     name: values.emergencyContactName,
@@ -1097,28 +1088,72 @@ function EditMemberForm({ plans, member }) {
                 profileImageUrl,
                 updatedAt: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["serverTimestamp"])()
             };
-            // Don't include these in the final object
             delete updatedUserData.emergencyContactName;
             delete updatedUserData.emergencyContactPhone;
             delete updatedUserData.emergencyContactRelation;
             delete updatedUserData.profilePicture;
             const memberDocRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["doc"])(firestore, "users", member.id);
-            (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$firebase$2f$non$2d$blocking$2d$updates$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["updateDocumentNonBlocking"])(memberDocRef, updatedUserData);
+            // Check if membership status has changed
+            if (member.membershipStatus !== values.membershipStatus) {
+                const userSummaryRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["doc"])(firestore, "stats/userSummary");
+                await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["runTransaction"])(firestore, async (transaction)=>{
+                    const summaryDoc = await transaction.get(userSummaryRef);
+                    if (!summaryDoc.exists()) return; // Exit if summary doc doesn't exist
+                    const summaryData = summaryDoc.data();
+                    let incrementValue = 0;
+                    // Case 1: Member is being activated
+                    if (member.membershipStatus !== 'active' && values.membershipStatus === 'active') {
+                        incrementValue = 1;
+                    } else if (member.membershipStatus === 'active' && values.membershipStatus !== 'active') {
+                        // Only decrement if the count is positive
+                        if (summaryData.activeMembers > 0) {
+                            incrementValue = -1;
+                        }
+                    }
+                    // Only update if there's a change to be made
+                    if (incrementValue !== 0) {
+                        transaction.update(userSummaryRef, {
+                            activeMembers: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["increment"])(incrementValue),
+                            lastUpdated: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["serverTimestamp"])()
+                        });
+                    }
+                });
+            }
+            return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["updateDoc"])(memberDocRef, updatedUserData);
+        },
+        onSuccess: (_, variables)=>{
             toast({
-                title: "Member Update Initiated",
-                description: `${values.name}'s profile will be updated shortly.`
+                title: "Member Updated Successfully",
+                description: `${variables.name}'s profile has been updated.`
+            });
+            queryClient.invalidateQueries({
+                queryKey: [
+                    'users'
+                ]
+            });
+            queryClient.invalidateQueries({
+                queryKey: [
+                    'processedMembers'
+                ]
+            });
+            queryClient.invalidateQueries({
+                queryKey: [
+                    'userSummary'
+                ]
             });
             router.push("/dashboard/members");
-        } catch (error) {
+        },
+        onError: (error)=>{
             console.error("Error updating member:", error);
             toast({
                 variant: "destructive",
                 title: "Update Failed",
                 description: "An error occurred while updating the member."
             });
-        } finally{
-            setIsLoading(false);
         }
+    });
+    function onSubmit(values) {
+        updateMember(values);
     }
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Form"], {
         ...form,
@@ -1139,12 +1174,12 @@ function EditMemberForm({ plans, member }) {
                                                 children: "Personal Information"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                lineNumber: 281,
+                                                lineNumber: 306,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                            lineNumber: 280,
+                                            lineNumber: 305,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1159,7 +1194,7 @@ function EditMemberForm({ plans, member }) {
                                                                     children: "Full Name"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 289,
+                                                                    lineNumber: 314,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1168,28 +1203,28 @@ function EditMemberForm({ plans, member }) {
                                                                         ...field
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                        lineNumber: 291,
+                                                                        lineNumber: 316,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 290,
+                                                                    lineNumber: 315,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 293,
+                                                                    lineNumber: 318,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 288,
+                                                            lineNumber: 313,
                                                             columnNumber: 21
                                                         }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 284,
+                                                    lineNumber: 309,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -1201,7 +1236,7 @@ function EditMemberForm({ plans, member }) {
                                                                     children: "Email Address"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 302,
+                                                                    lineNumber: 327,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1211,28 +1246,28 @@ function EditMemberForm({ plans, member }) {
                                                                         disabled: true
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                        lineNumber: 304,
+                                                                        lineNumber: 329,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 303,
+                                                                    lineNumber: 328,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 310,
+                                                                    lineNumber: 335,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 301,
+                                                            lineNumber: 326,
                                                             columnNumber: 21
                                                         }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 297,
+                                                    lineNumber: 322,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -1244,7 +1279,7 @@ function EditMemberForm({ plans, member }) {
                                                                     children: "Phone Number"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 319,
+                                                                    lineNumber: 344,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1253,28 +1288,28 @@ function EditMemberForm({ plans, member }) {
                                                                         ...field
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                        lineNumber: 321,
+                                                                        lineNumber: 346,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 320,
+                                                                    lineNumber: 345,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 323,
+                                                                    lineNumber: 348,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 318,
+                                                            lineNumber: 343,
                                                             columnNumber: 21
                                                         }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 314,
+                                                    lineNumber: 339,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -1287,7 +1322,7 @@ function EditMemberForm({ plans, member }) {
                                                                     children: "Date of Birth"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 332,
+                                                                    lineNumber: 357,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$popover$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Popover"], {
@@ -1303,30 +1338,30 @@ function EditMemberForm({ plans, member }) {
                                                                                             children: "Pick a date"
                                                                                         }, void 0, false, {
                                                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                            lineNumber: 346,
+                                                                                            lineNumber: 371,
                                                                                             columnNumber: 33
                                                                                         }, void 0),
                                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$calendar$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__CalendarIcon$3e$__["CalendarIcon"], {
                                                                                             className: "ml-auto h-4 w-4 opacity-50"
                                                                                         }, void 0, false, {
                                                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                            lineNumber: 348,
+                                                                                            lineNumber: 373,
                                                                                             columnNumber: 31
                                                                                         }, void 0)
                                                                                     ]
                                                                                 }, void 0, true, {
                                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                    lineNumber: 336,
+                                                                                    lineNumber: 361,
                                                                                     columnNumber: 29
                                                                                 }, void 0)
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                lineNumber: 335,
+                                                                                lineNumber: 360,
                                                                                 columnNumber: 27
                                                                             }, void 0)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                            lineNumber: 334,
+                                                                            lineNumber: 359,
                                                                             columnNumber: 25
                                                                         }, void 0),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$popover$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["PopoverContent"], {
@@ -1344,34 +1379,34 @@ function EditMemberForm({ plans, member }) {
                                                                                 initialFocus: true
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                lineNumber: 353,
+                                                                                lineNumber: 378,
                                                                                 columnNumber: 27
                                                                             }, void 0)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                            lineNumber: 352,
+                                                                            lineNumber: 377,
                                                                             columnNumber: 25
                                                                         }, void 0)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 333,
+                                                                    lineNumber: 358,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 368,
+                                                                    lineNumber: 393,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 331,
+                                                            lineNumber: 356,
                                                             columnNumber: 21
                                                         }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 327,
+                                                    lineNumber: 352,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -1384,7 +1419,7 @@ function EditMemberForm({ plans, member }) {
                                                                     children: "Gender"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 377,
+                                                                    lineNumber: 402,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1401,12 +1436,12 @@ function EditMemberForm({ plans, member }) {
                                                                                             value: "Male"
                                                                                         }, void 0, false, {
                                                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                            lineNumber: 386,
+                                                                                            lineNumber: 411,
                                                                                             columnNumber: 31
                                                                                         }, void 0)
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                        lineNumber: 385,
+                                                                                        lineNumber: 410,
                                                                                         columnNumber: 29
                                                                                     }, void 0),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormLabel"], {
@@ -1414,13 +1449,13 @@ function EditMemberForm({ plans, member }) {
                                                                                         children: "Male"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                        lineNumber: 388,
+                                                                                        lineNumber: 413,
                                                                                         columnNumber: 29
                                                                                     }, void 0)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                lineNumber: 384,
+                                                                                lineNumber: 409,
                                                                                 columnNumber: 27
                                                                             }, void 0),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormItem"], {
@@ -1431,12 +1466,12 @@ function EditMemberForm({ plans, member }) {
                                                                                             value: "Female"
                                                                                         }, void 0, false, {
                                                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                            lineNumber: 392,
+                                                                                            lineNumber: 417,
                                                                                             columnNumber: 31
                                                                                         }, void 0)
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                        lineNumber: 391,
+                                                                                        lineNumber: 416,
                                                                                         columnNumber: 29
                                                                                     }, void 0),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormLabel"], {
@@ -1444,13 +1479,13 @@ function EditMemberForm({ plans, member }) {
                                                                                         children: "Female"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                        lineNumber: 394,
+                                                                                        lineNumber: 419,
                                                                                         columnNumber: 29
                                                                                     }, void 0)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                lineNumber: 390,
+                                                                                lineNumber: 415,
                                                                                 columnNumber: 27
                                                                             }, void 0),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormItem"], {
@@ -1461,12 +1496,12 @@ function EditMemberForm({ plans, member }) {
                                                                                             value: "Other"
                                                                                         }, void 0, false, {
                                                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                            lineNumber: 400,
+                                                                                            lineNumber: 425,
                                                                                             columnNumber: 31
                                                                                         }, void 0)
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                        lineNumber: 399,
+                                                                                        lineNumber: 424,
                                                                                         columnNumber: 29
                                                                                     }, void 0),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormLabel"], {
@@ -1474,40 +1509,40 @@ function EditMemberForm({ plans, member }) {
                                                                                         children: "Other"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                        lineNumber: 402,
+                                                                                        lineNumber: 427,
                                                                                         columnNumber: 29
                                                                                     }, void 0)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                lineNumber: 398,
+                                                                                lineNumber: 423,
                                                                                 columnNumber: 27
                                                                             }, void 0)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                        lineNumber: 379,
+                                                                        lineNumber: 404,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 378,
+                                                                    lineNumber: 403,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 406,
+                                                                    lineNumber: 431,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 376,
+                                                            lineNumber: 401,
                                                             columnNumber: 21
                                                         }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 372,
+                                                    lineNumber: 397,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -1520,7 +1555,7 @@ function EditMemberForm({ plans, member }) {
                                                                     children: "Address"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 415,
+                                                                    lineNumber: 440,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1529,40 +1564,40 @@ function EditMemberForm({ plans, member }) {
                                                                         ...field
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                        lineNumber: 417,
+                                                                        lineNumber: 442,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 416,
+                                                                    lineNumber: 441,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 422,
+                                                                    lineNumber: 447,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 414,
+                                                            lineNumber: 439,
                                                             columnNumber: 21
                                                         }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 410,
+                                                    lineNumber: 435,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                            lineNumber: 283,
+                                            lineNumber: 308,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                    lineNumber: 279,
+                                    lineNumber: 304,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
@@ -1572,12 +1607,12 @@ function EditMemberForm({ plans, member }) {
                                                 children: "Health & Fitness"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                lineNumber: 431,
+                                                lineNumber: 456,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                            lineNumber: 430,
+                                            lineNumber: 455,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1592,7 +1627,7 @@ function EditMemberForm({ plans, member }) {
                                                                     children: "Height (cm)"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 439,
+                                                                    lineNumber: 464,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1602,28 +1637,28 @@ function EditMemberForm({ plans, member }) {
                                                                         ...field
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                        lineNumber: 441,
+                                                                        lineNumber: 466,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 440,
+                                                                    lineNumber: 465,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 443,
+                                                                    lineNumber: 468,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 438,
+                                                            lineNumber: 463,
                                                             columnNumber: 21
                                                         }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 434,
+                                                    lineNumber: 459,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -1635,7 +1670,7 @@ function EditMemberForm({ plans, member }) {
                                                                     children: "Weight (kg)"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 452,
+                                                                    lineNumber: 477,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1645,28 +1680,28 @@ function EditMemberForm({ plans, member }) {
                                                                         ...field
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                        lineNumber: 454,
+                                                                        lineNumber: 479,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 453,
+                                                                    lineNumber: 478,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 456,
+                                                                    lineNumber: 481,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 451,
+                                                            lineNumber: 476,
                                                             columnNumber: 21
                                                         }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 447,
+                                                    lineNumber: 472,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -1679,7 +1714,7 @@ function EditMemberForm({ plans, member }) {
                                                                     children: "Primary Fitness Goal"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 465,
+                                                                    lineNumber: 490,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1688,28 +1723,28 @@ function EditMemberForm({ plans, member }) {
                                                                         ...field
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                        lineNumber: 467,
+                                                                        lineNumber: 492,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 466,
+                                                                    lineNumber: 491,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 472,
+                                                                    lineNumber: 497,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 464,
+                                                            lineNumber: 489,
                                                             columnNumber: 21
                                                         }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 460,
+                                                    lineNumber: 485,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -1722,7 +1757,7 @@ function EditMemberForm({ plans, member }) {
                                                                     children: "Medical Conditions or Injuries"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 481,
+                                                                    lineNumber: 506,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1731,53 +1766,53 @@ function EditMemberForm({ plans, member }) {
                                                                         ...field
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                        lineNumber: 483,
+                                                                        lineNumber: 508,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 482,
+                                                                    lineNumber: 507,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormDescription"], {
                                                                     children: "Leave blank if not applicable. Separate with new lines."
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 488,
+                                                                    lineNumber: 513,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 491,
+                                                                    lineNumber: 516,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 480,
+                                                            lineNumber: 505,
                                                             columnNumber: 21
                                                         }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 476,
+                                                    lineNumber: 501,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                            lineNumber: 433,
+                                            lineNumber: 458,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                    lineNumber: 429,
+                                    lineNumber: 454,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                            lineNumber: 278,
+                            lineNumber: 303,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1791,20 +1826,20 @@ function EditMemberForm({ plans, member }) {
                                                     children: "Profile Picture"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 501,
+                                                    lineNumber: 526,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
                                                     children: "Update the member's photo."
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 502,
+                                                    lineNumber: 527,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                            lineNumber: 500,
+                                            lineNumber: 525,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1820,7 +1855,7 @@ function EditMemberForm({ plans, member }) {
                                                         playsInline: true
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                        lineNumber: 507,
+                                                        lineNumber: 532,
                                                         columnNumber: 21
                                                     }, this) : capturedImage ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
                                                         src: capturedImage,
@@ -1831,18 +1866,18 @@ function EditMemberForm({ plans, member }) {
                                                         "data-ai-hint": "person gym"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                        lineNumber: 515,
+                                                        lineNumber: 540,
                                                         columnNumber: 21
                                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$user$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__User$3e$__["User"], {
                                                         className: "w-24 h-24 text-muted-foreground"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                        lineNumber: 524,
+                                                        lineNumber: 549,
                                                         columnNumber: 21
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 505,
+                                                    lineNumber: 530,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("canvas", {
@@ -1850,7 +1885,7 @@ function EditMemberForm({ plans, member }) {
                                                     className: "hidden"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 527,
+                                                    lineNumber: 552,
                                                     columnNumber: 17
                                                 }, this),
                                                 hasCameraPermission === false && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Alert"], {
@@ -1860,20 +1895,20 @@ function EditMemberForm({ plans, member }) {
                                                             children: "Camera Access Denied"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 531,
+                                                            lineNumber: 556,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AlertDescription"], {
                                                             children: "Please allow camera access to use this feature."
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 532,
+                                                            lineNumber: 557,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 530,
+                                                    lineNumber: 555,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1888,14 +1923,14 @@ function EditMemberForm({ plans, member }) {
                                                                     className: "mr-2 h-4 w-4"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 544,
+                                                                    lineNumber: 569,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 member.profileImageUrl ? "Change Photo" : "Open Camera"
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 539,
+                                                            lineNumber: 564,
                                                             columnNumber: 21
                                                         }, this),
                                                         stream && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -1910,7 +1945,7 @@ function EditMemberForm({ plans, member }) {
                                                                     children: "Cancel"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 550,
+                                                                    lineNumber: 575,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -1919,7 +1954,7 @@ function EditMemberForm({ plans, member }) {
                                                                     children: "Capture Photo"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 560,
+                                                                    lineNumber: 585,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
@@ -1933,20 +1968,20 @@ function EditMemberForm({ plans, member }) {
                                                                     className: "mr-2 h-4 w-4"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 573,
+                                                                    lineNumber: 598,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 "Revert"
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 568,
+                                                            lineNumber: 593,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 537,
+                                                    lineNumber: 562,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -1960,40 +1995,40 @@ function EditMemberForm({ plans, member }) {
                                                                         ...field
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                        lineNumber: 584,
+                                                                        lineNumber: 609,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 583,
+                                                                    lineNumber: 608,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 586,
+                                                                    lineNumber: 611,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 582,
+                                                            lineNumber: 607,
                                                             columnNumber: 21
                                                         }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 578,
+                                                    lineNumber: 603,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                            lineNumber: 504,
+                                            lineNumber: 529,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                    lineNumber: 499,
+                                    lineNumber: 524,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
@@ -2003,93 +2038,17 @@ function EditMemberForm({ plans, member }) {
                                                 children: "Membership & Role"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                lineNumber: 594,
+                                                lineNumber: 619,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                            lineNumber: 593,
+                                            lineNumber: 618,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
                                             className: "space-y-6",
                                             children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
-                                                    control: form.control,
-                                                    name: "membershipPlanId",
-                                                    render: ({ field })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormItem"], {
-                                                            children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormLabel"], {
-                                                                    children: "Membership Plan"
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 602,
-                                                                    columnNumber: 23
-                                                                }, void 0),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Select"], {
-                                                                    onValueChange: field.onChange,
-                                                                    defaultValue: field.value,
-                                                                    children: [
-                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
-                                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectTrigger"], {
-                                                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectValue"], {
-                                                                                    placeholder: "Select an active plan"
-                                                                                }, void 0, false, {
-                                                                                    fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                    lineNumber: 609,
-                                                                                    columnNumber: 29
-                                                                                }, void 0)
-                                                                            }, void 0, false, {
-                                                                                fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                lineNumber: 608,
-                                                                                columnNumber: 27
-                                                                            }, void 0)
-                                                                        }, void 0, false, {
-                                                                            fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                            lineNumber: 607,
-                                                                            columnNumber: 25
-                                                                        }, void 0),
-                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectContent"], {
-                                                                            children: plans.filter((plan)=>plan.status === "active").map((plan)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
-                                                                                    value: plan.id,
-                                                                                    children: [
-                                                                                        plan.name,
-                                                                                        " (₹",
-                                                                                        plan.price,
-                                                                                        ")"
-                                                                                    ]
-                                                                                }, plan.id, true, {
-                                                                                    fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                    lineNumber: 616,
-                                                                                    columnNumber: 31
-                                                                                }, void 0))
-                                                                        }, void 0, false, {
-                                                                            fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                            lineNumber: 612,
-                                                                            columnNumber: 25
-                                                                        }, void 0)
-                                                                    ]
-                                                                }, void 0, true, {
-                                                                    fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 603,
-                                                                    columnNumber: 23
-                                                                }, void 0),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
-                                                                    fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 622,
-                                                                    columnNumber: 23
-                                                                }, void 0)
-                                                            ]
-                                                        }, void 0, true, {
-                                                            fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 601,
-                                                            columnNumber: 21
-                                                        }, void 0)
-                                                }, void 0, false, {
-                                                    fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 597,
-                                                    columnNumber: 17
-                                                }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
                                                     control: form.control,
                                                     name: "membershipStatus",
@@ -2099,7 +2058,7 @@ function EditMemberForm({ plans, member }) {
                                                                     children: "Membership Status"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 631,
+                                                                    lineNumber: 627,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Select"], {
@@ -2112,17 +2071,17 @@ function EditMemberForm({ plans, member }) {
                                                                                     placeholder: "Select status"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                    lineNumber: 638,
+                                                                                    lineNumber: 634,
                                                                                     columnNumber: 29
                                                                                 }, void 0)
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                lineNumber: 637,
+                                                                                lineNumber: 633,
                                                                                 columnNumber: 27
                                                                             }, void 0)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                            lineNumber: 636,
+                                                                            lineNumber: 632,
                                                                             columnNumber: 25
                                                                         }, void 0),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectContent"], {
@@ -2132,7 +2091,7 @@ function EditMemberForm({ plans, member }) {
                                                                                     children: "Active"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                    lineNumber: 642,
+                                                                                    lineNumber: 638,
                                                                                     columnNumber: 27
                                                                                 }, void 0),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -2140,7 +2099,7 @@ function EditMemberForm({ plans, member }) {
                                                                                     children: "Pending"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                    lineNumber: 643,
+                                                                                    lineNumber: 639,
                                                                                     columnNumber: 27
                                                                                 }, void 0),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -2148,124 +2107,77 @@ function EditMemberForm({ plans, member }) {
                                                                                     children: "Expired"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                    lineNumber: 644,
+                                                                                    lineNumber: 640,
                                                                                     columnNumber: 27
                                                                                 }, void 0)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                            lineNumber: 641,
+                                                                            lineNumber: 637,
                                                                             columnNumber: 25
                                                                         }, void 0)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 632,
+                                                                    lineNumber: 628,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 647,
+                                                                    lineNumber: 643,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 630,
+                                                            lineNumber: 626,
                                                             columnNumber: 21
                                                         }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 626,
+                                                    lineNumber: 622,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
                                                     control: form.control,
-                                                    name: "paymentStatus",
+                                                    name: "biometricDeviceId",
                                                     render: ({ field })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormItem"], {
                                                             children: [
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormLabel"], {
-                                                                    children: "Payment Status"
+                                                                    children: "Biometric Device ID"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 656,
+                                                                    lineNumber: 677,
                                                                     columnNumber: 23
                                                                 }, void 0),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Select"], {
-                                                                    onValueChange: field.onChange,
-                                                                    defaultValue: field.value,
-                                                                    children: [
-                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
-                                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectTrigger"], {
-                                                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectValue"], {
-                                                                                    placeholder: "Select payment status"
-                                                                                }, void 0, false, {
-                                                                                    fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                    lineNumber: 663,
-                                                                                    columnNumber: 29
-                                                                                }, void 0)
-                                                                            }, void 0, false, {
-                                                                                fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                lineNumber: 662,
-                                                                                columnNumber: 27
-                                                                            }, void 0)
-                                                                        }, void 0, false, {
-                                                                            fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                            lineNumber: 661,
-                                                                            columnNumber: 25
-                                                                        }, void 0),
-                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectContent"], {
-                                                                            children: [
-                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
-                                                                                    value: "paid",
-                                                                                    children: "Paid"
-                                                                                }, void 0, false, {
-                                                                                    fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                    lineNumber: 667,
-                                                                                    columnNumber: 27
-                                                                                }, void 0),
-                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
-                                                                                    value: "unpaid",
-                                                                                    children: "Unpaid"
-                                                                                }, void 0, false, {
-                                                                                    fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                    lineNumber: 668,
-                                                                                    columnNumber: 27
-                                                                                }, void 0),
-                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
-                                                                                    value: "pending",
-                                                                                    children: "Pending"
-                                                                                }, void 0, false, {
-                                                                                    fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                    lineNumber: 669,
-                                                                                    columnNumber: 27
-                                                                                }, void 0)
-                                                                            ]
-                                                                        }, void 0, true, {
-                                                                            fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                            lineNumber: 666,
-                                                                            columnNumber: 25
-                                                                        }, void 0)
-                                                                    ]
-                                                                }, void 0, true, {
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
+                                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
+                                                                        placeholder: "Biometric Device ID",
+                                                                        ...field
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
+                                                                        lineNumber: 679,
+                                                                        columnNumber: 25
+                                                                    }, void 0)
+                                                                }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 657,
+                                                                    lineNumber: 678,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 672,
+                                                                    lineNumber: 681,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 655,
+                                                            lineNumber: 676,
                                                             columnNumber: 21
                                                         }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 651,
+                                                    lineNumber: 672,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -2277,7 +2189,7 @@ function EditMemberForm({ plans, member }) {
                                                                     children: "Role"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 681,
+                                                                    lineNumber: 690,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Select"], {
@@ -2290,17 +2202,17 @@ function EditMemberForm({ plans, member }) {
                                                                                     placeholder: "Select a role"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                    lineNumber: 688,
+                                                                                    lineNumber: 697,
                                                                                     columnNumber: 29
                                                                                 }, void 0)
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                lineNumber: 687,
+                                                                                lineNumber: 696,
                                                                                 columnNumber: 27
                                                                             }, void 0)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                            lineNumber: 686,
+                                                                            lineNumber: 695,
                                                                             columnNumber: 25
                                                                         }, void 0),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectContent"], {
@@ -2310,7 +2222,7 @@ function EditMemberForm({ plans, member }) {
                                                                                     children: "Member"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                    lineNumber: 692,
+                                                                                    lineNumber: 701,
                                                                                     columnNumber: 27
                                                                                 }, void 0),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -2318,7 +2230,7 @@ function EditMemberForm({ plans, member }) {
                                                                                     children: "Trainer"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                    lineNumber: 693,
+                                                                                    lineNumber: 702,
                                                                                     columnNumber: 27
                                                                                 }, void 0),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -2326,47 +2238,47 @@ function EditMemberForm({ plans, member }) {
                                                                                     children: "Admin"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                                    lineNumber: 694,
+                                                                                    lineNumber: 703,
                                                                                     columnNumber: 27
                                                                                 }, void 0)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                            lineNumber: 691,
+                                                                            lineNumber: 700,
                                                                             columnNumber: 25
                                                                         }, void 0)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 682,
+                                                                    lineNumber: 691,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 697,
+                                                                    lineNumber: 706,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 680,
+                                                            lineNumber: 689,
                                                             columnNumber: 21
                                                         }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 676,
+                                                    lineNumber: 685,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                            lineNumber: 596,
+                                            lineNumber: 621,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                    lineNumber: 592,
+                                    lineNumber: 617,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
@@ -2376,12 +2288,12 @@ function EditMemberForm({ plans, member }) {
                                                 children: "Emergency Contact"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                lineNumber: 705,
+                                                lineNumber: 714,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                            lineNumber: 704,
+                                            lineNumber: 713,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -2396,7 +2308,7 @@ function EditMemberForm({ plans, member }) {
                                                                     children: "Contact Name"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 713,
+                                                                    lineNumber: 722,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -2405,28 +2317,28 @@ function EditMemberForm({ plans, member }) {
                                                                         ...field
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                        lineNumber: 715,
+                                                                        lineNumber: 724,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 714,
+                                                                    lineNumber: 723,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 717,
+                                                                    lineNumber: 726,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 712,
+                                                            lineNumber: 721,
                                                             columnNumber: 21
                                                         }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 708,
+                                                    lineNumber: 717,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -2438,7 +2350,7 @@ function EditMemberForm({ plans, member }) {
                                                                     children: "Contact Phone"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 726,
+                                                                    lineNumber: 735,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -2447,28 +2359,28 @@ function EditMemberForm({ plans, member }) {
                                                                         ...field
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                        lineNumber: 728,
+                                                                        lineNumber: 737,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 727,
+                                                                    lineNumber: 736,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 730,
+                                                                    lineNumber: 739,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 725,
+                                                            lineNumber: 734,
                                                             columnNumber: 21
                                                         }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 721,
+                                                    lineNumber: 730,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -2480,7 +2392,7 @@ function EditMemberForm({ plans, member }) {
                                                                     children: "Relationship"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 739,
+                                                                    lineNumber: 748,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -2489,52 +2401,52 @@ function EditMemberForm({ plans, member }) {
                                                                         ...field
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                        lineNumber: 741,
+                                                                        lineNumber: 750,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 740,
+                                                                    lineNumber: 749,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                                    lineNumber: 743,
+                                                                    lineNumber: 752,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                            lineNumber: 738,
+                                                            lineNumber: 747,
                                                             columnNumber: 21
                                                         }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                                    lineNumber: 734,
+                                                    lineNumber: 743,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                            lineNumber: 707,
+                                            lineNumber: 716,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                    lineNumber: 703,
+                                    lineNumber: 712,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                            lineNumber: 498,
+                            lineNumber: 523,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                    lineNumber: 277,
+                    lineNumber: 302,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2547,42 +2459,42 @@ function EditMemberForm({ plans, member }) {
                             children: "Cancel"
                         }, void 0, false, {
                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                            lineNumber: 753,
+                            lineNumber: 762,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
                             type: "submit",
-                            disabled: isLoading,
+                            disabled: isPending,
                             children: [
-                                isLoading && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$loader$2d$circle$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Loader2$3e$__["Loader2"], {
+                                isPending && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$loader$2d$circle$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Loader2$3e$__["Loader2"], {
                                     className: "mr-2 h-4 w-4 animate-spin"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                                    lineNumber: 757,
+                                    lineNumber: 766,
                                     columnNumber: 27
                                 }, this),
                                 "Save Changes"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                            lineNumber: 756,
+                            lineNumber: 765,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-                    lineNumber: 752,
+                    lineNumber: 761,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-            lineNumber: 276,
+            lineNumber: 301,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/dashboard/members/edit-member-form.tsx",
-        lineNumber: 275,
+        lineNumber: 300,
         columnNumber: 5
     }, this);
 }
@@ -2605,7 +2517,9 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$firebase$2f$
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@firebase/firestore/dist/index.node.mjs [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/skeleton.tsx [app-ssr] (ecmascript)");
-'use client';
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
+"use client";
+;
 ;
 ;
 ;
@@ -2616,21 +2530,53 @@ function EditMemberPage() {
     const params = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useParams"])();
     const id = params.id;
     const firestore = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$firebase$2f$provider$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useFirestore"])();
+    const [latestPlan, setLatestPlan] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(undefined);
     const memberRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$firebase$2f$provider$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemoFirebase"])(()=>{
         if (!firestore || !id) return null;
-        return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["doc"])(firestore, 'users', id);
+        return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["doc"])(firestore, "users", id);
     }, [
         firestore,
         id
     ]);
     const plansQuery = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$firebase$2f$provider$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemoFirebase"])(()=>{
         if (!firestore) return null;
-        return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["collection"])(firestore, 'membershipPlans');
+        return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["collection"])(firestore, "membershipPlans");
     }, [
         firestore
     ]);
     const { data: member, isLoading: memberLoading } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$firebase$2f$firestore$2f$use$2d$doc$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useDoc"])(memberRef);
     const { data: plans, isLoading: plansLoading } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$firebase$2f$firestore$2f$use$2d$collection$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCollection"])(plansQuery);
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        const fetchLatestHistory = async ()=>{
+            if (!firestore || !id) return;
+            const historyRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["collection"])(firestore, "users", id, "membershipHistory");
+            const q = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["query"])(historyRef, (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["orderBy"])("createdAt", "desc"));
+            const snapshot = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getDocs"])(q);
+            if (!snapshot.empty) {
+                const latest = snapshot.docs[0].data();
+                const now = new Date();
+                const start = new Date(latest.membershipStart);
+                const end = new Date(latest.membershipEnd);
+                let membershipStatus = "pending";
+                if (now < start) membershipStatus = "pending";
+                else if (now > end) membershipStatus = "expired";
+                else membershipStatus = "active";
+                setLatestPlan({
+                    membershipPlan: latest.membershipPlan || "N/A",
+                    membershipStart: latest.membershipStart,
+                    membershipEnd: latest.membershipEnd
+                });
+            } else {
+                setLatestPlan({
+                    membershipPlan: "No Plan Found"
+                });
+            }
+        };
+        fetchLatestHistory();
+    }, [
+        firestore,
+        id
+    ]);
     const isLoading = memberLoading || plansLoading;
     if (isLoading) {
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2642,34 +2588,34 @@ function EditMemberPage() {
                             className: "h-8 w-1/4"
                         }, void 0, false, {
                             fileName: "[project]/src/app/dashboard/members/edit/[id]/page.tsx",
-                            lineNumber: 34,
-                            columnNumber: 17
+                            lineNumber: 85,
+                            columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
                             className: "h-4 w-1/2 mt-2"
                         }, void 0, false, {
                             fileName: "[project]/src/app/dashboard/members/edit/[id]/page.tsx",
-                            lineNumber: 35,
-                            columnNumber: 17
+                            lineNumber: 86,
+                            columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/dashboard/members/edit/[id]/page.tsx",
-                    lineNumber: 33,
-                    columnNumber: 13
+                    lineNumber: 84,
+                    columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
                     className: "h-[600px] w-full"
                 }, void 0, false, {
                     fileName: "[project]/src/app/dashboard/members/edit/[id]/page.tsx",
-                    lineNumber: 37,
-                    columnNumber: 13
+                    lineNumber: 88,
+                    columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/dashboard/members/edit/[id]/page.tsx",
-            lineNumber: 32,
-            columnNumber: 9
+            lineNumber: 83,
+            columnNumber: 7
         }, this);
     }
     if (!member || !plans) {
@@ -2688,46 +2634,47 @@ function EditMemberPage() {
                         children: "Edit Member Profile"
                     }, void 0, false, {
                         fileName: "[project]/src/app/dashboard/members/edit/[id]/page.tsx",
-                        lineNumber: 52,
-                        columnNumber: 11
+                        lineNumber: 103,
+                        columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                         className: "text-muted-foreground",
                         children: [
-                            "Modify the details for ",
+                            "Modify the details for",
+                            " ",
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                 className: "font-semibold",
                                 children: member.name
                             }, void 0, false, {
                                 fileName: "[project]/src/app/dashboard/members/edit/[id]/page.tsx",
-                                lineNumber: 53,
-                                columnNumber: 71
+                                lineNumber: 108,
+                                columnNumber: 11
                             }, this),
                             "."
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/dashboard/members/edit/[id]/page.tsx",
-                        lineNumber: 53,
-                        columnNumber: 11
+                        lineNumber: 106,
+                        columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/dashboard/members/edit/[id]/page.tsx",
-                lineNumber: 51,
-                columnNumber: 8
+                lineNumber: 102,
+                columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$dashboard$2f$members$2f$edit$2d$member$2d$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["EditMemberForm"], {
                 member: member,
-                plans: plans
+                plans: latestPlan
             }, void 0, false, {
                 fileName: "[project]/src/app/dashboard/members/edit/[id]/page.tsx",
-                lineNumber: 55,
+                lineNumber: 111,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/dashboard/members/edit/[id]/page.tsx",
-        lineNumber: 50,
+        lineNumber: 101,
         columnNumber: 5
     }, this);
 }

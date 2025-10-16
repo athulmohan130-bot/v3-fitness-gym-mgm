@@ -41,7 +41,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import type { MembershipPlan, GymUser } from "@/lib/types";
+import type { MembershipPlan, GymUser, latestPlan } from "@/lib/types";
 import {
   Card,
   CardContent,
@@ -51,8 +51,9 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import Image from "next/image";
-import { useFirestore, updateDocumentNonBlocking } from "@/firebase";
-import { doc, serverTimestamp } from "firebase/firestore";
+import { useFirestore } from "@/firebase";
+import { doc, serverTimestamp, updateDoc, runTransaction, increment } from "firebase/firestore";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getStorage,
   ref,
@@ -74,25 +75,26 @@ const formSchema = z.object({
   medicalConditions: z.string().optional(),
   profilePicture: z.string().optional(),
   role: z.enum(["member", "trainer", "admin"]),
-  membershipPlanId: z.string({ required_error: "Please select a plan." }),
+  //   membershipPlanId: z.string({ required_error: "Please select a plan." }),
   membershipStatus: z.enum(["active", "expired", "pending"]),
   emergencyContactName: z.string().min(2),
   emergencyContactPhone: z.string().min(10),
   emergencyContactRelation: z.string().min(2),
-  paymentStatus: z.enum(["paid", "unpaid", "pending"]),
+  biometricDeviceId: z.string(),
+  //   paymentStatus: z.enum(["paid", "unpaid", "pending"]),
 });
 
 interface EditMemberFormProps {
-  plans: MembershipPlan[];
+  plans: latestPlan | undefined;
   member: GymUser & { id: string };
 }
 
 export function EditMemberForm({ plans, member }: EditMemberFormProps) {
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const firestore = useFirestore();
   const storage = getStorage();
+  const queryClient = useQueryClient();
 
   const placeholderImageUrl = "https://picsum.photos/seed/defaultuser/400/225";
   const initialProfilePicture = member.profileImageUrl || placeholderImageUrl;
@@ -112,12 +114,13 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
       medicalConditions: member.medicalConditions.join("\\n"),
       profilePicture: initialProfilePicture,
       role: member.role,
-      membershipPlanId: member.membershipPlanId,
+      //   membershipPlanId: member.membershipPlanId,
       membershipStatus: member.membershipStatus,
       emergencyContactName: member.emergencyContact.name,
       emergencyContactPhone: member.emergencyContact.phone,
       emergencyContactRelation: member.emergencyContact.relation,
-      paymentStatus: member.paymentStatus,
+      biometricDeviceId: member.biometricDeviceId,
+      //   paymentStatus: member.paymentStatus,
     },
   });
 
@@ -193,38 +196,23 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
     }
   };
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!firestore) return;
-    setIsLoading(true);
+  const { mutate: updateMember, isPending } = useMutation({
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
+      if (!firestore) throw new Error("Firestore not available");
 
-    try {
       let profileImageUrl = member.profileImageUrl;
-      // Check if the profile picture has been changed (it will be a data URI)
-      if (
-        values.profilePicture &&
-        values.profilePicture.startsWith("data:image")
-      ) {
-        // Delete old image if it exists and is not a placeholder
-        if (
-          member.profileImageUrl &&
-          !member.profileImageUrl.includes("picsum.photos")
-        ) {
+      if (values.profilePicture && values.profilePicture.startsWith("data:image")) {
+        if (member.profileImageUrl && !member.profileImageUrl.includes("picsum.photos")) {
           try {
             const oldImageRef = ref(storage, member.profileImageUrl);
             await deleteObject(oldImageRef);
           } catch (error: any) {
-            // Ignore not-found errors, as the file may have been deleted manually
             if (error.code !== "storage/object-not-found") {
               console.warn("Could not delete old profile image:", error);
             }
           }
         }
-
-        // Upload new image
-        const newImageRef = ref(
-          storage,
-          `profile_images/${member.id}_${new Date().getTime()}.png`
-        );
+        const newImageRef = ref(storage, `profile_images/${member.id}_${new Date().getTime()}.png`);
         await uploadString(newImageRef, values.profilePicture, "data_url");
         profileImageUrl = await getDownloadURL(newImageRef);
       }
@@ -232,9 +220,7 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
       const updatedUserData = {
         ...values,
         dateOfBirth: values.dateOfBirth.toISOString(),
-        medicalConditions: values.medicalConditions
-          ? values.medicalConditions.split("\\n")
-          : [],
+        medicalConditions: values.medicalConditions ? values.medicalConditions.split("\n") : [],
         bmi: values.weightKg / (values.heightCm / 100) ** 2,
         emergencyContact: {
           name: values.emergencyContactName,
@@ -245,30 +231,69 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
         updatedAt: serverTimestamp(),
       };
 
-      // Don't include these in the final object
       delete (updatedUserData as any).emergencyContactName;
       delete (updatedUserData as any).emergencyContactPhone;
       delete (updatedUserData as any).emergencyContactRelation;
       delete (updatedUserData as any).profilePicture;
 
       const memberDocRef = doc(firestore, "users", member.id);
-      updateDocumentNonBlocking(memberDocRef, updatedUserData);
 
+      // Check if membership status has changed
+      if (member.membershipStatus !== values.membershipStatus) {
+        const userSummaryRef = doc(firestore, "stats/userSummary");
+        await runTransaction(firestore, async (transaction) => {
+          const summaryDoc = await transaction.get(userSummaryRef);
+          if (!summaryDoc.exists()) return; // Exit if summary doc doesn't exist
+
+          const summaryData = summaryDoc.data();
+          let incrementValue = 0;
+
+          // Case 1: Member is being activated
+          if (member.membershipStatus !== 'active' && values.membershipStatus === 'active') {
+            incrementValue = 1;
+          }
+          // Case 2: Member is being deactivated
+          else if (member.membershipStatus === 'active' && values.membershipStatus !== 'active') {
+            // Only decrement if the count is positive
+            if (summaryData.activeMembers > 0) {
+              incrementValue = -1;
+            }
+          }
+
+          // Only update if there's a change to be made
+          if (incrementValue !== 0) {
+            transaction.update(userSummaryRef, {
+              activeMembers: increment(incrementValue),
+              lastUpdated: serverTimestamp(),
+            });
+          }
+        });
+      }
+
+      return updateDoc(memberDocRef, updatedUserData);
+    },
+    onSuccess: (_, variables) => {
       toast({
-        title: "Member Update Initiated",
-        description: `${values.name}'s profile will be updated shortly.`,
+        title: "Member Updated Successfully",
+        description: `${variables.name}'s profile has been updated.`,
       });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['processedMembers'] });
+      queryClient.invalidateQueries({ queryKey: ['userSummary'] });
       router.push("/dashboard/members");
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Error updating member:", error);
       toast({
         variant: "destructive",
         title: "Update Failed",
         description: "An error occurred while updating the member.",
       });
-    } finally {
-      setIsLoading(false);
-    }
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    updateMember(values);
   }
 
   return (
@@ -596,35 +621,6 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
               <CardContent className="space-y-6">
                 <FormField
                   control={form.control}
-                  name="membershipPlanId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Membership Plan</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select an active plan" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {plans
-                            .filter((plan) => plan.status === "active")
-                            .map((plan) => (
-                              <SelectItem key={plan.id} value={plan.id}>
-                                {plan.name} (₹{plan.price})
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
                   name="membershipStatus"
                   render={({ field }) => (
                     <FormItem>
@@ -648,7 +644,7 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
                     </FormItem>
                   )}
                 />
-                <FormField
+                {/* <FormField
                   control={form.control}
                   name="paymentStatus"
                   render={({ field }) => (
@@ -669,6 +665,19 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
                           <SelectItem value="pending">Pending</SelectItem>
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                /> */}
+                <FormField
+                  control={form.control}
+                  name="biometricDeviceId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Biometric Device ID</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Biometric Device ID" {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -753,8 +762,8 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
           <Button type="button" variant="outline" onClick={() => router.back()}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type="submit" disabled={isPending}>
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Save Changes
           </Button>
         </div>

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useFirebase } from '@/firebase/provider';
 import { doc, getDoc } from 'firebase/firestore';
@@ -54,7 +54,10 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 useEffect(() => {
   let isMounted = true;
 
-  const fetchUserProfile = async () => {
+  const handleAuthChange = async () => {
+    if (isUserLoading) return;
+    setLoading(true);
+
     if (!firebaseUser) {
       if (isMounted) {
         setUser(null);
@@ -63,7 +66,10 @@ useEffect(() => {
       return;
     }
 
-    if (!firestore) return;
+    if (!firestore) {
+      setLoading(false);
+      return;
+    }
 
     try {
       const userDocRef = doc(firestore, 'users', firebaseUser.uid);
@@ -93,10 +99,7 @@ useEffect(() => {
     }
   };
 
-  // 🔥 Make sure to run this *after* Firebase finishes checking auth
-  if (isUserLoading) return;
-  setLoading(true);
-  fetchUserProfile();
+  handleAuthChange();
 
   return () => {
     isMounted = false;
@@ -135,7 +138,7 @@ useEffect(() => {
     // The change in `user` state will trigger the redirect useEffect
   }, [auth]);
 
-  const value = { user, loading, login, logout };
+  const value = useMemo(() => ({ user, loading, login, logout }), [user, loading, login, logout]);
   const isAuthPage = pathname === '/login';
 
   // If we are still loading user state, show shimmer

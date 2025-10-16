@@ -1,185 +1,271 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { useFirestore } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/hooks/use-toast";
+import { Loader2, Save, X } from "lucide-react";
+import { MembershipPlan } from "@/lib/types";
+import { planSchema, PlanFormData } from "@/lib/validators/plan";
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { MembershipPlan } from "@/lib/types";
-import { useFirestore, updateDocumentNonBlocking } from "@/firebase";
-import { doc } from 'firebase/firestore';
-
-const formSchema = z.object({
-  name: z.string().min(3, { message: "Plan name must be at least 3 characters." }),
-  price: z.coerce.number().positive({ message: "Price must be a positive number." }),
-  durationInDays: z.coerce.number().positive().int({ message: "Duration must be a positive integer." }),
-  features: z.string().min(10, { message: "Please list at least one feature." }),
-  status: z.enum(["active", "inactive"]),
-});
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 
 interface EditPlanFormProps {
-  plan: MembershipPlan & { id: string };
+  plan: MembershipPlan;
 }
 
 export function EditPlanForm({ plan }: EditPlanFormProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   const router = useRouter();
   const firestore = useFirestore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isDirty },
+    control,
+    setValue,
+    watch,
+    reset,
+  } = useForm<PlanFormData>({
+    resolver: zodResolver(planSchema),
     defaultValues: {
       name: plan.name,
       price: plan.price,
       durationInDays: plan.durationInDays,
-      features: plan.features.join('\\n'),
-      status: plan.status,
+      features: plan.features,
+      status: plan.status || "active",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!firestore) {
-        toast({ variant: "destructive", title: "Error", description: "Database not available." });
-        return;
-    }
-    setIsLoading(true);
-    
-    const updatedPlanData = {
-        ...values,
-        features: values.features.split('\\n').map(f => f.trim()).filter(f => f)
-    };
+  const status = watch("status");
 
-    const planDocRef = doc(firestore, 'membershipPlans', plan.id);
-    updateDocumentNonBlocking(planDocRef, updatedPlanData);
-    
-    toast({
-      title: "Plan Update Initiated",
-      description: `${values.name} will be updated shortly.`,
-    });
-    router.push("/dashboard/plans");
-    setIsLoading(false);
-  }
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "features",
+  });
+
+  const onSubmit = async (data: PlanFormData) => {
+    if (!firestore) {
+      toast({
+        title: "Error",
+        description: "Database connection not available.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      
+      const planRef = doc(firestore, "membershipPlans", plan.id);
+      await updateDoc(planRef, {
+        ...data,
+        updatedAt: serverTimestamp(),
+      });
+
+      toast({
+        title: "Success",
+        description: "Plan updated successfully!",
+        variant: "default",
+      });
+
+      reset(data); // Reset form with new values
+      router.push("/dashboard/plans");
+    } catch (error) {
+      console.error("Error updating plan:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update plan. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Plan Details</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Plan Name</FormLabel>
-                        <FormControl>
-                            <Input placeholder="e.g., Premium Yearly" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="price"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Price (₹)</FormLabel>
-                        <FormControl>
-                            <Input type="number" placeholder="12000" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="durationInDays"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Duration (in days)</FormLabel>
-                        <FormControl>
-                            <Input type="number" placeholder="365" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Status</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="inactive">Inactive</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="features"
-                    render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                        <FormLabel>Features</FormLabel>
-                        <FormControl>
-                            <Textarea placeholder="List each feature on a new line." {...field} rows={5} />
-                        </FormControl>
-                         <FormDescription>
-                            Enter each feature on a new line. They will be displayed as a list.
-                        </FormDescription>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
+        <CardHeader>
+          <CardTitle>Edit Membership Plan</CardTitle>
+          <CardDescription>
+            Modify the details for the <span className="font-semibold">{plan.name}</span> plan.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-4">
+          <div>
+            <Label htmlFor="name">Plan Name</Label>
+            <Input
+              id="name"
+              {...register("name")}
+              placeholder="e.g., Premium Membership"
+              className={errors.name ? "border-destructive" : ""}
+              aria-invalid={!!errors.name}
+              aria-describedby="name-error"
+            />
+            {errors.name && (
+              <p id="name-error" className="text-sm text-destructive mt-1">
+                {errors.name.message}
+              </p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="price">Price (₹)</Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                {...register("price", { valueAsNumber: true })}
+                className={errors.price ? "border-destructive" : ""}
+                aria-invalid={!!errors.price}
+                aria-describedby="price-error"
+              />
+              {errors.price && (
+                <p id="price-error" className="text-sm text-destructive mt-1">
+                  {errors.price.message}
+                </p>
+              )}
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => router.push('/dashboard/plans')}>Cancel</Button>
-                <Button type="submit" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Changes
-                </Button>
+            <div>
+              <Label htmlFor="durationInDays">Duration (days)</Label>
+              <Input
+                id="durationInDays"
+                type="number"
+                {...register("durationInDays", { valueAsNumber: true })}
+                className={errors.durationInDays ? "border-destructive" : ""}
+                aria-invalid={!!errors.durationInDays}
+                aria-describedby="duration-error"
+              />
+              {errors.durationInDays && (
+                <p id="duration-error" className="text-sm text-destructive mt-1">
+                  {errors.durationInDays.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <Label>Features</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => append({ value: "" })}
+                aria-label="Add feature"
+              >
+                Add Feature
+              </Button>
+            </div>
+            <div className="space-y-2">
+              {fields.map((field, index) => (
+                <div key={field.id}>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      {...register(`features.${index}.value`)}
+                      placeholder="e.g., 24/7 Gym Access"
+                      aria-label={`Feature ${index + 1}`}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => remove(index)}
+                      className="text-destructive hover:bg-destructive/10"
+                      aria-label={`Remove feature ${index + 1}`}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {errors.features?.[index]?.value?.message && (
+                    <p className="text-sm text-destructive mt-1">
+                      {errors.features[index].value.message}
+                    </p>
+                  )}
+                </div>
+              ))}
+              {errors.features?.root && (
+                <p className="text-sm text-destructive mt-1">
+                  {errors.features.root.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div>
+              <Label htmlFor="status" className="text-base">
+                Plan Status
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {status === "active"
+                  ? "This plan is currently active and visible to members."
+                  : "This plan is inactive and hidden from members."}
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="status"
+                checked={status === "active"}
+                onCheckedChange={(checked) =>
+                  setValue("status", checked ? "active" : "inactive", { shouldDirty: true })
+                }
+                aria-label="Toggle plan status"
+              />
+              <Label htmlFor="status" className="cursor-pointer">
+                {status === "active" ? "Active" : "Inactive"}
+              </Label>
+            </div>
+          </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push("/dashboard/plans")}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting || !isDirty}>
+                {isSubmitting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                Save Changes
+              </Button>
             </div>
           </form>
-        </Form>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
   );
 }

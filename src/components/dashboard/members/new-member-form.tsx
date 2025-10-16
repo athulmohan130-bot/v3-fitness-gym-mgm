@@ -43,7 +43,7 @@ import { cn } from "@/lib/utils";
 import { format, add } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import type { MembershipPlan, UserRole } from "@/lib/types";
+import type { MembershipPlan } from "@/lib/types";
 import {
   Card,
   CardContent,
@@ -65,12 +65,11 @@ import {
   collection,
   serverTimestamp,
   doc,
-  writeBatch,
   runTransaction,
-  FieldValue,
   increment,
   setDoc,
 } from "firebase/firestore";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -87,14 +86,13 @@ const formSchema = z.object({
   role: z.enum(["member", "trainer", "admin"]),
   membershipPlanId: z.string({ required_error: "Please select a plan." }),
   joinDate: z.date({ required_error: "Join date is required." }),
-  emergencyContactName: z.string().min(2),
-  emergencyContactPhone: z.string().min(10),
-  emergencyContactRelation: z.string({
-    required_error: "Please select a relationship.",
-  }),
+  emergencyContactName: z.string().min(2, "Name is required."),
+  emergencyContactPhone: z.string().min(10, "A valid phone number is required."),
+  emergencyContactRelation: z.string().min(2, "Relation is required."),
   biometricDeviceId: z
     .string()
     .min(3, { message: "Biometric Device ID is required." }),
+  paidAmount: z.coerce.number().nonnegative("Enter a valid amount."),
 });
 
 const STEPS = [
@@ -112,7 +110,13 @@ const STEPS = [
   {
     id: "membership",
     title: "Membership & Role",
-    fields: ["membershipPlanId", "joinDate", "role", "biometricDeviceId"],
+    fields: [
+      "membershipPlanId",
+      "joinDate",
+      "role",
+      "biometricDeviceId",
+      "paidAmount",
+    ],
   },
   {
     id: "emergency",
@@ -131,12 +135,12 @@ interface NewMemberFormProps {
 
 export function NewMemberForm({ plans }: NewMemberFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const firestore = useFirestore();
   const { user: adminUser } = useAuth();
   const storage = getStorage();
+  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -144,8 +148,20 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
       gender: "Male",
       joinDate: new Date(),
       role: "member",
+      paidAmount: undefined,
+      // Set empty strings as default for required string fields to avoid initial 'undefined' state
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      fitnessGoal: "",
+      membershipPlanId: "",
+      biometricDeviceId: "",
+      emergencyContactName: "",
+      emergencyContactPhone: "",
+      emergencyContactRelation: "",
     },
-    mode: "onChange",
+    mode: "onBlur", // Validate on blur to provide a better user experience
   });
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -214,22 +230,13 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
     form.setValue("profilePicture", "", { shouldValidate: true });
     getCameraPermission();
   };
+  const { mutate: createMember, isPending } = useMutation({
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
+      if (!firestore || !adminUser) {
+        throw new Error("You must be logged in to create a member.");
+      }
 
-  async function processForm(values: z.infer<typeof formSchema>) {
-    if (!firestore || !adminUser) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "You must be logged in to create a member.",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
       const newUserRef = doc(collection(firestore, "users"));
-
       let profileImageUrl = "";
       if (values.profilePicture) {
         const storageRef = ref(
@@ -265,11 +272,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
           relation: values.emergencyContactRelation,
         },
         role: values.role,
-        membershipPlanId: values.membershipPlanId,
         membershipStatus: "active",
-        membershipStart: membershipStart.toISOString(),
-        membershipEnd: membershipEnd.toISOString(),
-        renewalDate: membershipEnd.toISOString(),
         heightCm: values.heightCm,
         weightKg: values.weightKg,
         bmi: values.weightKg / (values.heightCm / 100) ** 2,
@@ -283,38 +286,90 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
         profileImageUrl,
       };
 
-      // Step 1: Create the new user document
       await setDoc(newUserRef, newUserData);
 
-      // Step 2: Atomically update the user summary stats using a transaction
-      const userSummaryRef = doc(firestore, "stats/userSummary");
-      await runTransaction(firestore, async (transaction) => {
-        const summaryDoc = await transaction.get(userSummaryRef);
-        if (!summaryDoc.exists()) {
-          // If the document doesn't exist, create it.
+      const membershipHistoryRef = doc(
+        collection(newUserRef, "membershipHistory")
+      );
+      await setDoc(membershipHistoryRef, {
+        membershipStart: membershipStart.toISOString(),
+        membershipEnd: membershipEnd.toISOString(),
+        membershipPlanId: values.membershipPlanId,
+        price: selectedPlan.price,
+        paidAmount: values.paidAmount,
+        membershipPlan: selectedPlan.name,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      return runTransaction(firestore, async (transaction) => {
+        // All reads must come before all writes.
+        const userSummaryRef = doc(firestore, "stats/userSummary");
+        const revenueSummaryRef = doc(firestore, "stats/revenueSummary");
+
+        const [userSummaryDoc, revenueSummaryDoc] = await Promise.all([
+          transaction.get(userSummaryRef),
+          transaction.get(revenueSummaryRef),
+        ]);
+
+        // Now, perform all write operations.
+        // 1. User Summary Write
+        const currentMonth = format(new Date(), 'yyyy-MM');
+
+        if (!userSummaryDoc.exists()) {
           transaction.set(userSummaryRef, {
             totalMembers: 1,
             activeMembers: 1,
             newMembersThisMonth: 1,
+            newMembersMonth: currentMonth,
             lastUpdated: serverTimestamp(),
           });
         } else {
-          // If it exists, increment the fields.
+          const summaryData = userSummaryDoc.data();
+          const newMembersUpdate = summaryData.newMembersMonth === currentMonth ? increment(1) : 1;
+
           transaction.update(userSummaryRef, {
             totalMembers: increment(1),
             activeMembers: increment(1),
-            newMembersThisMonth: increment(1),
+            newMembersThisMonth: newMembersUpdate,
+            newMembersMonth: currentMonth,
             lastUpdated: serverTimestamp(),
           });
         }
-      });
 
+        // 2. Revenue Summary Write
+        const paidAmount = values.paidAmount;
+        if (paidAmount > 0) {
+          const monthKey = format(values.joinDate, 'yyyy-MM');
+          if (!revenueSummaryDoc.exists()) {
+            transaction.set(revenueSummaryRef, {
+              totalRevenueAllTime: paidAmount,
+              monthlyRevenue: { [monthKey]: paidAmount },
+              lastUpdated: serverTimestamp(),
+            });
+          } else {
+            transaction.update(revenueSummaryRef, {
+              totalRevenueAllTime: increment(paidAmount),
+              [`monthlyRevenue.${monthKey}`]: increment(paidAmount),
+              lastUpdated: serverTimestamp(),
+            });
+          }
+        }
+      });
+    },
+    onSuccess: (_, variables) => {
       toast({
         title: "Member Profile Created!",
-        description: `${values.name}'s profile has been created. Now, create their login credentials in Firebase Authentication.`,
+        description: `${variables.name}'s profile has been created.`,
       });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["processedMembers"] });
+      queryClient.invalidateQueries({ queryKey: ["userSummary"] });
+      queryClient.invalidateQueries({ queryKey: ["revenueSummary"] });
+      queryClient.invalidateQueries({ queryKey: ["recentUsersDashboard"] });
       router.push("/dashboard/members");
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Error creating member:", error);
       toast({
         variant: "destructive",
@@ -322,19 +377,38 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
         description:
           "Could not create member profile. Make sure the stats documents are initialized in Firestore.",
       });
-    } finally {
-      setIsLoading(false);
+    },
+  });
+
+  function processForm(values: z.infer<typeof formSchema>) {
+    // The zodResolver now handles all validation on submit.
+    createMember(values);
+  }
+
+  function onFormError(errors: any) {
+    // Find the first field with an error
+    const firstErrorField = Object.keys(errors)[0] as keyof z.infer<typeof formSchema>;
+    
+    // Find the step corresponding to that field
+    const stepIndex = STEPS.findIndex(step => step.fields.includes(firstErrorField));
+
+    // Navigate to that step if it's not the current one
+    if (stepIndex !== -1 && stepIndex !== currentStep) {
+      setCurrentStep(stepIndex);
     }
   }
 
-  type FieldName = keyof z.infer<typeof formSchema>;
+  const nextStep = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    const fields = STEPS[currentStep].fields as (keyof z.infer<
+      typeof formSchema
+    >)[];
+    const isValid = await form.trigger(fields);
 
-  const nextStep = async () => {
-    const fields = STEPS[currentStep].fields;
-    const valid = await form.trigger(fields as FieldName[], {
-      shouldFocus: true,
-    });
-    if (!valid) return;
+    if (!isValid) {
+      return; // Stay on the current step if validation fails
+    }
+
     if (currentStep < STEPS.length - 1) {
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
@@ -355,6 +429,24 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
   };
   const progress = ((currentStep + 1) / STEPS.length) * 100;
 
+  const selectedPlanId = form.watch("membershipPlanId");
+  const selectedPlan = useMemo(
+    () => plans.find((p) => p.id === selectedPlanId),
+    [selectedPlanId, plans]
+  );
+
+  const paidAmount = form.watch("paidAmount");
+  useEffect(() => {
+    if (selectedPlan && paidAmount > selectedPlan.price) {
+      form.setError("paidAmount", {
+        type: "manual",
+        message: "Paid amount cannot exceed plan price.",
+      });
+    } else {
+      form.clearErrors("paidAmount");
+    }
+  }, [paidAmount, selectedPlan, form]);
+
   return (
     <div>
       <div className="space-y-2 mb-8">
@@ -365,7 +457,8 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(processForm)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(processForm, onFormError)} className="space-y-8">
+          {/* Personal Information */}
           <div className={cn(currentStep !== 0 && "hidden")}>
             <Card>
               <CardHeader>
@@ -505,6 +598,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
             </Card>
           </div>
 
+          {/* Health & Fitness */}
           <div className={cn(currentStep !== 1 && "hidden")}>
             <Card>
               <CardHeader>
@@ -576,6 +670,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
             </Card>
           </div>
 
+          {/* Profile Picture */}
           <div className={cn(currentStep !== 2 && "hidden")}>
             <Card>
               <CardHeader>
@@ -607,17 +702,6 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                   )}
                 </div>
                 <canvas ref={canvasRef} className="hidden"></canvas>
-
-                <video
-                  ref={videoRef}
-                  className={cn("hidden", {
-                    "block w-full max-w-sm aspect-video rounded-md":
-                      stream && !capturedImage,
-                  })}
-                  autoPlay
-                  muted
-                  playsInline
-                />
 
                 {hasCameraPermission === false && (
                   <Alert variant="destructive">
@@ -670,6 +754,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
             </Card>
           </div>
 
+          {/* Membership & Role */}
           <div className={cn(currentStep !== 3 && "hidden")}>
             <Card>
               <CardHeader>
@@ -712,7 +797,6 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="membershipPlanId"
@@ -738,6 +822,63 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                             ))}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="paidAmount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Paid Amount</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Enter paid amount"
+                          {...field}
+                          value={field.value === undefined ? "" : field.value}
+                          onChange={(e) => {
+                            const value = Number(e.target.value);
+                            field.onChange(value);
+                          }}
+                        />
+                      </FormControl>
+
+                      {selectedPlan && (
+                        <p className="text-sm mt-2">
+                          <span className="text-muted-foreground">
+                            Plan Price:
+                          </span>{" "}
+                          <span className="font-medium">
+                            ₹{selectedPlan.price}
+                          </span>
+                          {field.value !== undefined &&
+                            field.value !== null && (
+                              <>
+                                {" "}
+                                |{" "}
+                                <span className="text-muted-foreground">
+                                  Remaining:
+                                </span>{" "}
+                                <span
+                                  className={cn(
+                                    "font-semibold",
+                                    field.value > selectedPlan.price
+                                      ? "text-destructive"
+                                      : "text-foreground"
+                                  )}
+                                >
+                                  ₹
+                                  {Math.max(
+                                    selectedPlan.price - field.value,
+                                    0
+                                  )}
+                                </span>
+                              </>
+                            )}
+                        </p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -791,6 +932,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
             </Card>
           </div>
 
+          {/* Emergency Contact */}
           <div className={cn(currentStep !== 4 && "hidden")}>
             <Card>
               <CardHeader>
@@ -829,23 +971,9 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Relationship</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a relationship" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Spouse">Spouse</SelectItem>
-                          <SelectItem value="Parent">Parent</SelectItem>
-                          <SelectItem value="Sibling">Sibling</SelectItem>
-                          <SelectItem value="Friend">Friend</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <Input placeholder="Spouse, Sibling, etc." {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -853,34 +981,30 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
               </CardContent>
             </Card>
           </div>
+
+          <div className="flex justify-end gap-4 mt-8">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={prevStep}
+              disabled={currentStep === 0}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+            </Button>
+
+            {currentStep < STEPS.length - 1 ? (
+              <Button type="button" onClick={(e) => nextStep(e)}>
+                Next <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            ) : (
+              <Button type="submit" disabled={isPending}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create Profile
+              </Button>
+            )}
+          </div>
         </form>
       </Form>
-
-      <div className="mt-8 pt-5 flex justify-between">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={prevStep}
-          disabled={currentStep === 0}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Previous
-        </Button>
-
-        {currentStep < STEPS.length - 1 ? (
-          <Button type="button" onClick={nextStep}>
-            Next <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            onClick={form.handleSubmit(processForm)}
-            disabled={isLoading}
-          >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Create Member Profile
-          </Button>
-        )}
-      </div>
     </div>
   );
 }

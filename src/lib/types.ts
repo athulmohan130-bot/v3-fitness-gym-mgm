@@ -6,6 +6,12 @@ export interface EmergencyContact {
   relation: string;
 }
 
+interface history {
+  membershipPlanId: string;
+  membershipEnd: string;
+  membershipStart: string;
+  price: number;
+}
 export interface GymUser {
   id: string;
   name: string;
@@ -34,6 +40,7 @@ export interface GymUser {
   profileImageUrl: string;
   biometricDeviceId: string;
   paymentStatus: "paid" | "unpaid" | "pending";
+  membershipHistory: history[];
 }
 
 export interface Payment {
@@ -54,7 +61,7 @@ export interface MembershipPlan {
   name: string;
   durationInDays: number;
   price: number;
-  features: string[];
+  features: { value: string }[];
   status: "active" | "inactive";
   createdBy: string; // adminUserId
   createdAt: string;
@@ -86,3 +93,9 @@ export interface UserSummary {
 }
 
 export type UserWithPlan = GymUser & { planName: string };
+
+export interface latestPlan {
+  membershipPlan: string;
+  membershipStart?: string;
+  membershipEnd?: string;
+}

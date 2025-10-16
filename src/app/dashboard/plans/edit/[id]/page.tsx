@@ -36,13 +36,5 @@ export default function EditPlanPage() {
     return null;
   }
 
-  return (
-    <div className="space-y-6">
-       <div>
-          <h1 className="text-3xl font-bold font-headline tracking-tight">Edit Membership Plan</h1>
-          <p className="text-muted-foreground">Modify the details for the <span className="font-semibold">{plan.name}</span> plan.</p>
-        </div>
-      <EditPlanForm plan={plan} />
-    </div>
-  );
+  return <EditPlanForm plan={plan} />;
 }
