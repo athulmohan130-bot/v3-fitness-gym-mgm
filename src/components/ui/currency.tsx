@@ -25,14 +25,18 @@ export default function Currency({
         minimumFractionDigits: maximumFractionDigits,
       }).format(value);
 
-      // Add currency symbol manually to ensure correct symbol
-      const currencySymbol = currency === "INR" ? "₹" : currency;
-      return `${currencySymbol} ${numberFormatted}`;
+      return numberFormatted;
     } catch (e) {
       // Fallback
-      return `${currency} ${value}`;
+      return value.toString();
     }
-  }, [value, currency, locale, maximumFractionDigits]);
+  }, [value, locale, maximumFractionDigits]);
 
-  return <span className={className}>{formatted}</span>;
+  const currencySymbol = currency === "INR" ? "₹" : "$";
+
+  return (
+    <span className={className}>
+      <span className="font-sans">{currencySymbol}</span> {formatted}
+    </span>
+  );
 }

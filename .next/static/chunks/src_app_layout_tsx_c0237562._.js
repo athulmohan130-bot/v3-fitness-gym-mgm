@@ -5,8 +5,9 @@
   "static/chunks/node_modules_tailwind-merge_dist_bundle-mjs_mjs_b854acb4._.js",
   "static/chunks/d9ef2_@firebase_auth_dist_esm2017_f3e5630b._.js",
   "static/chunks/node_modules_@firebase_firestore_dist_index_esm2017_c2fcaa2e.js",
-  "static/chunks/node_modules_0bb029b5._.js",
-  "static/chunks/src_bfb88511._.js"
+  "static/chunks/node_modules_@firebase_database_dist_index_esm2017_5cb37f30.js",
+  "static/chunks/node_modules_7264d337._.js",
+  "static/chunks/src_d449cdec._.js"
 ],
     source: "dynamic"
 });

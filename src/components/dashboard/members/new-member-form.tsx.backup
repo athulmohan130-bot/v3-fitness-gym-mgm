@@ -247,82 +247,68 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
         days: selectedPlan.durationInDays,
       });
 
-      // Use a transaction to:
-      // 1. Generate sequential biometric ID
-      // 2. Create user document
-      // 3. Update stats
-      let biometricDeviceId = "";
+      // Auto-generate biometric device ID using timestamp + random suffix
+      const biometricDeviceId = `BIO-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
-      await runTransaction(firestore, async (transaction) => {
-        // READ PHASE - All reads must come before writes
-        const counterRef = doc(firestore, "system", "biometricCounter");
+      const newUserData = {
+        id: newUserRef.id,
+        name: values.name,
+        biometricDeviceId,
+        email: values.email,
+        phone: values.phone,
+        gender: values.gender,
+        dateOfBirth: values.dateOfBirth.toISOString(),
+        age: new Date().getFullYear() - values.dateOfBirth.getFullYear(),
+        joinDate: values.joinDate.toISOString(),
+        address: values.address,
+        emergencyContact: {
+          name: values.emergencyContactName,
+          phone: values.emergencyContactPhone,
+          relation: values.emergencyContactRelation,
+        },
+        role: values.role,
+        membershipStatus: "active",
+        heightCm: values.heightCm || null,
+        weightKg: values.weightKg || null,
+        bmi: (values.heightCm && values.weightKg) ? values.weightKg / (values.heightCm / 100) ** 2 : null,
+        fitnessGoal: values.fitnessGoal,
+        medicalConditions: values.medicalConditions
+          ? values.medicalConditions.split("\\n")
+          : [],
+        injuries: [],
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        profileImageUrl,
+      };
+
+      await setDoc(newUserRef, newUserData);
+
+      const membershipHistoryRef = doc(
+        collection(newUserRef, "membershipHistory")
+      );
+      await setDoc(membershipHistoryRef, {
+        membershipStart: membershipStart.toISOString(),
+        membershipEnd: membershipEnd.toISOString(),
+        membershipPlanId: values.membershipPlanId,
+        price: selectedPlan.price,
+        paidAmount: values.paidAmount,
+        membershipPlan: selectedPlan.name,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      return runTransaction(firestore, async (transaction) => {
+        // All reads must come before all writes.
         const userSummaryRef = doc(firestore, "stats/userSummary");
         const revenueSummaryRef = doc(firestore, "stats/revenueSummary");
 
-        const [counterDoc, userSummaryDoc, revenueSummaryDoc] = await Promise.all([
-          transaction.get(counterRef),
+        const [userSummaryDoc, revenueSummaryDoc] = await Promise.all([
           transaction.get(userSummaryRef),
           transaction.get(revenueSummaryRef),
         ]);
 
-        // Generate next biometric ID
-        let nextId = 1;
-        if (counterDoc.exists()) {
-          nextId = (counterDoc.data().lastId || 0) + 1;
-        }
-        biometricDeviceId = nextId.toString().padStart(4, '0');
-
-        // WRITE PHASE - Perform all writes
-        // 1. Update biometric counter
-        transaction.set(counterRef, { lastId: nextId }, { merge: true });
-
-        // 2. Create user document
-        const newUserData = {
-          id: newUserRef.id,
-          name: values.name,
-          biometricDeviceId,
-          email: values.email,
-          phone: values.phone,
-          gender: values.gender,
-          dateOfBirth: values.dateOfBirth.toISOString(),
-          age: new Date().getFullYear() - values.dateOfBirth.getFullYear(),
-          joinDate: values.joinDate.toISOString(),
-          address: values.address,
-          emergencyContact: {
-            name: values.emergencyContactName,
-            phone: values.emergencyContactPhone,
-            relation: values.emergencyContactRelation,
-          },
-          role: values.role,
-          membershipStatus: "active",
-          heightCm: values.heightCm || null,
-          weightKg: values.weightKg || null,
-          bmi: (values.heightCm && values.weightKg) ? values.weightKg / (values.heightCm / 100) ** 2 : null,
-          fitnessGoal: values.fitnessGoal,
-          medicalConditions: values.medicalConditions
-            ? values.medicalConditions.split("\\n")
-            : [],
-          injuries: [],
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          profileImageUrl,
-        };
-        transaction.set(newUserRef, newUserData);
-
-        // 3. Create membership history (using subcollection path)
-        const membershipHistoryRef = doc(firestore, `users/${newUserRef.id}/membershipHistory/${Date.now()}`);
-        transaction.set(membershipHistoryRef, {
-          membershipStart: membershipStart.toISOString(),
-          membershipEnd: membershipEnd.toISOString(),
-          membershipPlanId: values.membershipPlanId,
-          price: selectedPlan.price,
-          paidAmount: values.paidAmount,
-          membershipPlan: selectedPlan.name,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-
-        // 4. Update user summary stats
+        // Now, perform all write operations.
+        // 1. User Summary Write
         const currentMonth = format(new Date(), 'yyyy-MM');
 
         if (!userSummaryDoc.exists()) {
@@ -346,7 +332,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
           });
         }
 
-        // 5. Update revenue summary
+        // 2. Revenue Summary Write
         const paidAmount = values.paidAmount;
         if (paidAmount > 0) {
           const monthKey = format(values.joinDate, 'yyyy-MM');
@@ -411,15 +397,11 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
     },
     onError: (error) => {
       console.error("Error creating member:", error);
-      console.error("Error details:", {
-        message: error.message,
-        code: error.code,
-        stack: error.stack,
-      });
       toast({
         variant: "destructive",
         title: "Uh oh!",
-        description: error.message || "Could not create member profile. Check console for details.",
+        description:
+          "Could not create member profile. Make sure the stats documents are initialized in Firestore.",
       });
     },
   });
@@ -711,172 +693,13 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                 <CardTitle className="text-lg">Membership Plan</CardTitle>
                 <CardDescription>Select a membership plan and process payment</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="joinDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Join Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value
-                                ? format(field.value, "PPP")
-                                : "Pick a date"}
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="membershipPlanId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Membership Plan</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select an active plan" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {plans
-                            .filter((plan) => plan.status === "active")
-                            .map((plan) => (
-                              <SelectItem key={plan.id} value={plan.id}>
-                                {plan.name} - ₹{plan.price} ({plan.durationInDays} days)
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="paidAmount"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Paid Amount</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="Enter paid amount"
-                          {...field}
-                          value={field.value === undefined ? "" : field.value}
-                          onChange={(e) => {
-                            const value = Number(e.target.value);
-                            field.onChange(value);
-                          }}
-                        />
-                      </FormControl>
-
-                      {selectedPlan && (
-                        <div className="rounded-lg border bg-muted/50 p-4 mt-3">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm text-muted-foreground">Plan Price:</span>
-                            <span className="font-semibold">₹{selectedPlan.price}</span>
-                          </div>
-                          {field.value !== undefined && field.value !== null && (
-                            <>
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm text-muted-foreground">Paid:</span>
-                                <span className="font-medium">₹{field.value}</span>
-                              </div>
-                              <div className="flex justify-between items-center mt-1 pt-2 border-t">
-                                <span className="text-sm font-medium">Balance:</span>
-                                <span
-                                  className={cn(
-                                    "font-bold text-lg",
-                                    field.value > selectedPlan.price
-                                      ? "text-destructive"
-                                      : field.value === selectedPlan.price
-                                      ? "text-green-600"
-                                      : "text-orange-600"
-                                  )}
-                                >
-                                  ₹{Math.max(selectedPlan.price - field.value, 0)}
-                                </span>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Role <span className="text-muted-foreground text-xs">(Advanced)</span></FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a role" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="member">Member</SelectItem>
-                          <SelectItem value="trainer">Trainer</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        Leave as 'Member' for regular gym members
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Step 3: Health Profile */}
-          <div className={cn(currentStep !== 2 && "hidden")}>
-            <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Health & Fitness Information</CardTitle>
-                <CardDescription>Optional: Helps trainers create better workout plans</CardDescription>
-              </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="heightCm"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Height (cm) <span className="text-muted-foreground text-xs">(Optional)</span></FormLabel>
+                      <FormLabel>Height (cm)</FormLabel>
                       <FormControl>
                         <Input type="number" placeholder="175" {...field} />
                       </FormControl>
@@ -889,7 +712,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                   name="weightKg"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Weight (kg) <span className="text-muted-foreground text-xs">(Optional)</span></FormLabel>
+                      <FormLabel>Weight (kg)</FormLabel>
                       <FormControl>
                         <Input type="number" placeholder="70" {...field} />
                       </FormControl>
@@ -902,10 +725,10 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                   name="fitnessGoal"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel>Primary Fitness Goal <span className="text-muted-foreground text-xs">(Optional)</span></FormLabel>
+                      <FormLabel>Primary Fitness Goal</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="e.g., Weight loss, muscle gain, general fitness"
+                          placeholder="e.g., Weight loss, muscle gain"
                           {...field}
                         />
                       </FormControl>
@@ -918,16 +741,15 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                   name="medicalConditions"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel>Medical Conditions or Injuries <span className="text-muted-foreground text-xs">(Optional)</span></FormLabel>
+                      <FormLabel>Medical Conditions or Injuries</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="List any relevant medical history (e.g., asthma, knee injury, diabetes)..."
+                          placeholder="List any relevant medical history..."
                           {...field}
-                          rows={3}
                         />
                       </FormControl>
                       <FormDescription>
-                        This helps trainers design safer workout plans
+                        Leave blank if not applicable.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -937,13 +759,13 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
             </Card>
           </div>
 
-          {/* Step 4: Profile Picture */}
-          <div className={cn(currentStep !== 3 && "hidden")}>
+          {/* Profile Picture */}
+          <div className={cn(currentStep !== 2 && "hidden")}>
             <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Profile Photo</CardTitle>
+              <CardHeader>
+                <CardTitle>Profile Picture</CardTitle>
                 <CardDescription>
-                  Optional: Capture or skip to complete registration
+                  Capture a photo of the new member.
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col items-center gap-4">
@@ -1021,41 +843,254 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
             </Card>
           </div>
 
-          {/* Navigation Buttons */}
-          <div className="flex justify-between gap-4 mt-8">
+          {/* Membership & Role */}
+          <div className={cn(currentStep !== 3 && "hidden")}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Membership & Role</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="joinDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Join Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value
+                                ? format(field.value, "PPP")
+                                : "Pick a date"}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="membershipPlanId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Membership Plan</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select an active plan" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {plans
+                            .filter((plan) => plan.status === "active")
+                            .map((plan) => (
+                              <SelectItem key={plan.id} value={plan.id}>
+                                {plan.name} (₹{plan.price})
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="paidAmount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Paid Amount</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Enter paid amount"
+                          {...field}
+                          value={field.value === undefined ? "" : field.value}
+                          onChange={(e) => {
+                            const value = Number(e.target.value);
+                            field.onChange(value);
+                          }}
+                        />
+                      </FormControl>
+
+                      {selectedPlan && (
+                        <p className="text-sm mt-2">
+                          <span className="text-muted-foreground">
+                            Plan Price:
+                          </span>{" "}
+                          <span className="font-medium">
+                            ₹{selectedPlan.price}
+                          </span>
+                          {field.value !== undefined &&
+                            field.value !== null && (
+                              <>
+                                {" "}
+                                |{" "}
+                                <span className="text-muted-foreground">
+                                  Remaining:
+                                </span>{" "}
+                                <span
+                                  className={cn(
+                                    "font-semibold",
+                                    field.value > selectedPlan.price
+                                      ? "text-destructive"
+                                      : "text-foreground"
+                                  )}
+                                >
+                                  ₹
+                                  {Math.max(
+                                    selectedPlan.price - field.value,
+                                    0
+                                  )}
+                                </span>
+                              </>
+                            )}
+                        </p>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="biometricDeviceId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Biometric Device ID</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter the biometric device ID"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Enter the unique ID assigned to the biometric device for
+                        this member.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Role</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a role" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="member">Member</SelectItem>
+                          <SelectItem value="trainer">Trainer</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Emergency Contact */}
+          <div className={cn(currentStep !== 4 && "hidden")}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Emergency Contact</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="emergencyContactName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contact Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Jane Doe" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="emergencyContactPhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contact Phone</FormLabel>
+                      <FormControl>
+                        <Input placeholder="+91 876 543 2109" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="emergencyContactRelation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Relationship</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Spouse, Sibling, etc." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="flex justify-end gap-4 mt-8">
             <Button
               type="button"
               variant="outline"
               onClick={prevStep}
-              disabled={currentStep === 0 || isPending}
+              disabled={currentStep === 0}
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Previous
             </Button>
 
-            <div className="flex gap-3">
-              {/* Show Skip button on optional steps (Health & Picture) */}
-              {(currentStep === 2 || currentStep === 3) && currentStep < STEPS.length - 1 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={(e) => nextStep(e)}
-                  disabled={isPending}
-                >
-                  Skip
-                </Button>
-              )}
-
-              {currentStep < STEPS.length - 1 ? (
-                <Button type="button" onClick={(e) => nextStep(e)} disabled={isPending}>
-                  Next <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              ) : (
-                <Button type="submit" disabled={isPending}>
-                  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isPending ? "Creating..." : "Create Member"}
-                </Button>
-              )}
-            </div>
+            {currentStep < STEPS.length - 1 ? (
+              <Button type="button" onClick={(e) => nextStep(e)}>
+                Next <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            ) : (
+              <Button type="submit" disabled={isPending}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create Profile
+              </Button>
+            )}
           </div>
         </form>
       </Form>

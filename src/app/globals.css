@@ -8,17 +8,17 @@ body {
 
 @layer base {
   :root {
-    --background: 220 13% 96%; /* #F0F2F5 */
+    --background: 220 17% 97%; /* Lighter, cleaner background */
     --foreground: 222 84% 4.9%;
-    --card: 220 13% 100%;
+    --card: 0 0% 100%; /* Pure white cards */
     --card-foreground: 222 84% 4.9%;
-    --popover: 220 13% 100%;
+    --popover: 0 0% 100%;
     --popover-foreground: 222 84% 4.9%;
     --primary: 224 100% 58%; /* #2962FF */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 17% 94%;
     --secondary-foreground: 222 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
+    --muted: 220 17% 94%;
     --muted-foreground: 215.4 16.3% 46.9%;
     --accent: 340 100% 63%; /* #FF4081 */
     --accent-foreground: 210 40% 98%;

@@ -14,16 +14,40 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, LogOut, User, PlusCircle, X } from "lucide-react";
+import { Bell, LogOut, User, PlusCircle, X, Search } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+
+// Page titles mapping
+const pageTitles: Record<string, string> = {
+  "/dashboard/overview": "Dashboard",
+  "/dashboard/members": "Members",
+  "/dashboard/members/new": "Add New Member",
+  "/dashboard/attendance": "Attendance",
+  "/dashboard/plans": "Membership Plans",
+  "/dashboard/billing": "Billing",
+  "/dashboard/settings": "Settings",
+};
 
 export function AppHeader() {
   const { user, logout, loading } = useAuth();
   const [search, setSearch] = useState("");
   const pathname = usePathname();
   const hideMembersControls = pathname.startsWith("/dashboard/members");
+
+  // Get page title
+  const getPageTitle = () => {
+    // Check exact match first
+    if (pageTitles[pathname]) return pageTitles[pathname];
+
+    // Check if it's a member view/edit page
+    if (pathname.match(/^\/dashboard\/members\/view\/[^/]+$/)) return "Member Details";
+    if (pathname.match(/^\/dashboard\/members\/edit\/[^/]+$/)) return "Edit Member";
+
+    // Default
+    return "Dashboard";
+  };
 
   // Example notifications (replace with your API/Firestore)
   const [notifications] = useState([
@@ -82,33 +106,25 @@ export function AppHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-border bg-background backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6">
-      {/* Left (Search) */}
+    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6">
+      {/* Left Side - Page Title & Search */}
+      <div className="flex items-center gap-4 flex-1">
+        {/* Page Title */}
+        <h1 className="text-xl font-bold text-foreground tracking-tight">
+          {getPageTitle()}
+        </h1>
 
-      <div className="flex items-center gap-3 flex-1">
+        {/* Compact Search - Only on members pages */}
         {!hideMembersControls && (
-          <div className="relative w-full max-w-md">
+          <div className="relative hidden md:block">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search members..."
+              placeholder="Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 rounded-full bg-muted/50 border focus-visible:ring-1 focus-visible:ring-primary"
+              className="pl-9 w-[200px] lg:w-[300px] h-9 rounded-lg bg-muted/50 border-0 focus-visible:ring-1 focus-visible:ring-primary/20"
             />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18a7.5 7.5 0 006.15-3.35z"
-              />
-            </svg>
           </div>
         )}
       </div>
@@ -116,7 +132,7 @@ export function AppHeader() {
       {/* Right */}
       <div className="flex items-center gap-3">
         {!hideMembersControls && (
-          <Button asChild>
+          <Button asChild className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all rounded-full px-6">
             <Link href="/dashboard/members/new">
               <PlusCircle className="mr-2 h-4 w-4" />
               Add Member

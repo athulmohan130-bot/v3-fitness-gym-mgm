@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Realtime Database Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .secondary {
+            background: #2196F3;
+        }
+        .secondary:hover {
+            background: #0b7dda;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .config {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .actions {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Firebase Realtime Database Test</h1>
+        <p class="subtitle">Test your Firebase Realtime Database connection</p>
+
+        <div class="config">
+            <strong>Database URL:</strong><br>
+            https://studio-7778498060-d5b43-default-rtdb.firebaseio.com/
+        </div>
+
+        <div class="actions">
+            <button onclick="testConnection()">Test Connection</button>
+            <button onclick="writeTestData()" class="secondary">Write Test Data</button>
+            <button onclick="readTestData()" class="secondary">Read Test Data</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+
+        <div id="status" class="info">
+Ready to test. Click "Test Connection" to begin.
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getDatabase, ref, set, push, get, onValue, onChildAdded } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAUe12LIyIxGwFl1wlq_mNC0usgNKwQrrc",
+            authDomain: "studio-7778498060-d5b43.firebaseapp.com",
+            projectId: "studio-7778498060-d5b43",
+            storageBucket: "studio-7778498060-d5b43.firebasestorage.app",
+            appId: "1:3680439879:web:43e3fac30fcc93f87e2b62",
+            messagingSenderId: "3680439879",
+            databaseURL: "https://studio-7778498060-d5b43-default-rtdb.firebaseio.com/"
+        };
+
+        // Initialize Firebase
+        let app, database;
+
+        try {
+            app = initializeApp(firebaseConfig);
+            database = getDatabase(app);
+            log('✅ Firebase initialized successfully', 'success');
+        } catch (error) {
+            log(`❌ Firebase initialization failed:\n${error.message}`, 'error');
+        }
+
+        // Expose functions to window
+        window.testConnection = async function() {
+            log('🔍 Testing Realtime Database connection...', 'info');
+
+            try {
+                const testRef = ref(database, '.info/connected');
+                const snapshot = await get(testRef);
+
+                if (snapshot.val() === true) {
+                    log('✅ Successfully connected to Firebase Realtime Database!', 'success');
+
+                    // Set up listener for member registrations
+                    const registrationsRef = ref(database, 'member_registrations');
+                    onChildAdded(registrationsRef, (snapshot) => {
+                        log(`📥 New registration detected:\n${JSON.stringify(snapshot.val(), null, 2)}`, 'success');
+                    });
+                    log('👂 Listening for new member registrations...', 'info');
+                } else {
+                    log('❌ Not connected to Firebase Realtime Database', 'error');
+                }
+            } catch (error) {
+                log(`❌ Connection test failed:\n${error.message}\n\n${error.stack}`, 'error');
+            }
+        };
+
+        window.writeTestData = async function() {
+            log('📝 Writing test data...', 'info');
+
+            try {
+                const registrationsRef = ref(database, 'member_registrations');
+                const newRegistrationRef = push(registrationsRef);
+
+                const testData = {
+                    userId: `test_${Date.now()}`,
+                    name: "Test Member (HTML Test)",
+                    email: "test@example.com",
+                    phone: "+919876543210",
+                    biometricDeviceId: "9999",
+                    membershipPlanId: "test-plan-123",
+                    membershipStart: new Date().toISOString(),
+                    membershipEnd: new Date(Date.now() + 30*24*60*60*1000).toISOString(),
+                    joinDate: new Date().toISOString(),
+                    timestamp: new Date().toISOString(),
+                    event: 'member_registered',
+                };
+
+                await set(newRegistrationRef, testData);
+
+                log(`✅ Test data written successfully!\nPath: member_registrations/${newRegistrationRef.key}\n\nData:\n${JSON.stringify(testData, null, 2)}`, 'success');
+            } catch (error) {
+                log(`❌ Write failed:\n${error.message}\n\n${error.stack}`, 'error');
+            }
+        };
+
+        window.readTestData = async function() {
+            log('📖 Reading all member registrations...', 'info');
+
+            try {
+                const registrationsRef = ref(database, 'member_registrations');
+                const snapshot = await get(registrationsRef);
+
+                if (snapshot.exists()) {
+                    const count = Object.keys(snapshot.val()).length;
+                    log(`✅ Found ${count} registration(s):\n\n${JSON.stringify(snapshot.val(), null, 2)}`, 'success');
+                } else {
+                    log('ℹ️ No registrations found in database', 'info');
+                }
+            } catch (error) {
+                log(`❌ Read failed:\n${error.message}\n\n${error.stack}`, 'error');
+            }
+        };
+
+        window.clearLog = function() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = 'Log cleared. Ready for new tests.';
+            statusDiv.className = 'info';
+        };
+
+        function log(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            const timestamp = new Date().toLocaleTimeString();
+            statusDiv.textContent += `\n[${timestamp}] ${message}\n`;
+            statusDiv.className = type;
+            statusDiv.scrollTop = statusDiv.scrollHeight;
+        }
+
+        // Auto-test connection on load
+        setTimeout(() => {
+            testConnection();
+        }, 1000);
+    </script>
+</body>
+</html>

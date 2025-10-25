@@ -95,7 +95,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar
-      className={`hidden lg:flex lg:flex-col bg-background text-foreground border-r border-border font-sans 
+      className={`hidden lg:flex lg:flex-col bg-card/50 backdrop-blur-sm text-foreground border-r border-border/50 font-sans shadow-sm
       transition-[width] duration-300 ease-in-out ${
         collapsed ? "w-16" : "w-64"
       }`}
@@ -169,11 +169,11 @@ export function AppSidebar() {
                         aria-label={collapsed ? item.label : undefined}
                         title={collapsed ? item.label : undefined}
                         disabled={isLoading}
-                        className={`w-full flex items-center rounded-lg px-3 py-2 transition-all duration-200
+                        className={`w-full flex items-center rounded-xl px-3 py-2.5 transition-all duration-200 group
                         ${
                           active
-                            ? "bg-primary/10 text-primary font-semibold border-l-4 border-primary"
-                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                            ? "bg-primary text-primary-foreground font-medium shadow-sm"
+                            : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
                         }
                         ${isLoading ? "opacity-70 cursor-wait" : ""}`}
                       >
@@ -181,8 +181,8 @@ export function AppSidebar() {
                           <Loader2 className="h-5 w-5 animate-spin text-primary" />
                         ) : (
                           <item.icon
-                            className={`h-5 w-5 ${
-                              active ? "text-primary" : "text-muted-foreground"
+                            className={`h-5 w-5 shrink-0 ${
+                              active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
                             }`}
                           />
                         )}

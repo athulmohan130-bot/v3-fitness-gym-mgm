@@ -21,6 +21,13 @@ pnpm-debug.log*
 .env.test.local
 .env.production.local
 
+# Firebase Service Account Keys (NEVER COMMIT THESE!)
+firebase-service-account-key.json
+*-firebase-adminsdk-*.json
+
+# Local server data
+processed-registrations.json
+
 # OS-specific
 .DS_Store
 Thumbs.db
