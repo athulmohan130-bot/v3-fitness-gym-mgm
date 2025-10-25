@@ -91,7 +91,7 @@ export default function PlansPage() {
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Breadcrumbs */}
       <Breadcrumb>
         <BreadcrumbList>
@@ -109,12 +109,12 @@ export default function PlansPage() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold font-headline tracking-tight">Membership Plans</h1>
-          <p className="text-muted-foreground">View and manage membership plans.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold font-headline tracking-tight">Membership Plans</h1>
+          <p className="text-sm text-muted-foreground hidden sm:block">View and manage membership plans.</p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto">
           <Link href="/dashboard/plans/new">
             <PlusCircle className="mr-2 h-4 w-4" />
             Add New Plan
@@ -124,8 +124,8 @@ export default function PlansPage() {
 
       {activePlans.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Active Plans</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <h2 className="text-lg sm:text-xl font-semibold">Active Plans</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {activePlans.map(renderPlanCard)}
           </div>
         </div>
@@ -133,8 +133,8 @@ export default function PlansPage() {
 
       {inactivePlans.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Inactive Plans</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <h2 className="text-lg sm:text-xl font-semibold">Inactive Plans</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {inactivePlans.map(renderPlanCard)}
           </div>
         </div>

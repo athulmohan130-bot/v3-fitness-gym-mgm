@@ -93,18 +93,18 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-4">
       <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-        <div className="flex items-center p-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-4">
           <Input
             placeholder="Search members..."
             value={globalFilter ?? ""}
             onChange={(event) => {
               setGlobalFilter(event.target.value);
             }}
-            className="max-w-sm"
+            className="w-full sm:max-w-sm"
           />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
+              <Button variant="outline" className="w-full sm:w-auto sm:ml-auto">
                 Columns <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -129,7 +129,7 @@ export function DataTable<TData, TValue>({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="border-t">
+        <div className="border-t overflow-x-auto">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (

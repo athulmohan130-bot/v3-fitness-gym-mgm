@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { AppSidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/header";
-import { MobileNav } from "@/components/layout/mobile-nav";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { NavigationLoadingProvider } from "@/hooks/use-navigation-loading";
 
@@ -20,7 +19,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </main>
           </div>
         </div>
-        <MobileNav />
       </SidebarProvider>
     </NavigationLoadingProvider>
   );

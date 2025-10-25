@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -107,10 +108,13 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6">
-      {/* Left Side - Page Title & Search */}
-      <div className="flex items-center gap-4 flex-1">
+      {/* Left Side - Menu Button, Page Title & Search */}
+      <div className="flex items-center gap-3 flex-1">
+        {/* Mobile Menu Button */}
+        <SidebarTrigger className="lg:hidden" />
+
         {/* Page Title */}
-        <h1 className="text-xl font-bold text-foreground tracking-tight">
+        <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
           {getPageTitle()}
         </h1>
 
@@ -130,9 +134,9 @@ export function AppHeader() {
       </div>
 
       {/* Right */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         {!hideMembersControls && (
-          <Button asChild className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all rounded-full px-6">
+          <Button asChild className="hidden sm:flex bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all rounded-full px-6">
             <Link href="/dashboard/members/new">
               <PlusCircle className="mr-2 h-4 w-4" />
               Add Member

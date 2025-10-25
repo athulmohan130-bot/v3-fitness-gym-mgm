@@ -21,6 +21,12 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import {
   AttendanceNotificationHandler,
   getMembershipAlertType,
   type NotificationConfig
@@ -34,8 +40,11 @@ export default function AttendancePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterTimeSlot, setFilterTimeSlot] = useState("all");
   const [newRecordIds, setNewRecordIds] = useState<Set<string>>(new Set());
   const prevRecordsRef = useRef<AttendanceRecord[]>([]);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
 
   // View mode state with localStorage persistence
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -68,6 +77,42 @@ export default function AttendancePage() {
   }, [firestore, selectedDate]);
 
   const { data: attendanceRecords, isLoading, error } = useCollection<AttendanceRecord>(attendanceQuery);
+
+  // Query for total active members count
+  const usersQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, "users");
+  }, [firestore]);
+
+  const { data: allUsers } = useCollection(usersQuery);
+
+  // Calculate attendance stats
+  const attendanceStats = useMemo(() => {
+    if (!attendanceRecords) return { totalCheckedIn: 0, totalMembers: 0, percentage: 0, peakHour: null };
+
+    const totalCheckedIn = attendanceRecords.length;
+    const totalMembers = allUsers?.length || 0;
+    const percentage = totalMembers > 0 ? Math.round((totalCheckedIn / totalMembers) * 100) : 0;
+
+    // Calculate peak hour (hour with most check-ins)
+    const hourCounts: Record<number, number> = {};
+    attendanceRecords.forEach(record => {
+      const hour = new Date(record.checkInTime).getHours();
+      hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+    });
+
+    let peakHour: string | null = null;
+    let maxCount = 0;
+    Object.entries(hourCounts).forEach(([hour, count]) => {
+      if (count > maxCount) {
+        maxCount = count;
+        const hourNum = parseInt(hour);
+        peakHour = `${hourNum > 12 ? hourNum - 12 : hourNum} ${hourNum >= 12 ? 'PM' : 'AM'}`;
+      }
+    });
+
+    return { totalCheckedIn, totalMembers, percentage, peakHour };
+  }, [attendanceRecords, allUsers]);
 
   // Initialize notification handler
   useEffect(() => {
@@ -142,8 +187,23 @@ export default function AttendancePage() {
       records = records.filter(record => record.membershipStatus === filterStatus);
     }
 
+    // Filter by time slot
+    if (filterTimeSlot !== "all") {
+      records = records.filter(record => {
+        const hour = new Date(record.checkInTime).getHours();
+        if (filterTimeSlot === "morning") {
+          return hour >= 6 && hour < 12; // 6 AM - 12 PM
+        } else if (filterTimeSlot === "afternoon") {
+          return hour >= 12 && hour < 16; // 12 PM - 4 PM
+        } else if (filterTimeSlot === "evening") {
+          return hour >= 16 && hour < 22; // 4 PM - 10 PM
+        }
+        return true;
+      });
+    }
+
     return records;
-  }, [attendanceRecords, searchQuery, filterStatus]);
+  }, [attendanceRecords, searchQuery, filterStatus, filterTimeSlot]);
 
   // Get border color based on membership status
   const getBorderColor = (status?: string) => {
@@ -289,8 +349,100 @@ export default function AttendancePage() {
         </Popover>
       </div>
 
-      {/* Compact Search, Filters, and View Toggle - Single Row */}
-      <Card>
+      {/* Compact Search, Filters, and View Toggle */}
+      <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen} className="md:hidden">
+        <Card>
+          <CardContent className="pt-4 pb-4">
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between p-2">
+                <div className="flex items-center gap-2">
+                  <Search className="h-4 w-4" />
+                  <span className="font-medium">Filters & Search</span>
+                  {(filterStatus !== "all" || filterTimeSlot !== "all" || searchQuery) && (
+                    <Badge variant="secondary" className="ml-2">Active</Badge>
+                  )}
+                </div>
+                {isFiltersOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-3 space-y-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search members..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 h-9"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="expired">Expired</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={filterTimeSlot} onValueChange={setFilterTimeSlot}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="Time Slot" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Day</SelectItem>
+                    <SelectItem value="morning">Morning (6-12)</SelectItem>
+                    <SelectItem value="afternoon">Afternoon (12-4)</SelectItem>
+                    <SelectItem value="evening">Evening (4-10)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="h-9"
+              />
+              <div className="flex items-center gap-3 pt-2">
+                <span className="text-sm text-muted-foreground flex-1">
+                  {filteredRecords.length} {filteredRecords.length === 1 ? 'member' : 'members'}
+                </span>
+                <div className="inline-flex rounded-lg border bg-background p-1 gap-1">
+                  <Button
+                    variant={viewMode === "grid" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("grid")}
+                    className="h-7 px-2"
+                  >
+                    <Grid3x3 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === "list" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                    className="h-7 px-2"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === "compact" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("compact")}
+                    className="h-7 px-2"
+                  >
+                    <LayoutList className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </CardContent>
+        </Card>
+      </Collapsible>
+
+      {/* Desktop Filters - Always Visible */}
+      <Card className="hidden md:block">
         <CardContent className="pt-6">
           <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center justify-between">
             {/* Left Side: Search and Filters */}
@@ -315,6 +467,17 @@ export default function AttendancePage() {
                   <SelectItem value="pending">Pending</SelectItem>
                 </SelectContent>
               </Select>
+              <Select value={filterTimeSlot} onValueChange={setFilterTimeSlot}>
+                <SelectTrigger className="w-full sm:w-[140px] h-9">
+                  <SelectValue placeholder="Time Slot" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Day</SelectItem>
+                  <SelectItem value="morning">Morning (6-12)</SelectItem>
+                  <SelectItem value="afternoon">Afternoon (12-4)</SelectItem>
+                  <SelectItem value="evening">Evening (4-10)</SelectItem>
+                </SelectContent>
+              </Select>
               <Input
                 type="date"
                 value={selectedDate}
@@ -328,39 +491,144 @@ export default function AttendancePage() {
               <span className="text-sm text-muted-foreground">
                 {filteredRecords.length} {filteredRecords.length === 1 ? 'member' : 'members'}
               </span>
-              <div className="inline-flex rounded-lg border bg-background p-1">
+              <div className="inline-flex rounded-lg border bg-background p-1 gap-1">
                 <Button
                   variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("grid")}
-                  className="h-7 px-2"
-                  title="Grid view"
+                  className="h-7 px-3 gap-1.5"
                 >
                   <Grid3x3 className="h-4 w-4" />
+                  <span className="text-xs hidden sm:inline">Grid</span>
                 </Button>
                 <Button
                   variant={viewMode === "list" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("list")}
-                  className="h-7 px-2"
-                  title="List view"
+                  className="h-7 px-3 gap-1.5"
                 >
                   <List className="h-4 w-4" />
+                  <span className="text-xs hidden sm:inline">List</span>
                 </Button>
                 <Button
                   variant={viewMode === "compact" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("compact")}
-                  className="h-7 px-2"
-                  title="Compact view"
+                  className="h-7 px-3 gap-1.5"
                 >
                   <LayoutList className="h-4 w-4" />
+                  <span className="text-xs hidden sm:inline">Compact</span>
                 </Button>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Attendance Summary Stats */}
+      {!isLoading && (
+        <>
+          {/* Mobile: Collapsible Stats */}
+          <Collapsible open={isStatsOpen} onOpenChange={setIsStatsOpen} className="md:hidden">
+            <Card>
+              <CardContent className="pt-4 pb-4">
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-between p-2">
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      <span className="font-medium">Statistics</span>
+                      <Badge variant="outline" className="ml-2">
+                        {attendanceStats.totalCheckedIn}/{attendanceStats.totalMembers}
+                      </Badge>
+                    </div>
+                    {isStatsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Today's Attendance</p>
+                      <div className="flex items-baseline gap-1">
+                        <p className="text-2xl font-bold">{attendanceStats.totalCheckedIn}</p>
+                        <p className="text-sm text-muted-foreground">/{attendanceStats.totalMembers}</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {attendanceStats.percentage}% checked in
+                      </p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Peak Hour</p>
+                      <p className="text-2xl font-bold">
+                        {attendanceStats.peakHour || "-"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Most active time
+                      </p>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </CardContent>
+            </Card>
+          </Collapsible>
+
+          {/* Desktop: Always Visible Stats */}
+          <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Today's Attendance</p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-3xl font-bold">{attendanceStats.totalCheckedIn}</p>
+                    <p className="text-muted-foreground">of {attendanceStats.totalMembers}</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {attendanceStats.percentage}% checked in today
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Total Check-ins</p>
+                  <p className="text-3xl font-bold">{attendanceStats.totalCheckedIn}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {format(new Date(selectedDate), "MMM dd, yyyy")}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Peak Hour</p>
+                  <p className="text-3xl font-bold">
+                    {attendanceStats.peakHour || "-"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Most active time
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Avg Daily Attendance</p>
+                  <p className="text-3xl font-bold">{attendanceStats.totalCheckedIn}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Based on today's data
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      )}
 
       {/* Attendance Records - Dynamic View */}
       {isLoading ? (
@@ -393,12 +661,12 @@ export default function AttendancePage() {
                 const isNew = newRecordIds.has(record.id);
 
                 return (
-                  <Card
-                    key={record.id}
-                    className={`overflow-hidden border-2 transition-all duration-300 ${getBorderColor(record.membershipStatus)} ${
-                      isNew ? "animate-pulse-glow" : ""
-                    }`}
-                  >
+                  <Link href={`/dashboard/members/view/${record.userId}`} key={record.id}>
+                    <Card
+                      className={`overflow-hidden border-2 transition-all duration-300 cursor-pointer hover:shadow-lg hover:scale-[1.02] ${getBorderColor(record.membershipStatus)} ${
+                        isNew ? "animate-pulse-glow" : ""
+                      }`}
+                    >
                     <CardContent className="p-5">
                       <div className="flex flex-col items-center text-center space-y-3">
                         {/* Avatar */}
@@ -419,13 +687,20 @@ export default function AttendancePage() {
                           <h3 className="font-bold text-base truncate">{record.name}</h3>
                         </div>
 
-                        {/* Membership Info */}
-                        {membershipInfo && (
-                          <div className="w-full">
-                            <p className={`text-xs font-medium ${membershipInfo.color}`}>
-                              {record.membershipStatus?.charAt(0).toUpperCase() + record.membershipStatus?.slice(1)}
-                            </p>
-                          </div>
+                        {/* Membership Status Badge - Prominent */}
+                        {record.membershipStatus && (
+                          <Badge
+                            variant={
+                              record.membershipStatus === "active"
+                                ? "default"
+                                : record.membershipStatus === "expired"
+                                ? "destructive"
+                                : "secondary"
+                            }
+                            className="text-xs font-semibold px-3 py-1"
+                          >
+                            {record.membershipStatus.charAt(0).toUpperCase() + record.membershipStatus.slice(1)}
+                          </Badge>
                         )}
 
                         {/* Check-in Time */}
@@ -446,23 +721,18 @@ export default function AttendancePage() {
                           </div>
                         )}
 
-                        {/* Badges */}
-                        <div className="flex gap-2 flex-wrap justify-center pt-2">
-                          <Badge
-                            variant={record.source === "essl" ? "default" : "secondary"}
-                            className="text-xs"
-                          >
-                            {record.source === "essl" ? "ESSL" : record.source.toUpperCase()}
-                          </Badge>
-                          {record.biometricDeviceId && (
+                        {/* Device ID Badge (removed ESSL tag) */}
+                        {record.biometricDeviceId && (
+                          <div className="pt-2">
                             <Badge variant="outline" className="text-xs">
-                              {record.biometricDeviceId}
+                              ID: {record.biometricDeviceId}
                             </Badge>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
+                  </Link>
                 );
               })}
             </div>
@@ -478,12 +748,12 @@ export default function AttendancePage() {
                     const isNew = newRecordIds.has(record.id);
 
                     return (
-                      <div
-                        key={record.id}
-                        className={`flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors ${
-                          isNew ? "bg-green-50 border-l-4 border-l-green-500" : ""
-                        }`}
-                      >
+                      <Link href={`/dashboard/members/view/${record.userId}`} key={record.id}>
+                        <div
+                          className={`flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer ${
+                            isNew ? "bg-green-50 border-l-4 border-l-green-500" : ""
+                          }`}
+                        >
                         {/* Avatar */}
                         <div className="relative flex-shrink-0">
                           <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
@@ -545,6 +815,7 @@ export default function AttendancePage() {
                           </p>
                         </div>
                       </div>
+                      </Link>
                     );
                   })}
                 </div>
@@ -561,12 +832,12 @@ export default function AttendancePage() {
                     const isNew = newRecordIds.has(record.id);
 
                     return (
-                      <div
-                        key={record.id}
-                        className={`flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors ${
-                          isNew ? "bg-green-50 border-l-4 border-l-green-500" : ""
-                        }`}
-                      >
+                      <Link href={`/dashboard/members/view/${record.userId}`} key={record.id}>
+                        <div
+                          className={`flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors cursor-pointer ${
+                            isNew ? "bg-green-50 border-l-4 border-l-green-500" : ""
+                          }`}
+                        >
                         {/* Avatar */}
                         <div className="relative flex-shrink-0">
                           <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
@@ -595,6 +866,7 @@ export default function AttendancePage() {
                           </p>
                         </div>
                       </div>
+                      </Link>
                     );
                   })}
                 </div>

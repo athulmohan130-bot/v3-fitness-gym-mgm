@@ -76,7 +76,7 @@ export function AdminDashboard() {
     queryKey: ['recentUsersDashboard'],
     queryFn: async () => {
       if (!firestore) return [];
-      const q = query(collection(firestore, "users"), orderBy("joinDate", "desc"), limit(5));
+      const q = query(collection(firestore, "users"), orderBy("joinDate", "desc"), limit(8));
       const snapshot = await getDocs(q);
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GymUser));
     },
@@ -133,7 +133,7 @@ export function AdminDashboard() {
   }, [revenueSummary?.monthlyRevenue]);
 
   const chartData = useMemo(() => {
-    // Generate last 6 months data (including months with 0 revenue)
+    // Always generate last 6 months from current date
     const now = new Date();
     const months = [];
 
@@ -142,7 +142,7 @@ export function AdminDashboard() {
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       const monthName = date.toLocaleString('default', { month: 'short' });
 
-      // Get revenue for this month from Firebase data, default to 0 if not found
+      // Get revenue from Firebase data, default to 0 if not found
       const revenue = revenueSummary?.monthlyRevenue?.[monthKey] || 0;
 
       months.push({
@@ -154,6 +154,9 @@ export function AdminDashboard() {
 
     return months;
   }, [revenueSummary]);
+
+  // Check if we have multiple months of data for meaningful trends
+  const hasMultipleMonths = chartData.length > 1;
 
   useEffect(() => {
     if (availableYears.length > 0 && !availableYears.includes(selectedYear)) {
@@ -198,9 +201,9 @@ export function AdminDashboard() {
 
   // ---- ACTUAL DASHBOARD ----
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Top metrics cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {/* This Month Revenue - Green */}
         <Card className="border-l-4 border-l-emerald-500 hover:shadow-xl transition-shadow group overflow-hidden relative">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-300" />
@@ -258,21 +261,28 @@ export function AdminDashboard() {
           <CardContent className="space-y-3">
             <div className="flex items-baseline gap-2">
               <div className="text-3xl font-bold tracking-tight">{activeSubscriptions}</div>
-              <span className="text-lg text-muted-foreground">active</span>
+              <span className="text-lg text-muted-foreground">/ {totalMembers}</span>
             </div>
             <div className="space-y-1.5">
               {inactiveMembers > 0 ? (
-                <p className="text-sm text-amber-600 font-medium">
-                  ⚠ {inactiveMembers} inactive member{inactiveMembers > 1 ? 's' : ''} need{inactiveMembers === 1 ? 's' : ''} attention
-                </p>
+                <>
+                  <p className="text-sm text-amber-600 font-medium">
+                    ⚠ {inactiveMembers} inactive member{inactiveMembers > 1 ? 's' : ''} need{inactiveMembers === 1 ? 's' : ''} attention
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {Math.round((activeSubscriptions / totalMembers) * 100)}% active
+                  </p>
+                </>
               ) : (
-                <p className="text-sm text-emerald-600 font-medium">
-                  ✓ All {totalMembers} members active
-                </p>
+                <>
+                  <p className="text-sm text-emerald-600 font-medium">
+                    ✓ All members active
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    100% retention
+                  </p>
+                </>
               )}
-              <p className="text-xs text-muted-foreground">
-                Total: {totalMembers} member{totalMembers !== 1 ? 's' : ''}
-              </p>
             </div>
           </CardContent>
         </Card>
@@ -292,13 +302,17 @@ export function AdminDashboard() {
               <span className="text-lg text-muted-foreground">members</span>
             </div>
             <div className="space-y-1.5">
-              {totalMembers > 0 ? (
+              {launchMonth === format(new Date(), 'MMM yyyy') ? (
                 <p className="text-sm text-purple-600 font-medium">
-                  {Math.round((newMembersData.count / totalMembers) * 100)}% growth this month
+                  First month signups
+                </p>
+              ) : totalMembers > 0 && newMembersData.count > 0 ? (
+                <p className="text-sm text-purple-600 font-medium">
+                  {Math.round((newMembersData.count / totalMembers) * 100)}% of total base
                 </p>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Your first signups!
+                  No new members this month
                 </p>
               )}
               <p className="text-xs text-muted-foreground">
@@ -310,16 +324,18 @@ export function AdminDashboard() {
       </div>
 
       {/* Chart + Recent Members */}
-      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
-        {/* Chart - More compact */}
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
+        {/* Revenue Chart */}
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <div>
-              <CardTitle className="text-xl">Revenue Trend</CardTitle>
-              <CardDescription className="mt-1.5">Last 6 months revenue overview</CardDescription>
+              <CardTitle className="text-lg sm:text-xl">Revenue Trend</CardTitle>
+              <CardDescription className="mt-1.5 text-xs sm:text-sm">
+                Last 6 months revenue overview
+              </CardDescription>
             </div>
           </CardHeader>
-          <CardContent className="pl-2 pr-4 pb-6">
+          <CardContent className="pl-0 sm:pl-2 pr-2 sm:pr-4 pb-6">
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={chartData}>
                 <defs>
@@ -348,8 +364,8 @@ export function AdminDashboard() {
                   axisLine={false}
                   tickFormatter={value => {
                     if (value === 0) return '₹0';
-                    if (value >= 1000) return `₹${(value / 1000).toFixed(1)}k`;
-                    return `₹${value}`;
+                    // Always use comma formatting for consistency - no mixing formats
+                    return `₹${value.toLocaleString('en-IN')}`;
                   }}
                 />
                 <Tooltip
@@ -400,10 +416,15 @@ export function AdminDashboard() {
                 </span>
               </CardTitle>
               <Button asChild variant="ghost" size="sm" className="text-xs">
-                <Link href="/dashboard/members">View All →</Link>
+                <Link href="/dashboard/members">View All {totalMembers} →</Link>
               </Button>
             </div>
-            <CardDescription className="mt-2">{format(new Date(), 'MMMM yyyy')}</CardDescription>
+            <CardDescription className="mt-2">
+              {recentUsersData && recentUsersData.length < totalMembers
+                ? `Showing ${recentUsersData.length} most recent of ${totalMembers} total members`
+                : `All ${totalMembers} member${totalMembers !== 1 ? 's' : ''}`
+              }
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
