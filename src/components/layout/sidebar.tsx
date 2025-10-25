@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -13,6 +13,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 
 import {
@@ -25,6 +26,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/lib/auth-provider";
+import { useNavigationLoading } from "@/hooks/use-navigation-loading";
 
 const menuGroups = [
   {
@@ -77,9 +79,19 @@ const menuGroups = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, logout } = useAuth();
   const userRole = user?.role || "member";
   const [collapsed, setCollapsed] = useState(false);
+  const { isNavigating, targetPath, startNavigation } = useNavigationLoading();
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (pathname !== href) {
+      e.preventDefault();
+      startNavigation(href);
+      router.push(href);
+    }
+  };
 
   return (
     <Sidebar
@@ -148,25 +160,32 @@ export function AppSidebar() {
               )}
               {visibleItems.map((item) => {
                 const active = pathname.startsWith(item.href);
+                const isLoading = isNavigating && targetPath === item.href;
                 return (
                   <SidebarMenuItem key={item.href}>
-                    <Link href={item.href}>
+                    <Link href={item.href} onClick={(e) => handleNavClick(e, item.href)}>
                       <SidebarMenuButton
                         aria-current={active ? "page" : undefined}
                         aria-label={collapsed ? item.label : undefined}
                         title={collapsed ? item.label : undefined}
-                        className={`w-full flex items-center rounded-lg px-3 py-2 transition-all duration-200 
+                        disabled={isLoading}
+                        className={`w-full flex items-center rounded-lg px-3 py-2 transition-all duration-200
                         ${
                           active
                             ? "bg-primary/10 text-primary font-semibold border-l-4 border-primary"
                             : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                        }`}
+                        }
+                        ${isLoading ? "opacity-70 cursor-wait" : ""}`}
                       >
-                        <item.icon
-                          className={`h-5 w-5 ${
-                            active ? "text-primary" : "text-muted-foreground"
-                          }`}
-                        />
+                        {isLoading ? (
+                          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                        ) : (
+                          <item.icon
+                            className={`h-5 w-5 ${
+                              active ? "text-primary" : "text-muted-foreground"
+                            }`}
+                          />
+                        )}
                         {!collapsed && (
                           <span className="ml-2">{item.label}</span>
                         )}

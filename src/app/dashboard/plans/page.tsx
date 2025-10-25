@@ -5,12 +5,14 @@ import { useMemoFirebase, useCollection, useFirestore } from "@/firebase";
 import { collection, query, where, orderBy } from "firebase/firestore";
 import type { MembershipPlan } from "@/lib/types";
 import { Button } from "@/components/ui/button";
+import Currency from '@/components/ui/currency';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, PlusCircle, Pencil } from "lucide-react";
+import { CheckCircle2, PlusCircle, Pencil, Home } from "lucide-react";
 import Link from "next/link";
 import { PlansSkeleton } from "@/components/dashboard/plans/plans-skeleton";
 import { useMemo } from "react";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
 export default function PlansPage() {
   const firestore = useFirestore();
@@ -62,7 +64,7 @@ export default function PlansPage() {
           </Badge>
         </div>
         <CardDescription>
-          <span className="text-3xl font-bold text-primary">₹{plan.price}</span>
+          <span className="text-3xl font-bold text-primary"><Currency value={plan.price} /></span>
           <span className="text-muted-foreground"> / {plan.durationInDays} days</span>
         </CardDescription>
       </CardHeader>
@@ -90,6 +92,23 @@ export default function PlansPage() {
 
   return (
     <div className="space-y-8">
+      {/* Breadcrumbs */}
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href="/dashboard/overview">
+                <Home className="h-4 w-4" />
+              </Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Plans</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold font-headline tracking-tight">Membership Plans</h1>

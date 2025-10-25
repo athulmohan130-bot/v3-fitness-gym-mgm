@@ -48,6 +48,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const { auth, firestore, user: firebaseUser, isUserLoading } = useFirebase();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasInitialized, setHasInitialized] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -95,7 +96,10 @@ useEffect(() => {
       console.error('Error fetching Firestore profile:', err);
       if (isMounted) setUser(null);
     } finally {
-      if (isMounted) setLoading(false);
+      if (isMounted) {
+        setLoading(false);
+        setHasInitialized(true);
+      }
     }
   };
 
@@ -107,7 +111,9 @@ useEffect(() => {
 }, [firebaseUser, isUserLoading, firestore, auth]);
   
   useEffect(() => {
-    if (loading) return; // Don't perform redirects until all loading is complete
+    // Don't redirect until auth has been fully initialized
+    if (!hasInitialized) return;
+    if (loading) return;
 
     const isAuthPage = pathname === '/login';
 
@@ -116,7 +122,7 @@ useEffect(() => {
     } else if (user && isAuthPage) {
       router.replace('/dashboard/overview');
     }
-  }, [user, loading, pathname, router]);
+  }, [user, loading, pathname, router, hasInitialized]);
 
   useEffect(() => {
   if (!loading) return;

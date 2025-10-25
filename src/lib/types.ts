@@ -68,14 +68,22 @@ export interface MembershipPlan {
 }
 
 export interface AttendanceRecord {
-  id: string; // userId
-  name: string;
+  id: string; // Firestore document ID
   userId: string;
-  checkInTime: string;
+  name: string;
+  profileImageUrl?: string;
+  biometricDeviceId?: string; // ESSL machine device ID
+  checkInTime: string; // ISO timestamp
+  checkOutTime?: string; // ISO timestamp (optional)
+  date: string; // YYYY-MM-DD format for querying
   status: "present" | "absent";
-  handledBy: string; // adminUserId or trainerId
-  membershipPlanId: string;
-  remarks: string;
+  source: "essl" | "manual" | "app"; // Track how attendance was recorded
+  membershipPlanId?: string;
+  membershipStatus?: "active" | "expired" | "pending";
+  membershipEnd?: string; // ISO date when membership expires
+  remarks?: string;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 export interface MonthlyPaymentSummary {

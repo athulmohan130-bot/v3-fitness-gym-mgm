@@ -32,6 +32,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -39,6 +40,7 @@ interface DataTableProps<TData, TValue> {
   onLoadMore?: () => void;
   hasMore?: boolean;
   isLoadingMore?: boolean;
+  onRowClick?: (row: TData) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -47,7 +49,9 @@ export function DataTable<TData, TValue>({
   onLoadMore,
   hasMore = false,
   isLoadingMore = false,
+  onRowClick,
 }: DataTableProps<TData, TValue>) {
+  const router = useRouter();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = React.useState<string>("");
@@ -151,6 +155,16 @@ export function DataTable<TData, TValue>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
+                    onClick={(e) => {
+                      // Don't trigger row click if clicking on interactive elements
+                      const target = e.target as HTMLElement;
+                      const isInteractive = target.closest('button, a, [role="menuitem"]');
+
+                      if (!isInteractive && onRowClick) {
+                        onRowClick(row.original);
+                      }
+                    }}
+                    className="cursor-pointer hover:bg-muted/50 transition-colors"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>

@@ -23,7 +23,9 @@ import { doc, getDoc, query, collection, orderBy, limit, getDocs } from "firebas
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { GymUser } from "@/lib/types";
+import { StatsGridSkeleton, ChartSkeleton, CompactListSkeleton } from "@/components/ui/loading-skeletons";
 import { useQuery } from "@tanstack/react-query";
+import Currency from '@/components/ui/currency';
 
 // Define types for your summary documents
 interface UserSummary {
@@ -111,50 +113,22 @@ export function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-in fade-in-50">
-        {/* Stats cards skeleton */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-4 w-1/3" />
-                <Skeleton className="h-5 w-5 rounded-full" />
-              </div>
-              <Skeleton className="h-7 w-1/2" />
-              <Skeleton className="h-3 w-1/3" />
-            </Card>
-          ))}
-        </div>
+      <div className="space-y-6 animate-in fade-in-50 duration-500">
+        <StatsGridSkeleton count={4} />
 
-        {/* Chart + Recent Members skeleton */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          {/* Chart Section */}
-          <Card className="col-span-4 p-4 space-y-4">
-            <div className="flex justify-between items-center">
-              <Skeleton className="h-5 w-1/3" />
-              <Skeleton className="h-8 w-24 rounded-md" />
-            </div>
-            <Skeleton className="h-[350px] w-full rounded-lg" />
-          </Card>
+          <div className="col-span-4">
+            <ChartSkeleton />
+          </div>
 
-          {/* Recent Members Section */}
-          <Card className="col-span-4 lg:col-span-3 p-4 space-y-4">
-            <div>
-              <Skeleton className="h-5 w-1/2" />
-              <Skeleton className="h-4 w-1/3 mt-1" />
-            </div>
-            <div className="space-y-5">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex items-center">
-                  <Skeleton className="h-9 w-9 rounded-full" />
-                  <div className="ml-4 space-y-2 flex-1">
-                    <Skeleton className="h-4 w-1/3" />
-                    <Skeleton className="h-3 w-1/4" />
-                  </div>
-                  <Skeleton className="h-4 w-16 ml-auto" />
-                </div>
-              ))}
-            </div>
+          <Card className="col-span-4 lg:col-span-3">
+            <CardHeader>
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-4 w-32 mt-1" />
+            </CardHeader>
+            <CardContent>
+              <CompactListSkeleton items={5} />
+            </CardContent>
           </Card>
         </div>
       </div>
@@ -172,7 +146,7 @@ export function AdminDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{(totalRevenue || 0).toLocaleString()}</div>
+            <div className="text-2xl font-bold"><Currency value={totalRevenue} /></div>
             <p className="text-xs text-muted-foreground">Across all time</p>
           </CardContent>
         </Card>

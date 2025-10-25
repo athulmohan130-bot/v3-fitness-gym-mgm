@@ -11,10 +11,14 @@ import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RenewPlanDialog } from "@/components/dashboard/members/renew-plan-dialogue";
+import { TableSkeleton, PageHeaderSkeleton } from "@/components/ui/loading-skeletons";
 import type { UserWithPlan, MembershipPlan } from "@/lib/types";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React from "react";
 import { format } from "date-fns";
+import { useRouter } from "next/navigation";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Home } from "lucide-react";
 
 type MembershipStatus = "active" | "pending" | "expired";
 
@@ -35,6 +39,7 @@ const safeParseDate = (date: any): Date | null => {
 export default function MembersPage() {
   const firestore = useFirestore();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [renewOpen, setRenewOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<UserWithMembership | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -159,14 +164,36 @@ export default function MembersPage() {
     queryClient.invalidateQueries({ queryKey: ['processedMembers'] });
   };
 
+  const handleRowClick = (member: UserWithMembership) => {
+    router.push(`/dashboard/members/view/${member.id}`);
+  };
+
   return (
     <div className="space-y-6">
+      {/* Breadcrumbs */}
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href="/dashboard/overview">
+                <Home className="h-4 w-4" />
+              </Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Members</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      {/* Always show the header - looks more polished */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold font-headline tracking-tight">Members</h1>
           <p className="text-muted-foreground">Manage all members of GymFlex.</p>
         </div>
-        <Button asChild>
+        <Button asChild disabled={showSkeleton}>
           <Link href="/dashboard/members/new">
             <PlusCircle className="mr-2 h-4 w-4" />
             Add Member
@@ -174,12 +201,15 @@ export default function MembersPage() {
         </Button>
       </div>
 
+      {/* Show enhanced skeleton or actual data */}
       {showSkeleton ? (
-        <div className="space-y-2">
-          {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
-        </div>
+        <TableSkeleton rows={10} />
       ) : (
-        <DataTable columns={columns} data={processedData || []} />
+        <DataTable
+          columns={columns}
+          data={processedData || []}
+          onRowClick={handleRowClick}
+        />
       )}
 
       {selectedMember && plansData && (

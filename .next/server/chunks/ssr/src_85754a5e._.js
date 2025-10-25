@@ -935,7 +935,10 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$firebase$2f$
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$storage$2f$dist$2f$node$2d$esm$2f$index$2e$node$2e$esm$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@firebase/storage/dist/node-esm/index.node.esm.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$firebase$2f$firestore$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$module__evaluation$3e$__ = __turbopack_context__.i("[project]/node_modules/firebase/firestore/dist/index.mjs [app-ssr] (ecmascript) <module evaluation>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@firebase/firestore/dist/index.node.mjs [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useMutation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@tanstack/react-query/build/modern/useMutation.js [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$QueryClientProvider$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js [app-ssr] (ecmascript)");
 "use client";
+;
 ;
 ;
 ;
@@ -998,14 +1001,13 @@ const formSchema = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modu
     joinDate: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$types$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["date"])({
         required_error: "Join date is required."
     }),
-    emergencyContactName: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$types$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["string"])().min(2),
-    emergencyContactPhone: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$types$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["string"])().min(10),
-    emergencyContactRelation: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$types$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["string"])({
-        required_error: "Please select a relationship."
-    }),
+    emergencyContactName: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$types$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["string"])().min(2, "Name is required."),
+    emergencyContactPhone: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$types$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["string"])().min(10, "A valid phone number is required."),
+    emergencyContactRelation: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$types$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["string"])().min(2, "Relation is required."),
     biometricDeviceId: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$types$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["string"])().min(3, {
         message: "Biometric Device ID is required."
-    })
+    }),
+    paidAmount: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$types$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["coerce"].number().nonnegative("Enter a valid amount.")
 });
 const STEPS = [
     {
@@ -1044,7 +1046,8 @@ const STEPS = [
             "membershipPlanId",
             "joinDate",
             "role",
-            "biometricDeviceId"
+            "biometricDeviceId",
+            "paidAmount"
         ]
     },
     {
@@ -1059,20 +1062,32 @@ const STEPS = [
 ];
 function NewMemberForm({ plans }) {
     const [currentStep, setCurrentStep] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(0);
-    const [isLoading, setIsLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useToast"])();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
     const firestore = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$firebase$2f$provider$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useFirestore"])();
     const { user: adminUser } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$firebase$2f$provider$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useAuth"])();
     const storage = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$storage$2f$dist$2f$node$2d$esm$2f$index$2e$node$2e$esm$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getStorage"])();
+    const queryClient = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$QueryClientProvider$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useQueryClient"])();
     const form = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hook$2d$form$2f$dist$2f$index$2e$esm$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useForm"])({
         resolver: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$hookform$2f$resolvers$2f$zod$2f$dist$2f$zod$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["zodResolver"])(formSchema),
         defaultValues: {
             gender: "Male",
             joinDate: new Date(),
-            role: "member"
+            role: "member",
+            paidAmount: undefined,
+            // Set empty strings as default for required string fields to avoid initial 'undefined' state
+            name: "",
+            email: "",
+            phone: "",
+            address: "",
+            fitnessGoal: "",
+            membershipPlanId: "",
+            biometricDeviceId: "",
+            emergencyContactName: "",
+            emergencyContactPhone: "",
+            emergencyContactRelation: ""
         },
-        mode: "onChange"
+        mode: "onBlur"
     });
     const videoRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
     const canvasRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
@@ -1136,17 +1151,11 @@ function NewMemberForm({ plans }) {
         });
         getCameraPermission();
     };
-    async function processForm(values) {
-        if (!firestore || !adminUser) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "You must be logged in to create a member."
-            });
-            return;
-        }
-        setIsLoading(true);
-        try {
+    const { mutate: createMember, isPending } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useMutation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMutation"])({
+        mutationFn: async (values)=>{
+            if (!firestore || !adminUser) {
+                throw new Error("You must be logged in to create a member.");
+            }
             const newUserRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["doc"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["collection"])(firestore, "users"));
             let profileImageUrl = "";
             if (values.profilePicture) {
@@ -1177,11 +1186,7 @@ function NewMemberForm({ plans }) {
                     relation: values.emergencyContactRelation
                 },
                 role: values.role,
-                membershipPlanId: values.membershipPlanId,
                 membershipStatus: "active",
-                membershipStart: membershipStart.toISOString(),
-                membershipEnd: membershipEnd.toISOString(),
-                renewalDate: membershipEnd.toISOString(),
                 heightCm: values.heightCm,
                 weightKg: values.weightKg,
                 bmi: values.weightKg / (values.heightCm / 100) ** 2,
@@ -1192,52 +1197,132 @@ function NewMemberForm({ plans }) {
                 updatedAt: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["serverTimestamp"])(),
                 profileImageUrl
             };
-            // Step 1: Create the new user document
             await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["setDoc"])(newUserRef, newUserData);
-            // Step 2: Atomically update the user summary stats using a transaction
-            const userSummaryRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["doc"])(firestore, "stats/userSummary");
-            await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["runTransaction"])(firestore, async (transaction)=>{
-                const summaryDoc = await transaction.get(userSummaryRef);
-                if (!summaryDoc.exists()) {
-                    // If the document doesn't exist, create it.
+            const membershipHistoryRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["doc"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["collection"])(newUserRef, "membershipHistory"));
+            await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["setDoc"])(membershipHistoryRef, {
+                membershipStart: membershipStart.toISOString(),
+                membershipEnd: membershipEnd.toISOString(),
+                membershipPlanId: values.membershipPlanId,
+                price: selectedPlan.price,
+                paidAmount: values.paidAmount,
+                membershipPlan: selectedPlan.name,
+                createdAt: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["serverTimestamp"])(),
+                updatedAt: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["serverTimestamp"])()
+            });
+            return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["runTransaction"])(firestore, async (transaction)=>{
+                // All reads must come before all writes.
+                const userSummaryRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["doc"])(firestore, "stats/userSummary");
+                const revenueSummaryRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["doc"])(firestore, "stats/revenueSummary");
+                const [userSummaryDoc, revenueSummaryDoc] = await Promise.all([
+                    transaction.get(userSummaryRef),
+                    transaction.get(revenueSummaryRef)
+                ]);
+                // Now, perform all write operations.
+                // 1. User Summary Write
+                const currentMonth = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])(new Date(), 'yyyy-MM');
+                if (!userSummaryDoc.exists()) {
                     transaction.set(userSummaryRef, {
                         totalMembers: 1,
                         activeMembers: 1,
                         newMembersThisMonth: 1,
+                        newMembersMonth: currentMonth,
                         lastUpdated: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["serverTimestamp"])()
                     });
                 } else {
-                    // If it exists, increment the fields.
+                    const summaryData = userSummaryDoc.data();
+                    const newMembersUpdate = summaryData.newMembersMonth === currentMonth ? (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["increment"])(1) : 1;
                     transaction.update(userSummaryRef, {
                         totalMembers: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["increment"])(1),
                         activeMembers: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["increment"])(1),
-                        newMembersThisMonth: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["increment"])(1),
+                        newMembersThisMonth: newMembersUpdate,
+                        newMembersMonth: currentMonth,
                         lastUpdated: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["serverTimestamp"])()
                     });
                 }
+                // 2. Revenue Summary Write
+                const paidAmount = values.paidAmount;
+                if (paidAmount > 0) {
+                    const monthKey = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])(values.joinDate, 'yyyy-MM');
+                    if (!revenueSummaryDoc.exists()) {
+                        transaction.set(revenueSummaryRef, {
+                            totalRevenueAllTime: paidAmount,
+                            monthlyRevenue: {
+                                [monthKey]: paidAmount
+                            },
+                            lastUpdated: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["serverTimestamp"])()
+                        });
+                    } else {
+                        transaction.update(revenueSummaryRef, {
+                            totalRevenueAllTime: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["increment"])(paidAmount),
+                            [`monthlyRevenue.${monthKey}`]: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["increment"])(paidAmount),
+                            lastUpdated: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["serverTimestamp"])()
+                        });
+                    }
+                }
             });
+        },
+        onSuccess: (_, variables)=>{
             toast({
                 title: "Member Profile Created!",
-                description: `${values.name}'s profile has been created. Now, create their login credentials in Firebase Authentication.`
+                description: `${variables.name}'s profile has been created.`
+            });
+            queryClient.invalidateQueries({
+                queryKey: [
+                    "users"
+                ]
+            });
+            queryClient.invalidateQueries({
+                queryKey: [
+                    "processedMembers"
+                ]
+            });
+            queryClient.invalidateQueries({
+                queryKey: [
+                    "userSummary"
+                ]
+            });
+            queryClient.invalidateQueries({
+                queryKey: [
+                    "revenueSummary"
+                ]
+            });
+            queryClient.invalidateQueries({
+                queryKey: [
+                    "recentUsersDashboard"
+                ]
             });
             router.push("/dashboard/members");
-        } catch (error) {
+        },
+        onError: (error)=>{
             console.error("Error creating member:", error);
             toast({
                 variant: "destructive",
                 title: "Uh oh!",
                 description: "Could not create member profile. Make sure the stats documents are initialized in Firestore."
             });
-        } finally{
-            setIsLoading(false);
+        }
+    });
+    function processForm(values) {
+        // The zodResolver now handles all validation on submit.
+        createMember(values);
+    }
+    function onFormError(errors) {
+        // Find the first field with an error
+        const firstErrorField = Object.keys(errors)[0];
+        // Find the step corresponding to that field
+        const stepIndex = STEPS.findIndex((step)=>step.fields.includes(firstErrorField));
+        // Navigate to that step if it's not the current one
+        if (stepIndex !== -1 && stepIndex !== currentStep) {
+            setCurrentStep(stepIndex);
         }
     }
-    const nextStep = async ()=>{
+    const nextStep = async (event)=>{
+        event.preventDefault();
         const fields = STEPS[currentStep].fields;
-        const valid = await form.trigger(fields, {
-            shouldFocus: true
-        });
-        if (!valid) return;
+        const isValid = await form.trigger(fields);
+        if (!isValid) {
+            return; // Stay on the current step if validation fails
+        }
         if (currentStep < STEPS.length - 1) {
             if (stream) {
                 stream.getTracks().forEach((track)=>track.stop());
@@ -1256,6 +1341,26 @@ function NewMemberForm({ plans }) {
         }
     };
     const progress = (currentStep + 1) / STEPS.length * 100;
+    const selectedPlanId = form.watch("membershipPlanId");
+    const selectedPlan = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>plans.find((p)=>p.id === selectedPlanId), [
+        selectedPlanId,
+        plans
+    ]);
+    const paidAmount = form.watch("paidAmount");
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        if (selectedPlan && paidAmount > selectedPlan.price) {
+            form.setError("paidAmount", {
+                type: "manual",
+                message: "Paid amount cannot exceed plan price."
+            });
+        } else {
+            form.clearErrors("paidAmount");
+        }
+    }, [
+        paidAmount,
+        selectedPlan,
+        form
+    ]);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1265,7 +1370,7 @@ function NewMemberForm({ plans }) {
                         value: progress
                     }, void 0, false, {
                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                        lineNumber: 361,
+                        lineNumber: 453,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1280,19 +1385,19 @@ function NewMemberForm({ plans }) {
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                        lineNumber: 362,
+                        lineNumber: 454,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                lineNumber: 360,
+                lineNumber: 452,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Form"], {
                 ...form,
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
-                    onSubmit: form.handleSubmit(processForm),
+                    onSubmit: form.handleSubmit(processForm, onFormError),
                     className: "space-y-8",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1304,12 +1409,12 @@ function NewMemberForm({ plans }) {
                                             children: "Personal Information"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                            lineNumber: 372,
+                                            lineNumber: 465,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                        lineNumber: 371,
+                                        lineNumber: 464,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1324,7 +1429,7 @@ function NewMemberForm({ plans }) {
                                                                 children: "Full Name"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 380,
+                                                                lineNumber: 473,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1333,28 +1438,28 @@ function NewMemberForm({ plans }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                    lineNumber: 382,
+                                                                    lineNumber: 475,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 381,
+                                                                lineNumber: 474,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 384,
+                                                                lineNumber: 477,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 379,
+                                                        lineNumber: 472,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 375,
+                                                lineNumber: 468,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -1366,7 +1471,7 @@ function NewMemberForm({ plans }) {
                                                                 children: "Email Address"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 393,
+                                                                lineNumber: 486,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1375,28 +1480,28 @@ function NewMemberForm({ plans }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                    lineNumber: 395,
+                                                                    lineNumber: 488,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 394,
+                                                                lineNumber: 487,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 397,
+                                                                lineNumber: 490,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 392,
+                                                        lineNumber: 485,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 388,
+                                                lineNumber: 481,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -1408,7 +1513,7 @@ function NewMemberForm({ plans }) {
                                                                 children: "Phone Number"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 406,
+                                                                lineNumber: 499,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1417,28 +1522,28 @@ function NewMemberForm({ plans }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                    lineNumber: 408,
+                                                                    lineNumber: 501,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 407,
+                                                                lineNumber: 500,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 410,
+                                                                lineNumber: 503,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 405,
+                                                        lineNumber: 498,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 401,
+                                                lineNumber: 494,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -1451,7 +1556,7 @@ function NewMemberForm({ plans }) {
                                                                 children: "Date of Birth"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 419,
+                                                                lineNumber: 512,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$popover$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Popover"], {
@@ -1467,30 +1572,30 @@ function NewMemberForm({ plans }) {
                                                                                         children: "Pick a date"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                        lineNumber: 433,
+                                                                                        lineNumber: 526,
                                                                                         columnNumber: 33
                                                                                     }, void 0),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$calendar$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__CalendarIcon$3e$__["CalendarIcon"], {
                                                                                         className: "ml-auto h-4 w-4 opacity-50"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                        lineNumber: 435,
+                                                                                        lineNumber: 528,
                                                                                         columnNumber: 31
                                                                                     }, void 0)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                lineNumber: 423,
+                                                                                lineNumber: 516,
                                                                                 columnNumber: 29
                                                                             }, void 0)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                            lineNumber: 422,
+                                                                            lineNumber: 515,
                                                                             columnNumber: 27
                                                                         }, void 0)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                        lineNumber: 421,
+                                                                        lineNumber: 514,
                                                                         columnNumber: 25
                                                                     }, void 0),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$popover$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["PopoverContent"], {
@@ -1508,34 +1613,34 @@ function NewMemberForm({ plans }) {
                                                                             initialFocus: true
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                            lineNumber: 440,
+                                                                            lineNumber: 533,
                                                                             columnNumber: 27
                                                                         }, void 0)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                        lineNumber: 439,
+                                                                        lineNumber: 532,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 420,
+                                                                lineNumber: 513,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 455,
+                                                                lineNumber: 548,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 418,
+                                                        lineNumber: 511,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 414,
+                                                lineNumber: 507,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -1548,7 +1653,7 @@ function NewMemberForm({ plans }) {
                                                                 children: "Gender"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 464,
+                                                                lineNumber: 557,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1568,12 +1673,12 @@ function NewMemberForm({ plans }) {
                                                                                         value: g
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                        lineNumber: 477,
+                                                                                        lineNumber: 570,
                                                                                         columnNumber: 33
                                                                                     }, void 0)
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                    lineNumber: 476,
+                                                                                    lineNumber: 569,
                                                                                     columnNumber: 31
                                                                                 }, void 0),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormLabel"], {
@@ -1581,39 +1686,39 @@ function NewMemberForm({ plans }) {
                                                                                     children: g
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                    lineNumber: 479,
+                                                                                    lineNumber: 572,
                                                                                     columnNumber: 31
                                                                                 }, void 0)
                                                                             ]
                                                                         }, g, true, {
                                                                             fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                            lineNumber: 472,
+                                                                            lineNumber: 565,
                                                                             columnNumber: 29
                                                                         }, void 0))
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                    lineNumber: 466,
+                                                                    lineNumber: 559,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 465,
+                                                                lineNumber: 558,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 484,
+                                                                lineNumber: 577,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 463,
+                                                        lineNumber: 556,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 459,
+                                                lineNumber: 552,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -1626,7 +1731,7 @@ function NewMemberForm({ plans }) {
                                                                 children: "Address"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 493,
+                                                                lineNumber: 586,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1635,45 +1740,45 @@ function NewMemberForm({ plans }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                    lineNumber: 495,
+                                                                    lineNumber: 588,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 494,
+                                                                lineNumber: 587,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 500,
+                                                                lineNumber: 593,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 492,
+                                                        lineNumber: 585,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 488,
+                                                lineNumber: 581,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                        lineNumber: 374,
+                                        lineNumber: 467,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                lineNumber: 370,
+                                lineNumber: 463,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                            lineNumber: 369,
+                            lineNumber: 462,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1685,12 +1790,12 @@ function NewMemberForm({ plans }) {
                                             children: "Health & Fitness"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                            lineNumber: 511,
+                                            lineNumber: 605,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                        lineNumber: 510,
+                                        lineNumber: 604,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1705,7 +1810,7 @@ function NewMemberForm({ plans }) {
                                                                 children: "Height (cm)"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 519,
+                                                                lineNumber: 613,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1715,28 +1820,28 @@ function NewMemberForm({ plans }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                    lineNumber: 521,
+                                                                    lineNumber: 615,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 520,
+                                                                lineNumber: 614,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 523,
+                                                                lineNumber: 617,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 518,
+                                                        lineNumber: 612,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 514,
+                                                lineNumber: 608,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -1748,7 +1853,7 @@ function NewMemberForm({ plans }) {
                                                                 children: "Weight (kg)"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 532,
+                                                                lineNumber: 626,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1758,28 +1863,28 @@ function NewMemberForm({ plans }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                    lineNumber: 534,
+                                                                    lineNumber: 628,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 533,
+                                                                lineNumber: 627,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 536,
+                                                                lineNumber: 630,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 531,
+                                                        lineNumber: 625,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 527,
+                                                lineNumber: 621,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -1792,7 +1897,7 @@ function NewMemberForm({ plans }) {
                                                                 children: "Primary Fitness Goal"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 545,
+                                                                lineNumber: 639,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1801,28 +1906,28 @@ function NewMemberForm({ plans }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                    lineNumber: 547,
+                                                                    lineNumber: 641,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 546,
+                                                                lineNumber: 640,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 552,
+                                                                lineNumber: 646,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 544,
+                                                        lineNumber: 638,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 540,
+                                                lineNumber: 634,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -1835,7 +1940,7 @@ function NewMemberForm({ plans }) {
                                                                 children: "Medical Conditions or Injuries"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 561,
+                                                                lineNumber: 655,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -1844,52 +1949,52 @@ function NewMemberForm({ plans }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                    lineNumber: 563,
+                                                                    lineNumber: 657,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 562,
+                                                                lineNumber: 656,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormDescription"], {
                                                                 children: "Leave blank if not applicable."
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 568,
+                                                                lineNumber: 662,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 571,
+                                                                lineNumber: 665,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 560,
+                                                        lineNumber: 654,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 556,
+                                                lineNumber: 650,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                        lineNumber: 513,
+                                        lineNumber: 607,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                lineNumber: 509,
+                                lineNumber: 603,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                            lineNumber: 508,
+                            lineNumber: 602,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1902,20 +2007,20 @@ function NewMemberForm({ plans }) {
                                                 children: "Profile Picture"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 582,
+                                                lineNumber: 677,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
                                                 children: "Capture a photo of the new member."
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 583,
+                                                lineNumber: 678,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                        lineNumber: 581,
+                                        lineNumber: 676,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1931,7 +2036,7 @@ function NewMemberForm({ plans }) {
                                                     className: "object-cover"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                    lineNumber: 590,
+                                                    lineNumber: 685,
                                                     columnNumber: 21
                                                 }, this) : stream ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("video", {
                                                     ref: videoRef,
@@ -1941,18 +2046,18 @@ function NewMemberForm({ plans }) {
                                                     playsInline: true
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                    lineNumber: 598,
+                                                    lineNumber: 693,
                                                     columnNumber: 21
                                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$user$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__User$3e$__["User"], {
                                                     className: "w-24 h-24 text-muted-foreground"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                    lineNumber: 606,
+                                                    lineNumber: 701,
                                                     columnNumber: 21
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 588,
+                                                lineNumber: 683,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("canvas", {
@@ -1960,20 +2065,7 @@ function NewMemberForm({ plans }) {
                                                 className: "hidden"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 609,
-                                                columnNumber: 17
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("video", {
-                                                ref: videoRef,
-                                                className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["cn"])("hidden", {
-                                                    "block w-full max-w-sm aspect-video rounded-md": stream && !capturedImage
-                                                }),
-                                                autoPlay: true,
-                                                muted: true,
-                                                playsInline: true
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 611,
+                                                lineNumber: 704,
                                                 columnNumber: 17
                                             }, this),
                                             hasCameraPermission === false && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Alert"], {
@@ -1983,20 +2075,20 @@ function NewMemberForm({ plans }) {
                                                         children: "Camera Access Denied"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 624,
+                                                        lineNumber: 708,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AlertDescription"], {
                                                         children: "Please allow camera access to use this feature."
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 625,
+                                                        lineNumber: 709,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 623,
+                                                lineNumber: 707,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2011,14 +2103,14 @@ function NewMemberForm({ plans }) {
                                                                 className: "mr-2 h-4 w-4"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 637,
+                                                                lineNumber: 721,
                                                                 columnNumber: 23
                                                             }, this),
                                                             stream ? "Close Camera" : "Open Camera"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 632,
+                                                        lineNumber: 716,
                                                         columnNumber: 21
                                                     }, this),
                                                     stream && !capturedImage && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -2027,7 +2119,7 @@ function NewMemberForm({ plans }) {
                                                         children: "Capture Photo"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 642,
+                                                        lineNumber: 726,
                                                         columnNumber: 21
                                                     }, this),
                                                     capturedImage && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -2039,20 +2131,20 @@ function NewMemberForm({ plans }) {
                                                                 className: "mr-2 h-4 w-4"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 652,
+                                                                lineNumber: 736,
                                                                 columnNumber: 23
                                                             }, this),
                                                             "Recapture"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 647,
+                                                        lineNumber: 731,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 630,
+                                                lineNumber: 714,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -2066,45 +2158,45 @@ function NewMemberForm({ plans }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                    lineNumber: 663,
+                                                                    lineNumber: 747,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 662,
+                                                                lineNumber: 746,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 665,
+                                                                lineNumber: 749,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 661,
+                                                        lineNumber: 745,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 657,
+                                                lineNumber: 741,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                        lineNumber: 587,
+                                        lineNumber: 682,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                lineNumber: 580,
+                                lineNumber: 675,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                            lineNumber: 579,
+                            lineNumber: 674,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2116,12 +2208,12 @@ function NewMemberForm({ plans }) {
                                             children: "Membership & Role"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                            lineNumber: 676,
+                                            lineNumber: 761,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                        lineNumber: 675,
+                                        lineNumber: 760,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -2137,7 +2229,7 @@ function NewMemberForm({ plans }) {
                                                                 children: "Join Date"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 684,
+                                                                lineNumber: 769,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$popover$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Popover"], {
@@ -2153,24 +2245,24 @@ function NewMemberForm({ plans }) {
                                                                                         className: "mr-2 h-4 w-4"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                        lineNumber: 695,
+                                                                                        lineNumber: 780,
                                                                                         columnNumber: 31
                                                                                     }, void 0),
                                                                                     field.value ? (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])(field.value, "PPP") : "Pick a date"
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                lineNumber: 688,
+                                                                                lineNumber: 773,
                                                                                 columnNumber: 29
                                                                             }, void 0)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                            lineNumber: 687,
+                                                                            lineNumber: 772,
                                                                             columnNumber: 27
                                                                         }, void 0)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                        lineNumber: 686,
+                                                                        lineNumber: 771,
                                                                         columnNumber: 25
                                                                     }, void 0),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$popover$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["PopoverContent"], {
@@ -2183,34 +2275,34 @@ function NewMemberForm({ plans }) {
                                                                             initialFocus: true
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                            lineNumber: 703,
+                                                                            lineNumber: 788,
                                                                             columnNumber: 27
                                                                         }, void 0)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                        lineNumber: 702,
+                                                                        lineNumber: 787,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 685,
+                                                                lineNumber: 770,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 711,
+                                                                lineNumber: 796,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 683,
+                                                        lineNumber: 768,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 679,
+                                                lineNumber: 764,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -2222,7 +2314,7 @@ function NewMemberForm({ plans }) {
                                                                 children: "Membership Plan"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 721,
+                                                                lineNumber: 805,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Select"], {
@@ -2235,17 +2327,17 @@ function NewMemberForm({ plans }) {
                                                                                 placeholder: "Select an active plan"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                lineNumber: 728,
+                                                                                lineNumber: 812,
                                                                                 columnNumber: 29
                                                                             }, void 0)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                            lineNumber: 727,
+                                                                            lineNumber: 811,
                                                                             columnNumber: 27
                                                                         }, void 0)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                        lineNumber: 726,
+                                                                        lineNumber: 810,
                                                                         columnNumber: 25
                                                                     }, void 0),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectContent"], {
@@ -2259,240 +2351,23 @@ function NewMemberForm({ plans }) {
                                                                                 ]
                                                                             }, plan.id, true, {
                                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                lineNumber: 735,
+                                                                                lineNumber: 819,
                                                                                 columnNumber: 31
                                                                             }, void 0))
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                        lineNumber: 731,
+                                                                        lineNumber: 815,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 ]
                                                             }, void 0, true, {
-                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 722,
-                                                                columnNumber: 23
-                                                            }, void 0),
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
-                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 741,
-                                                                columnNumber: 23
-                                                            }, void 0)
-                                                        ]
-                                                    }, void 0, true, {
-                                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 720,
-                                                        columnNumber: 21
-                                                    }, void 0)
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 716,
-                                                columnNumber: 17
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
-                                                control: form.control,
-                                                name: "biometricDeviceId",
-                                                render: ({ field })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormItem"], {
-                                                        children: [
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormLabel"], {
-                                                                children: "Biometric Device ID"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 750,
-                                                                columnNumber: 23
-                                                            }, void 0),
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
-                                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
-                                                                    placeholder: "Enter the biometric device ID",
-                                                                    ...field
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                    lineNumber: 752,
-                                                                    columnNumber: 25
-                                                                }, void 0)
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 751,
-                                                                columnNumber: 23
-                                                            }, void 0),
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormDescription"], {
-                                                                children: "Enter the unique ID assigned to the biometric device for this member."
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 757,
-                                                                columnNumber: 23
-                                                            }, void 0),
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
-                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 761,
-                                                                columnNumber: 23
-                                                            }, void 0)
-                                                        ]
-                                                    }, void 0, true, {
-                                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 749,
-                                                        columnNumber: 21
-                                                    }, void 0)
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 745,
-                                                columnNumber: 17
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
-                                                control: form.control,
-                                                name: "role",
-                                                render: ({ field })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormItem"], {
-                                                        children: [
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormLabel"], {
-                                                                children: "Role"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 770,
-                                                                columnNumber: 23
-                                                            }, void 0),
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Select"], {
-                                                                onValueChange: field.onChange,
-                                                                defaultValue: field.value,
-                                                                children: [
-                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
-                                                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectTrigger"], {
-                                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectValue"], {
-                                                                                placeholder: "Select a role"
-                                                                            }, void 0, false, {
-                                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                lineNumber: 777,
-                                                                                columnNumber: 29
-                                                                            }, void 0)
-                                                                        }, void 0, false, {
-                                                                            fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                            lineNumber: 776,
-                                                                            columnNumber: 27
-                                                                        }, void 0)
-                                                                    }, void 0, false, {
-                                                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                        lineNumber: 775,
-                                                                        columnNumber: 25
-                                                                    }, void 0),
-                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectContent"], {
-                                                                        children: [
-                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
-                                                                                value: "member",
-                                                                                children: "Member"
-                                                                            }, void 0, false, {
-                                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                lineNumber: 781,
-                                                                                columnNumber: 27
-                                                                            }, void 0),
-                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
-                                                                                value: "trainer",
-                                                                                children: "Trainer"
-                                                                            }, void 0, false, {
-                                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                lineNumber: 782,
-                                                                                columnNumber: 27
-                                                                            }, void 0),
-                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
-                                                                                value: "admin",
-                                                                                children: "Admin"
-                                                                            }, void 0, false, {
-                                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                lineNumber: 783,
-                                                                                columnNumber: 27
-                                                                            }, void 0)
-                                                                        ]
-                                                                    }, void 0, true, {
-                                                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                        lineNumber: 780,
-                                                                        columnNumber: 25
-                                                                    }, void 0)
-                                                                ]
-                                                            }, void 0, true, {
-                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 771,
-                                                                columnNumber: 23
-                                                            }, void 0),
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
-                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 786,
-                                                                columnNumber: 23
-                                                            }, void 0)
-                                                        ]
-                                                    }, void 0, true, {
-                                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 769,
-                                                        columnNumber: 21
-                                                    }, void 0)
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 765,
-                                                columnNumber: 17
-                                            }, this)
-                                        ]
-                                    }, void 0, true, {
-                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                        lineNumber: 678,
-                                        columnNumber: 15
-                                    }, this)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                lineNumber: 674,
-                                columnNumber: 13
-                            }, this)
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                            lineNumber: 673,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["cn"])(currentStep !== 4 && "hidden"),
-                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
-                                children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardHeader"], {
-                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardTitle"], {
-                                            children: "Emergency Contact"
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                            lineNumber: 797,
-                                            columnNumber: 17
-                                        }, this)
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                        lineNumber: 796,
-                                        columnNumber: 15
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
-                                        className: "space-y-6",
-                                        children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
-                                                control: form.control,
-                                                name: "emergencyContactName",
-                                                render: ({ field })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormItem"], {
-                                                        children: [
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormLabel"], {
-                                                                children: "Contact Name"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 805,
-                                                                columnNumber: 23
-                                                            }, void 0),
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
-                                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
-                                                                    placeholder: "Jane Doe",
-                                                                    ...field
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                    lineNumber: 807,
-                                                                    columnNumber: 25
-                                                                }, void 0)
-                                                            }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
                                                                 lineNumber: 806,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 809,
+                                                                lineNumber: 825,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
@@ -2508,6 +2383,327 @@ function NewMemberForm({ plans }) {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
                                                 control: form.control,
+                                                name: "paidAmount",
+                                                render: ({ field })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormItem"], {
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormLabel"], {
+                                                                children: "Paid Amount"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                lineNumber: 834,
+                                                                columnNumber: 23
+                                                            }, void 0),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
+                                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
+                                                                    type: "number",
+                                                                    placeholder: "Enter paid amount",
+                                                                    ...field,
+                                                                    value: field.value === undefined ? "" : field.value,
+                                                                    onChange: (e)=>{
+                                                                        const value = Number(e.target.value);
+                                                                        field.onChange(value);
+                                                                    }
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                    lineNumber: 836,
+                                                                    columnNumber: 25
+                                                                }, void 0)
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                lineNumber: 835,
+                                                                columnNumber: 23
+                                                            }, void 0),
+                                                            selectedPlan && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                className: "text-sm mt-2",
+                                                                children: [
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                        className: "text-muted-foreground",
+                                                                        children: "Plan Price:"
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                        lineNumber: 850,
+                                                                        columnNumber: 27
+                                                                    }, void 0),
+                                                                    " ",
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                        className: "font-medium",
+                                                                        children: [
+                                                                            "₹",
+                                                                            selectedPlan.price
+                                                                        ]
+                                                                    }, void 0, true, {
+                                                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                        lineNumber: 853,
+                                                                        columnNumber: 27
+                                                                    }, void 0),
+                                                                    field.value !== undefined && field.value !== null && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+                                                                        children: [
+                                                                            " ",
+                                                                            "|",
+                                                                            " ",
+                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                className: "text-muted-foreground",
+                                                                                children: "Remaining:"
+                                                                            }, void 0, false, {
+                                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                                lineNumber: 861,
+                                                                                columnNumber: 33
+                                                                            }, void 0),
+                                                                            " ",
+                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["cn"])("font-semibold", field.value > selectedPlan.price ? "text-destructive" : "text-foreground"),
+                                                                                children: [
+                                                                                    "₹",
+                                                                                    Math.max(selectedPlan.price - field.value, 0)
+                                                                                ]
+                                                                            }, void 0, true, {
+                                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                                lineNumber: 864,
+                                                                                columnNumber: 33
+                                                                            }, void 0)
+                                                                        ]
+                                                                    }, void 0, true)
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                lineNumber: 849,
+                                                                columnNumber: 25
+                                                            }, void 0),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
+                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                lineNumber: 882,
+                                                                columnNumber: 23
+                                                            }, void 0)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                        lineNumber: 833,
+                                                        columnNumber: 21
+                                                    }, void 0)
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                lineNumber: 829,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
+                                                control: form.control,
+                                                name: "biometricDeviceId",
+                                                render: ({ field })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormItem"], {
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormLabel"], {
+                                                                children: "Biometric Device ID"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                lineNumber: 891,
+                                                                columnNumber: 23
+                                                            }, void 0),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
+                                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
+                                                                    placeholder: "Enter the biometric device ID",
+                                                                    ...field
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                    lineNumber: 893,
+                                                                    columnNumber: 25
+                                                                }, void 0)
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                lineNumber: 892,
+                                                                columnNumber: 23
+                                                            }, void 0),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormDescription"], {
+                                                                children: "Enter the unique ID assigned to the biometric device for this member."
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                lineNumber: 898,
+                                                                columnNumber: 23
+                                                            }, void 0),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
+                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                lineNumber: 902,
+                                                                columnNumber: 23
+                                                            }, void 0)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                        lineNumber: 890,
+                                                        columnNumber: 21
+                                                    }, void 0)
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                lineNumber: 886,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
+                                                control: form.control,
+                                                name: "role",
+                                                render: ({ field })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormItem"], {
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormLabel"], {
+                                                                children: "Role"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                lineNumber: 911,
+                                                                columnNumber: 23
+                                                            }, void 0),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Select"], {
+                                                                onValueChange: field.onChange,
+                                                                defaultValue: field.value,
+                                                                children: [
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
+                                                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectTrigger"], {
+                                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectValue"], {
+                                                                                placeholder: "Select a role"
+                                                                            }, void 0, false, {
+                                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                                lineNumber: 918,
+                                                                                columnNumber: 29
+                                                                            }, void 0)
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                            lineNumber: 917,
+                                                                            columnNumber: 27
+                                                                        }, void 0)
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                        lineNumber: 916,
+                                                                        columnNumber: 25
+                                                                    }, void 0),
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectContent"], {
+                                                                        children: [
+                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
+                                                                                value: "member",
+                                                                                children: "Member"
+                                                                            }, void 0, false, {
+                                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                                lineNumber: 922,
+                                                                                columnNumber: 27
+                                                                            }, void 0),
+                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
+                                                                                value: "trainer",
+                                                                                children: "Trainer"
+                                                                            }, void 0, false, {
+                                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                                lineNumber: 923,
+                                                                                columnNumber: 27
+                                                                            }, void 0),
+                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
+                                                                                value: "admin",
+                                                                                children: "Admin"
+                                                                            }, void 0, false, {
+                                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                                lineNumber: 924,
+                                                                                columnNumber: 27
+                                                                            }, void 0)
+                                                                        ]
+                                                                    }, void 0, true, {
+                                                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                        lineNumber: 921,
+                                                                        columnNumber: 25
+                                                                    }, void 0)
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                lineNumber: 912,
+                                                                columnNumber: 23
+                                                            }, void 0),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
+                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                lineNumber: 927,
+                                                                columnNumber: 23
+                                                            }, void 0)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                        lineNumber: 910,
+                                                        columnNumber: 21
+                                                    }, void 0)
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                lineNumber: 906,
+                                                columnNumber: 17
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                        lineNumber: 763,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                lineNumber: 759,
+                                columnNumber: 13
+                            }, this)
+                        }, void 0, false, {
+                            fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                            lineNumber: 758,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["cn"])(currentStep !== 4 && "hidden"),
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardHeader"], {
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardTitle"], {
+                                            children: "Emergency Contact"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                            lineNumber: 939,
+                                            columnNumber: 17
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                        lineNumber: 938,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
+                                        className: "space-y-6",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
+                                                control: form.control,
+                                                name: "emergencyContactName",
+                                                render: ({ field })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormItem"], {
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormLabel"], {
+                                                                children: "Contact Name"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                lineNumber: 947,
+                                                                columnNumber: 23
+                                                            }, void 0),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
+                                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
+                                                                    placeholder: "Jane Doe",
+                                                                    ...field
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                    lineNumber: 949,
+                                                                    columnNumber: 25
+                                                                }, void 0)
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                lineNumber: 948,
+                                                                columnNumber: 23
+                                                            }, void 0),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
+                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                lineNumber: 951,
+                                                                columnNumber: 23
+                                                            }, void 0)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                        lineNumber: 946,
+                                                        columnNumber: 21
+                                                    }, void 0)
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                lineNumber: 942,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
+                                                control: form.control,
                                                 name: "emergencyContactPhone",
                                                 render: ({ field })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormItem"], {
                                                         children: [
@@ -2515,7 +2711,7 @@ function NewMemberForm({ plans }) {
                                                                 children: "Contact Phone"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 818,
+                                                                lineNumber: 960,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -2524,28 +2720,28 @@ function NewMemberForm({ plans }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                    lineNumber: 820,
+                                                                    lineNumber: 962,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 819,
+                                                                lineNumber: 961,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 822,
+                                                                lineNumber: 964,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 817,
+                                                        lineNumber: 959,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 813,
+                                                lineNumber: 955,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormField"], {
@@ -2557,199 +2753,135 @@ function NewMemberForm({ plans }) {
                                                                 children: "Relationship"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 831,
+                                                                lineNumber: 973,
                                                                 columnNumber: 23
                                                             }, void 0),
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Select"], {
-                                                                onValueChange: field.onChange,
-                                                                defaultValue: field.value,
-                                                                children: [
-                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
-                                                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectTrigger"], {
-                                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectValue"], {
-                                                                                placeholder: "Select a relationship"
-                                                                            }, void 0, false, {
-                                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                lineNumber: 838,
-                                                                                columnNumber: 29
-                                                                            }, void 0)
-                                                                        }, void 0, false, {
-                                                                            fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                            lineNumber: 837,
-                                                                            columnNumber: 27
-                                                                        }, void 0)
-                                                                    }, void 0, false, {
-                                                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                        lineNumber: 836,
-                                                                        columnNumber: 25
-                                                                    }, void 0),
-                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectContent"], {
-                                                                        children: [
-                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
-                                                                                value: "Spouse",
-                                                                                children: "Spouse"
-                                                                            }, void 0, false, {
-                                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                lineNumber: 842,
-                                                                                columnNumber: 27
-                                                                            }, void 0),
-                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
-                                                                                value: "Parent",
-                                                                                children: "Parent"
-                                                                            }, void 0, false, {
-                                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                lineNumber: 843,
-                                                                                columnNumber: 27
-                                                                            }, void 0),
-                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
-                                                                                value: "Sibling",
-                                                                                children: "Sibling"
-                                                                            }, void 0, false, {
-                                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                lineNumber: 844,
-                                                                                columnNumber: 27
-                                                                            }, void 0),
-                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
-                                                                                value: "Friend",
-                                                                                children: "Friend"
-                                                                            }, void 0, false, {
-                                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                lineNumber: 845,
-                                                                                columnNumber: 27
-                                                                            }, void 0),
-                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
-                                                                                value: "Other",
-                                                                                children: "Other"
-                                                                            }, void 0, false, {
-                                                                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                                lineNumber: 846,
-                                                                                columnNumber: 27
-                                                                            }, void 0)
-                                                                        ]
-                                                                    }, void 0, true, {
-                                                                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                        lineNumber: 841,
-                                                                        columnNumber: 25
-                                                                    }, void 0)
-                                                                ]
-                                                            }, void 0, true, {
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
+                                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
+                                                                    placeholder: "Spouse, Sibling, etc.",
+                                                                    ...field
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                                                    lineNumber: 975,
+                                                                    columnNumber: 25
+                                                                }, void 0)
+                                                            }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 832,
+                                                                lineNumber: 974,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                                lineNumber: 849,
+                                                                lineNumber: 977,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                        lineNumber: 830,
+                                                        lineNumber: 972,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                                lineNumber: 826,
+                                                lineNumber: 968,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                        lineNumber: 799,
+                                        lineNumber: 941,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                lineNumber: 795,
+                                lineNumber: 937,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                            lineNumber: 794,
+                            lineNumber: 936,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "flex justify-end gap-4 mt-8",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
+                                    type: "button",
+                                    variant: "outline",
+                                    onClick: prevStep,
+                                    disabled: currentStep === 0,
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$left$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowLeft$3e$__["ArrowLeft"], {
+                                            className: "mr-2 h-4 w-4"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                            lineNumber: 992,
+                                            columnNumber: 15
+                                        }, this),
+                                        " Previous"
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                    lineNumber: 986,
+                                    columnNumber: 13
+                                }, this),
+                                currentStep < STEPS.length - 1 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
+                                    type: "button",
+                                    onClick: (e)=>nextStep(e),
+                                    children: [
+                                        "Next ",
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__["ArrowRight"], {
+                                            className: "ml-2 h-4 w-4"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                            lineNumber: 997,
+                                            columnNumber: 22
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                    lineNumber: 996,
+                                    columnNumber: 15
+                                }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
+                                    type: "submit",
+                                    disabled: isPending,
+                                    children: [
+                                        isPending && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$loader$2d$circle$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Loader2$3e$__["Loader2"], {
+                                            className: "mr-2 h-4 w-4 animate-spin"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                            lineNumber: 1001,
+                                            columnNumber: 31
+                                        }, this),
+                                        "Create Profile"
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                                    lineNumber: 1000,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
+                            lineNumber: 985,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                    lineNumber: 368,
+                    lineNumber: 460,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                lineNumber: 367,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "mt-8 pt-5 flex justify-between",
-                children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
-                        type: "button",
-                        variant: "outline",
-                        onClick: prevStep,
-                        disabled: currentStep === 0,
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$left$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowLeft$3e$__["ArrowLeft"], {
-                                className: "mr-2 h-4 w-4"
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                lineNumber: 866,
-                                columnNumber: 11
-                            }, this),
-                            " Previous"
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                        lineNumber: 860,
-                        columnNumber: 9
-                    }, this),
-                    currentStep < STEPS.length - 1 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
-                        type: "button",
-                        onClick: nextStep,
-                        children: [
-                            "Next ",
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__["ArrowRight"], {
-                                className: "ml-2 h-4 w-4"
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                lineNumber: 871,
-                                columnNumber: 18
-                            }, this)
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                        lineNumber: 870,
-                        columnNumber: 11
-                    }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
-                        type: "button",
-                        onClick: form.handleSubmit(processForm),
-                        disabled: isLoading,
-                        children: [
-                            isLoading && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$loader$2d$circle$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Loader2$3e$__["Loader2"], {
-                                className: "mr-2 h-4 w-4 animate-spin"
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                                lineNumber: 879,
-                                columnNumber: 27
-                            }, this),
-                            "Create Member Profile"
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                        lineNumber: 874,
-                        columnNumber: 11
-                    }, this)
-                ]
-            }, void 0, true, {
-                fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-                lineNumber: 859,
+                lineNumber: 459,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/dashboard/members/new-member-form.tsx",
-        lineNumber: 359,
+        lineNumber: 451,
         columnNumber: 5
     }, this);
 }

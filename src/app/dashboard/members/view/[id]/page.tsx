@@ -29,12 +29,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
-import { Skeleton } from "@/components/ui/skeleton";
+import { MemberDetailSkeleton } from "@/components/ui/loading-skeletons";
 import { useEffect, useState } from "react";
 import { differenceInDays, format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { getStorage, ref, deleteObject } from "firebase/storage";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Home } from "lucide-react";
 
 export default function ViewMemberPage() {
   const params = useParams();
@@ -227,27 +229,7 @@ export default function ViewMemberPage() {
   //   useDoc<MembershipPlan>(planRef);
 
   if (memberLoading || historyLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-10 w-10 rounded-md" />
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-64" />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            <Skeleton className="h-64 w-full" />
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-48 w-full" />
-          </div>
-          <div className="space-y-8">
-            <Skeleton className="h-96 w-full" />
-          </div>
-        </div>
-      </div>
-    );
+    return <MemberDetailSkeleton />;
   }
 
   if (!member) {
@@ -259,6 +241,29 @@ export default function ViewMemberPage() {
   // The 'plan' can be optional, so we don't need to gate rendering on it.
   return (
     <div className="space-y-6">
+      {/* Breadcrumbs */}
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href="/dashboard/overview">
+                <Home className="h-4 w-4" />
+              </Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href="/dashboard/members">Members</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{member.name}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <div className="flex items-center gap-4">
         <Button asChild variant="outline" size="icon">
           <Link href="/dashboard/members">
