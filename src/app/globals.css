@@ -100,45 +100,117 @@ body {
     --rdp-outline-selected: 2px solid hsla(var(--primary), 0.5);
     --rdp-selected-color: hsl(var(--primary-foreground));
   }
-  .rdp-day_selected,
-  .rdp-day_selected:focus-visible,
-  .rdp-day_selected:hover {
-    color: hsl(var(--primary-foreground));
-    background-color: hsl(var(--primary));
-    border-radius: 9999px; /* Changed from 50% for consistency */
-  }
-  .rdp-day_today {
-    font-weight: bold;
-    color: hsl(var(--primary));
-    background-color: hsl(var(--primary) / 0.1);
-    border-radius: 9999px; /* Changed from 50% */
+
+  /* Calendar container */
+  .rdp {
+    @apply rounded-xl p-4;
   }
 
-  .rdp-day_outside {
-    color: hsl(var(--muted-foreground));
-    opacity: 0.5; /* Mute the outside dates */
+  /* Light mode calendar */
+  .rdp {
+    background: white;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 
+  /* Dark mode calendar */
+  .dark .rdp {
+    background: #1f2937;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Calendar header */
+  .rdp-caption {
+    @apply flex items-center justify-between mb-3;
+  }
+
+  /* Month/Year dropdowns */
   .rdp-caption_dropdowns {
     @apply flex gap-2;
   }
-  .rdp-caption_label {
-    @apply hidden;
-  }
-  .rdp-vhidden {
-    @apply hidden;
-  }
+
   .rdp-dropdown_month, .rdp-dropdown_year {
     @apply w-full;
   }
+
   .rdp-dropdown {
     @apply relative inline-flex items-center;
   }
+
   .rdp-dropdown_label {
-    @apply hidden; /* Hide the "Month:" and "Year:" labels */
+    @apply hidden;
   }
+
   .rdp-dropdown > select {
-    @apply appearance-none bg-transparent font-semibold text-foreground text-sm cursor-pointer p-1 rounded-md border border-input focus:outline-none focus:ring-2 focus:ring-ring;
+    @apply appearance-none bg-white dark:bg-gray-800 font-semibold text-gray-900 dark:text-gray-100 text-sm cursor-pointer px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all;
+  }
+
+  /* Navigation arrows */
+  .rdp-nav_button {
+    @apply w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-center;
+  }
+
+  .rdp-nav_button svg {
+    @apply w-4 h-4 text-gray-600 dark:text-gray-400;
+  }
+
+  /* Weekday labels */
+  .rdp-head_cell {
+    @apply text-xs font-semibold text-gray-500 dark:text-gray-400 pb-2;
+  }
+
+  /* Day cells */
+  .rdp-day {
+    @apply w-10 h-10 text-sm font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer;
+  }
+
+  /* Today */
+  .rdp-day_today {
+    font-weight: 700;
+    color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.1);
+    border-radius: 0.5rem;
+  }
+
+  .dark .rdp-day_today {
+    color: #60a5fa;
+    background-color: rgba(59, 130, 246, 0.15);
+  }
+
+  /* Selected day */
+  .rdp-day_selected,
+  .rdp-day_selected:focus-visible,
+  .rdp-day_selected:hover {
+    color: white;
+    background-color: #3b82f6;
+    border-radius: 0.5rem;
+    font-weight: 600;
+  }
+
+  /* Outside month days */
+  .rdp-day_outside {
+    color: #9ca3af;
+    opacity: 0.4;
+  }
+
+  .dark .rdp-day_outside {
+    color: #6b7280;
+    opacity: 0.3;
+  }
+
+  /* Disabled days */
+  .rdp-day_disabled {
+    @apply opacity-30 cursor-not-allowed;
+  }
+
+  /* Hide unused elements */
+  .rdp-caption_label {
+    @apply hidden;
+  }
+
+  .rdp-vhidden {
+    @apply hidden;
   }
 }
 
@@ -247,6 +319,72 @@ body {
 
 .animate-pulse-glow {
   animation: pulse-glow 1.5s ease-in-out 3;
+}
+
+/* Staggered fade-in for cards */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 0.4s ease-out forwards;
+}
+
+/* Avatar ring pulse for checked-in members */
+@keyframes ringPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0px rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+}
+
+.ring-pulse-green {
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.4);
+  animation: ringPulse 2s ease-in-out infinite;
+}
+
+/* Hover lift effect */
+.hover-lift {
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.15);
+}
+
+/* Gradient backgrounds for summary cards */
+.gradient-green-subtle {
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+}
+
+.gradient-blue-subtle {
+  background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+}
+
+.gradient-purple-subtle {
+  background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
+}
+
+.gradient-orange-subtle {
+  background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%);
+}
+
+/* Dark mode overrides for summary cards */
+.dark .gradient-green-subtle,
+.dark .gradient-blue-subtle,
+.dark .gradient-purple-subtle,
+.dark .gradient-orange-subtle {
+  background: rgba(31, 41, 55, 0.95) !important;
 }
 
 /* Hide scrollbar while maintaining scroll functionality */

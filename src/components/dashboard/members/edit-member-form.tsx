@@ -36,6 +36,8 @@ import {
   Loader2,
   User as UserIcon,
   RotateCcw,
+  Upload,
+  ImageIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -194,6 +196,38 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
       stream.getTracks().forEach((track) => track.stop());
       setStream(null);
     }
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        variant: "destructive",
+        title: "File too large",
+        description: "Please upload an image smaller than 5MB.",
+      });
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        variant: "destructive",
+        title: "Invalid file type",
+        description: "Please upload an image file (JPG, PNG, etc.).",
+      });
+      return;
+    }
+
+    // Convert to data URL
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      form.setValue("profilePicture", reader.result as string, { shouldValidate: true });
+    };
+    reader.readAsDataURL(file);
   };
 
   const { mutate: updateMember, isPending } = useMutation({
@@ -524,10 +558,11 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
             <Card>
               <CardHeader>
                 <CardTitle>Profile Picture</CardTitle>
-                <CardDescription>Update the member's photo.</CardDescription>
+                <CardDescription>Update the member's photo</CardDescription>
               </CardHeader>
-              <CardContent className="flex flex-col items-center gap-4">
-                <div className="w-full max-w-sm aspect-video rounded-md border bg-muted flex items-center justify-center overflow-hidden">
+              <CardContent className="flex flex-col items-center gap-6">
+                {/* Photo Preview Area */}
+                <div className="w-full max-w-sm aspect-video rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/50 flex items-center justify-center overflow-hidden">
                   {stream ? (
                     <video
                       ref={videoRef}
@@ -539,39 +574,50 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
                   ) : capturedImage ? (
                     <Image
                       src={capturedImage}
-                      alt="Captured photo"
+                      alt="Profile photo"
                       width={400}
                       height={225}
-                      className="object-cover"
+                      className="object-cover w-full h-full"
                       data-ai-hint="person gym"
                     />
                   ) : (
-                    <UserIcon className="w-24 h-24 text-muted-foreground" />
+                    <div className="flex flex-col items-center gap-3 p-6 text-center">
+                      <ImageIcon className="w-16 h-16 text-muted-foreground/40" />
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">No photo yet</p>
+                        <p className="text-xs text-muted-foreground/70 mt-1">Use camera or upload a file</p>
+                      </div>
+                    </div>
                   )}
                 </div>
                 <canvas ref={canvasRef} className="hidden"></canvas>
 
+                {/* Photo Requirements */}
+                <div className="w-full max-w-sm bg-blue-50 border border-blue-200 rounded-md p-3">
+                  <p className="text-xs font-medium text-blue-900 mb-1">Photo Requirements:</p>
+                  <ul className="text-xs text-blue-800 space-y-0.5 ml-4 list-disc">
+                    <li>Clear, well-lit frontal face photo</li>
+                    <li>Maximum size: 5MB</li>
+                    <li>Formats: JPG, PNG, WebP</li>
+                    <li>Used only for member identification</li>
+                  </ul>
+                </div>
+
+                {/* Camera Permission Error */}
                 {hasCameraPermission === false && (
-                  <Alert variant="destructive">
+                  <Alert variant="destructive" className="max-w-sm">
                     <AlertTitle>Camera Access Denied</AlertTitle>
                     <AlertDescription>
-                      Please allow camera access to use this feature.
+                      Please allow camera access in your browser settings or use the upload option instead.
                     </AlertDescription>
                   </Alert>
                 )}
-                <div className="flex gap-2">
-                  {!stream && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={getCameraPermission}
-                    >
-                      <Camera className="mr-2 h-4 w-4" />
-                      {member.profileImageUrl ? "Change Photo" : "Open Camera"}
-                    </Button>
-                  )}
-                  {stream && (
-                    <>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col gap-3 w-full max-w-sm">
+                  {stream ? (
+                    /* Camera is active - show Cancel and Capture */
+                    <div className="flex gap-2">
                       <Button
                         type="button"
                         variant="outline"
@@ -579,27 +625,65 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
                           stream.getTracks().forEach((track) => track.stop());
                           setStream(null);
                         }}
+                        className="flex-1"
                       >
                         Cancel
                       </Button>
-                      <Button type="button" onClick={capturePhoto}>
+                      <Button type="button" onClick={capturePhoto} className="flex-1">
+                        <Camera className="mr-2 h-4 w-4" />
                         Capture Photo
                       </Button>
+                    </div>
+                  ) : (
+                    /* Camera not active - show Camera and Upload options */
+                    <>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={getCameraPermission}
+                          className="flex-1"
+                        >
+                          <Camera className="mr-2 h-4 w-4" />
+                          {capturedImage ? "Use Camera" : "Open Camera"}
+                        </Button>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => document.getElementById('photo-upload-edit')?.click()}
+                          className="flex-1"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload Photo
+                        </Button>
+                      </div>
+
+                      {capturedImage && capturedImage !== initialProfilePicture && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={revertPhoto}
+                          className="w-full"
+                        >
+                          <RotateCcw className="mr-2 h-4 w-4" />
+                          Revert to Original
+                        </Button>
+                      )}
                     </>
                   )}
-                  {capturedImage &&
-                    capturedImage !== initialProfilePicture &&
-                    !stream && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={revertPhoto}
-                      >
-                        <RotateCcw className="mr-2 h-4 w-4" />
-                        Revert
-                      </Button>
-                    )}
                 </div>
+
+                {/* Hidden file input */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="photo-upload-edit"
+                />
+
+                {/* Hidden Form Field */}
                 <FormField
                   control={form.control}
                   name="profilePicture"
@@ -676,8 +760,11 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
                     <FormItem>
                       <FormLabel>Biometric Device ID</FormLabel>
                       <FormControl>
-                        <Input placeholder="Biometric Device ID" {...field} />
+                        <Input placeholder="Biometric Device ID" {...field} disabled />
                       </FormControl>
+                      <FormDescription className="text-xs">
+                        This ID is automatically assigned and cannot be changed
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

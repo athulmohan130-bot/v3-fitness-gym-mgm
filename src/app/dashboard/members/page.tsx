@@ -47,14 +47,37 @@ export default function MembersPage() {
   const [selectedMember, setSelectedMember] = useState<UserWithMembership | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
 
-  const getMembershipStatus = useCallback((startDate?: string, endDate?: string): MembershipStatus => {
-    if (!startDate || !endDate) return "pending";
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+  const getMembershipStatus = useCallback((historyDocs: any[]): MembershipStatus => {
+    if (!historyDocs || historyDocs.length === 0) return "pending";
+
     const now = new Date();
-    if (now < start) return "pending";
-    if (now > end) return "expired";
-    return "active";
+
+    // Check if ANY membership period covers today's date
+    const hasActiveMembership = historyDocs.some(doc => {
+      const data = doc.data();
+      if (!data.membershipStart || !data.membershipEnd) return false;
+
+      const start = new Date(data.membershipStart);
+      const end = new Date(data.membershipEnd);
+
+      // Member is active if today is between start and end dates
+      return now >= start && now <= end;
+    });
+
+    if (hasActiveMembership) return "active";
+
+    // If no active membership, check if there's a future one
+    const hasFutureMembership = historyDocs.some(doc => {
+      const data = doc.data();
+      if (!data.membershipStart) return false;
+      const start = new Date(data.membershipStart);
+      return now < start;
+    });
+
+    if (hasFutureMembership) return "pending";
+
+    // All memberships have expired
+    return "expired";
   }, []);
 
   const { data: processedData, isLoading: isMembersLoading } = useQuery<UserWithMembership[]>({ 
@@ -70,14 +93,30 @@ export default function MembersPage() {
         usersData.map(async (user) => {
           const historyRef = collection(firestore, "users", user.id, "membershipHistory");
           const historySnap = await getDocs(query(historyRef, orderBy("createdAt", "desc")));
-          const latestPlanData = historySnap.docs[0]?.data();
-          const startDate = safeParseDate(latestPlanData?.membershipStart);
-          const endDate = safeParseDate(latestPlanData?.membershipEnd);
+
+          // Get membership status by checking ALL history entries
+          const membershipStatus = getMembershipStatus(historySnap.docs);
+
+          // For display purposes, find the currently active plan or the latest one
+          const now = new Date();
+          const activePlan = historySnap.docs.find(doc => {
+            const data = doc.data();
+            if (!data.membershipStart || !data.membershipEnd) return false;
+            const start = new Date(data.membershipStart);
+            const end = new Date(data.membershipEnd);
+            return now >= start && now <= end;
+          });
+
+          // If no active plan, use the latest one (could be future or expired)
+          const displayPlan = activePlan || historySnap.docs[0];
+          const planData = displayPlan?.data();
+          const startDate = safeParseDate(planData?.membershipStart);
+          const endDate = safeParseDate(planData?.membershipEnd);
 
           return {
             ...user,
-            planName: latestPlanData?.membershipPlan || "N/A",
-            membershipStatus: getMembershipStatus(startDate?.toISOString(), endDate?.toISOString()),
+            planName: planData?.membershipPlan || "N/A",
+            membershipStatus,
             membershipStart: startDate?.toISOString() ?? '',
             membershipEnd: endDate?.toISOString() ?? '',
           };

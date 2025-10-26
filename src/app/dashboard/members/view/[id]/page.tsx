@@ -70,7 +70,19 @@ export default function ViewMemberPage() {
     enabled: !!firestore && !!id,
   });
 
-  const latestMembership = membershipHistory?.[0] || null;
+  // Find the currently active membership (one that covers today's date)
+  // If multiple active memberships exist (overlapping periods), use the most recently created one
+  // If no active membership, fall back to the latest one
+  const activeMemberships = membershipHistory?.filter((history: any) => {
+    if (!history.membershipStart || !history.membershipEnd) return false;
+    const now = new Date();
+    const start = new Date(history.membershipStart);
+    const end = new Date(history.membershipEnd);
+    return now >= start && now <= end;
+  }) || [];
+
+  // Use the first active membership (most recently created) or fall back to latest
+  const activeMembership = activeMemberships[0] || membershipHistory?.[0] || null;
 
   const handlePaymentUpdate = async (historyId: string, amount: number) => {
     if (!firestore || !id) return;
@@ -283,7 +295,7 @@ export default function ViewMemberPage() {
       </div>
       <ViewMemberDetails
         member={member}
-        plan={latestMembership}
+        plan={activeMembership}
         availablePlans={membershipHistory || []}
         onPaymentSubmit={handlePaymentUpdate}
         onFreezeSubmit={handleFreezeSubmit}

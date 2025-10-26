@@ -1,4 +1,5 @@
 // columns.tsx
+import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import type { GymUser } from "@/lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -85,6 +86,7 @@ const DeleteMemberDialog = ({ user }: { user: UserWithPlan }) => {
   const firestore = useFirestore();
   const storage = getStorage();
   const queryClient = useQueryClient();
+  const [open, setOpen] = React.useState(false);
 
   const handleDelete = async () => {
     if (!firestore) return;
@@ -136,6 +138,9 @@ const DeleteMemberDialog = ({ user }: { user: UserWithPlan }) => {
       queryClient.invalidateQueries({ queryKey: ["processedMembers"] });
       queryClient.invalidateQueries({ queryKey: ["userSummary"] });
 
+      // Close the dialog
+      setOpen(false);
+
     } catch (error) {
       console.error("Error deleting member:", error);
       toast({
@@ -147,32 +152,34 @@ const DeleteMemberDialog = ({ user }: { user: UserWithPlan }) => {
   };
 
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <div className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-destructive focus:bg-destructive/10">
-          Delete member
-        </div>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the
-            member account for <span className="font-bold">{user.name}</span>{" "}
-            and remove their data from our servers.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleDelete}
-            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-          >
-            Yes, delete member
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogTrigger asChild>
+          <button className="w-full text-left">
+            <span className="text-destructive text-sm">Delete member</span>
+          </button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              member account for <span className="font-bold">{user.name}</span>{" "}
+              and remove their data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+            >
+              Yes, delete member
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </DropdownMenuItem>
   );
 };
 
@@ -222,6 +229,61 @@ export const getColumns = (
   {
     accessorKey: "planName",
     header: "Plan",
+  },
+  {
+    accessorKey: "membershipEnd",
+    header: "Expiry Date",
+    cell: ({ row }) => {
+      const membershipEnd = row.getValue("membershipEnd") as string;
+      if (!membershipEnd) return <span className="text-muted-foreground">—</span>;
+
+      const endDate = new Date(membershipEnd);
+      return <span className="font-medium">{format(endDate, "dd MMM yyyy")}</span>;
+    },
+  },
+  {
+    accessorKey: "daysRemaining",
+    header: "Days Remaining",
+    cell: ({ row }) => {
+      const membershipEnd = row.original.membershipEnd;
+      if (!membershipEnd) return <span className="text-muted-foreground">—</span>;
+
+      const endDate = new Date(membershipEnd);
+      const today = new Date();
+      const daysRemaining = differenceInDays(endDate, today);
+
+      // Determine badge color and style based on days remaining
+      let badgeClass = "";
+      let badgeText = "";
+
+      if (daysRemaining < 0) {
+        // Expired - Red
+        badgeClass = "bg-red-100 text-red-800 border-red-200";
+        badgeText = `Expired (${Math.abs(daysRemaining)}d ago)`;
+      } else if (daysRemaining === 0) {
+        // Expires today - Red
+        badgeClass = "bg-red-100 text-red-800 border-red-200";
+        badgeText = "Expires today";
+      } else if (daysRemaining < 3) {
+        // Less than 3 days - Darker Amber (more urgent)
+        badgeClass = "bg-amber-200 text-amber-900 border-amber-300";
+        badgeText = `${daysRemaining}d left`;
+      } else if (daysRemaining < 10) {
+        // Less than 10 days - Amber
+        badgeClass = "bg-amber-100 text-amber-800 border-amber-200";
+        badgeText = `${daysRemaining}d left`;
+      } else {
+        // 10 days or more - Green
+        badgeClass = "bg-green-100 text-green-800 border-green-200";
+        badgeText = `${daysRemaining}d left`;
+      }
+
+      return (
+        <Badge className={cn("font-medium", badgeClass)}>
+          {badgeText}
+        </Badge>
+      );
+    },
   },
   {
     accessorKey: "joinDate",

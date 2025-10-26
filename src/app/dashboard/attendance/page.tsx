@@ -11,7 +11,7 @@ import { MemberCardGridSkeleton, SearchBarSkeleton } from "@/components/ui/loadi
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
 import { format } from "date-fns";
-import { Search, Users, Volume2, VolumeX, Settings, Home, Grid3x3, List, LayoutList } from "lucide-react";
+import { Search, Users, Volume2, VolumeX, Settings, Home, Grid3x3, List, LayoutList, CheckCircle, BarChart, Clock, TrendingUp, CalendarIcon } from "lucide-react";
 import type { AttendanceRecord } from "@/lib/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
@@ -20,6 +20,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 import {
   Collapsible,
   CollapsibleContent,
@@ -38,7 +40,7 @@ type ViewMode = "grid" | "list" | "compact";
 export default function AttendancePage() {
   const firestore = useFirestore();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterTimeSlot, setFilterTimeSlot] = useState("all");
   const [newRecordIds, setNewRecordIds] = useState<Set<string>>(new Set());
@@ -75,7 +77,8 @@ export default function AttendancePage() {
   // Real-time query for today's attendance
   const attendanceQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return collection(firestore, `attendance_logs/${selectedDate}/records`);
+    const dateString = format(selectedDate, "yyyy-MM-dd");
+    return collection(firestore, `attendance_logs/${dateString}/records`);
   }, [firestore, selectedDate]);
 
   const { data: attendanceRecords, isLoading, error } = useCollection<AttendanceRecord>(attendanceQuery);
@@ -234,6 +237,21 @@ export default function AttendancePage() {
     };
 
     return daysInfo[record.membershipStatus as keyof typeof daysInfo] || null;
+  };
+
+  // Get relative time string
+  const getRelativeTime = (timestamp: string) => {
+    const now = new Date();
+    const then = new Date(timestamp);
+    const diffMs = now.getTime() - then.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins} ${diffMins === 1 ? 'minute' : 'minutes'} ago`;
+    if (diffHours < 24) return `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
+    return `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`;
   };
 
   if (error) {
@@ -522,12 +540,28 @@ export default function AttendancePage() {
                   </SelectContent>
                 </Select>
               </div>
-              <Input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="h-9"
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "h-9 justify-start text-left font-normal",
+                      !selectedDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && setSelectedDate(date)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
               <div className="flex items-center gap-3 pt-2">
                 <span className="text-sm text-muted-foreground flex-1">
                   {filteredRecords.length} {filteredRecords.length === 1 ? 'member' : 'members'}
@@ -565,22 +599,22 @@ export default function AttendancePage() {
       </Collapsible>
 
       {/* Desktop Filters - Always Visible */}
-      <Card className="hidden md:block">
-        <CardContent className="pt-6">
-          <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center justify-between">
+      <Card className="hidden md:block bg-gray-50/50 dark:bg-gray-800/50 border-0 shadow-sm dark:border dark:border-white/5">
+        <CardContent className="pt-6 pb-6">
+          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
             {/* Left Side: Search and Filters */}
-            <div className="flex flex-col sm:flex-row gap-2 flex-1 w-full lg:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3 flex-1 w-full lg:w-auto">
               <div className="relative flex-1 sm:max-w-xs">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
                   placeholder="Search members..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-9"
+                  className="pl-9 h-10 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-full sm:w-[140px] h-9">
+                <SelectTrigger className="w-full sm:w-[150px] h-10 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 shadow-sm">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -591,7 +625,7 @@ export default function AttendancePage() {
                 </SelectContent>
               </Select>
               <Select value={filterTimeSlot} onValueChange={setFilterTimeSlot}>
-                <SelectTrigger className="w-full sm:w-[140px] h-9">
+                <SelectTrigger className="w-full sm:w-[160px] h-10 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 shadow-sm">
                   <SelectValue placeholder="Time Slot" />
                 </SelectTrigger>
                 <SelectContent>
@@ -601,25 +635,43 @@ export default function AttendancePage() {
                   <SelectItem value="evening">Evening (4-10)</SelectItem>
                 </SelectContent>
               </Select>
-              <Input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full sm:w-auto h-9"
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full sm:w-auto h-10 justify-start text-left font-normal rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 shadow-sm"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && setSelectedDate(date)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Right Side: Member Count and View Toggle */}
-            <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
-              <span className="text-sm text-muted-foreground">
-                {filteredRecords.length} {filteredRecords.length === 1 ? 'member' : 'members'}
-              </span>
-              <div className="inline-flex rounded-lg border bg-background p-1 gap-1">
+            <div className="flex items-center gap-4 w-full lg:w-auto justify-between lg:justify-end">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {filteredRecords.length} {filteredRecords.length === 1 ? 'Member' : 'Members'} Checked In
+                </span>
+              </div>
+              <div className="inline-flex rounded-xl border-0 bg-white dark:bg-gray-700 shadow-sm p-1 gap-1">
                 <Button
                   variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("grid")}
-                  className="h-7 px-3 gap-1.5"
+                  className="h-8 px-3 gap-2 rounded-lg dark:text-gray-300"
                 >
                   <Grid3x3 className="h-4 w-4" />
                   <span className="text-xs hidden sm:inline">Grid</span>
@@ -628,7 +680,7 @@ export default function AttendancePage() {
                   variant={viewMode === "list" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("list")}
-                  className="h-7 px-3 gap-1.5"
+                  className="h-8 px-3 gap-2 rounded-lg dark:text-gray-300"
                 >
                   <List className="h-4 w-4" />
                   <span className="text-xs hidden sm:inline">List</span>
@@ -637,7 +689,7 @@ export default function AttendancePage() {
                   variant={viewMode === "compact" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("compact")}
-                  className="h-7 px-3 gap-1.5"
+                  className="h-8 px-3 gap-2 rounded-lg dark:text-gray-300"
                 >
                   <LayoutList className="h-4 w-4" />
                   <span className="text-xs hidden sm:inline">Compact</span>
@@ -696,54 +748,70 @@ export default function AttendancePage() {
           </Collapsible>
 
           {/* Desktop: Always Visible Stats */}
-          <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Today's Attendance</p>
-                  <div className="flex items-baseline gap-2">
-                    <p className="text-3xl font-bold">{attendanceStats.totalCheckedIn}</p>
-                    <p className="text-muted-foreground">of {attendanceStats.totalMembers}</p>
+          <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Today's Attendance Card */}
+            <Card className="gradient-green-subtle border-0 overflow-hidden relative transition-all duration-200 hover:shadow-md hover:-translate-y-1 dark:bg-gray-800/95 dark:border-t-2 dark:border-t-green-500 dark:border-0 dark:shadow-none">
+              <CardContent className="pt-8 pb-6 px-6">
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today's Attendance</p>
+                    <CheckCircle className="h-10 w-10 text-green-500/40 dark:text-green-500/20" />
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <p className="text-5xl font-bold text-gray-900 dark:text-gray-100">{attendanceStats.totalCheckedIn}</p>
+                    <p className="text-lg text-gray-500 dark:text-gray-400 font-medium">/ {attendanceStats.totalMembers}</p>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 font-medium">
                     {attendanceStats.percentage}% checked in today
                   </p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Total Check-ins</p>
-                  <p className="text-3xl font-bold">{attendanceStats.totalCheckedIn}</p>
-                  <p className="text-xs text-muted-foreground">
+            {/* Total Check-ins Card */}
+            <Card className="gradient-blue-subtle border-0 overflow-hidden relative transition-all duration-200 hover:shadow-md hover:-translate-y-1 dark:bg-gray-800/95 dark:border-t-2 dark:border-t-blue-500 dark:border-0 dark:shadow-none">
+              <CardContent className="pt-8 pb-6 px-6">
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Check-ins</p>
+                    <BarChart className="h-10 w-10 text-blue-500/40 dark:text-blue-500/20" />
+                  </div>
+                  <p className="text-5xl font-bold text-gray-900 dark:text-gray-100 mb-2">{attendanceStats.totalCheckedIn}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 font-medium">
                     {format(new Date(selectedDate), "MMM dd, yyyy")}
                   </p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Peak Hour</p>
-                  <p className="text-3xl font-bold">
+            {/* Peak Hour Card */}
+            <Card className="gradient-purple-subtle border-0 overflow-hidden relative transition-all duration-200 hover:shadow-md hover:-translate-y-1 dark:bg-gray-800/95 dark:border-t-2 dark:border-t-purple-500 dark:border-0 dark:shadow-none">
+              <CardContent className="pt-8 pb-6 px-6">
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Peak Hour</p>
+                    <Clock className="h-10 w-10 text-purple-500/40 dark:text-purple-500/20" />
+                  </div>
+                  <p className="text-5xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                     {attendanceStats.peakHour || "-"}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-gray-500 dark:text-gray-500 font-medium">
                     Most active time
                   </p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Avg Daily Attendance</p>
-                  <p className="text-3xl font-bold">{attendanceStats.totalCheckedIn}</p>
-                  <p className="text-xs text-muted-foreground">
+            {/* Avg Daily Attendance Card */}
+            <Card className="gradient-orange-subtle border-0 overflow-hidden relative transition-all duration-200 hover:shadow-md hover:-translate-y-1 dark:bg-gray-800/95 dark:border-t-2 dark:border-t-orange-500 dark:border-0 dark:shadow-none">
+              <CardContent className="pt-8 pb-6 px-6">
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Avg Daily Attendance</p>
+                    <TrendingUp className="h-10 w-10 text-orange-500/40 dark:text-orange-500/20" />
+                  </div>
+                  <p className="text-5xl font-bold text-gray-900 dark:text-gray-100 mb-2">{attendanceStats.totalCheckedIn}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 font-medium">
                     Based on today's data
                   </p>
                 </div>
@@ -778,77 +846,61 @@ export default function AttendancePage() {
         <>
           {/* Grid View */}
           {viewMode === "grid" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-in fade-in-50 duration-300">
-              {filteredRecords.map((record) => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 animate-in fade-in-50 duration-300 px-2">
+              {filteredRecords.map((record, index) => {
                 const membershipInfo = getMembershipInfo(record);
                 const isNew = newRecordIds.has(record.id);
+                const isActive = record.membershipStatus === "active";
 
                 return (
                   <Link href={`/dashboard/members/view/${record.userId}`} key={record.id}>
                     <Card
-                      className={`overflow-hidden border-2 transition-all duration-300 cursor-pointer hover:shadow-lg hover:scale-[1.02] ${getBorderColor(record.membershipStatus)} ${
-                        isNew ? "animate-pulse-glow" : ""
-                      }`}
+                      className={`group overflow-hidden transition-all duration-300 cursor-pointer rounded-[20px] ${
+                        isActive
+                          ? "bg-gradient-to-b from-white to-green-50/30 border-t-4 border-t-green-500 shadow-[0_2px_8px_rgba(0,0,0,0.08),0_0_1px_rgba(0,0,0,0.1),0_4px_20px_rgba(16,185,129,0.15)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.12),0_0_1px_rgba(0,0,0,0.1),0_8px_32px_rgba(16,185,129,0.2)] hover:-translate-y-2 dark:bg-gradient-to-b dark:from-gray-800 dark:to-gray-800/95 dark:border-t-green-500 dark:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                          : "bg-white opacity-60 border-2 border-dashed border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] hover:-translate-y-1 dark:bg-gray-800 dark:opacity-50 dark:border-gray-700"
+                      } ${isNew ? "animate-pulse-glow" : ""}`}
+                      style={{ animationDelay: `${index * 50}ms` }}
                     >
-                    <CardContent className="p-5">
-                      <div className="flex flex-col items-center text-center space-y-3">
-                        {/* Avatar */}
-                        <div className="relative">
-                          <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
-                            <AvatarImage src={record.profileImageUrl} alt={record.name} />
-                            <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
+                    <CardContent className="p-8">
+                      <div className="flex flex-col items-center text-center space-y-5">
+                        {/* Avatar with Enhanced Ring */}
+                        <div className="relative mb-2">
+                          <Avatar className={`h-28 w-28 border-4 border-white transition-all duration-300 group-hover:scale-105 ${
+                            isActive
+                              ? "shadow-[0_4px_12px_rgba(0,0,0,0.1),0_0_0_4px_rgba(16,185,129,0.4)] dark:border-gray-700 dark:shadow-[0_4px_12px_rgba(0,0,0,0.5),0_0_0_4px_rgba(16,185,129,0.5)]"
+                              : "grayscale-[60%] opacity-70 shadow-[0_4px_12px_rgba(0,0,0,0.08)] dark:border-gray-600/30"
+                          }`}>
+                            <AvatarImage src={record.profileImageUrl} alt={record.name} className={isActive ? "" : "grayscale-[60%]"} />
+                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-2xl">
                               {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
                             </AvatarFallback>
                           </Avatar>
                           {isNew && (
-                            <div className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full animate-ping" />
+                            <div className="absolute -top-1 -right-1 h-5 w-5 bg-green-500 rounded-full animate-ping" />
                           )}
                         </div>
 
                         {/* Name */}
                         <div className="w-full">
-                          <h3 className="font-bold text-base truncate">{record.name}</h3>
+                          <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 truncate mb-2">{record.name}</h3>
                         </div>
 
-                        {/* Membership Status Badge - Prominent */}
-                        {record.membershipStatus && (
-                          <Badge
-                            variant={
-                              record.membershipStatus === "active"
-                                ? "default"
-                                : record.membershipStatus === "expired"
-                                ? "destructive"
-                                : "secondary"
-                            }
-                            className="text-xs font-semibold px-3 py-1"
-                          >
-                            {record.membershipStatus.charAt(0).toUpperCase() + record.membershipStatus.slice(1)}
-                          </Badge>
-                        )}
-
-                        {/* Check-in Time */}
-                        <div className="w-full pt-2 border-t border-gray-200">
-                          <p className="text-xs text-muted-foreground">Checked in at</p>
-                          <p className="font-semibold text-sm">
+                        {/* Check-in Time - Hero Element */}
+                        <div className="w-full">
+                          <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
                             {format(new Date(record.checkInTime), "hh:mm a")}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {getRelativeTime(record.checkInTime)}
                           </p>
                         </div>
 
-                        {/* Check-out Time */}
-                        {record.checkOutTime && (
-                          <div className="w-full pt-2 border-t border-gray-200">
-                            <p className="text-xs text-muted-foreground">Checked out at</p>
-                            <p className="font-semibold text-sm">
-                              {format(new Date(record.checkOutTime), "hh:mm a")}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Device ID Badge (removed ESSL tag) */}
+                        {/* Device ID Badge */}
                         {record.biometricDeviceId && (
-                          <div className="pt-2">
-                            <Badge variant="outline" className="text-xs">
-                              ID: {record.biometricDeviceId}
+                          <div className="mt-2">
+                            <Badge variant="outline" className="text-[10px] text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 px-2 py-0.5">
+                              #{record.biometricDeviceId}
                             </Badge>
                           </div>
                         )}
