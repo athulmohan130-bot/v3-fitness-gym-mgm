@@ -4,6 +4,8 @@ export interface NotificationConfig {
   playSound: boolean;
   playVoice: boolean;
   volume: number; // 0 to 1
+  voiceRate?: number; // 0.1 to 2.0, default 0.95
+  voicePitch?: number; // 0 to 2.0, default 1.05
 }
 
 export type MembershipAlertType =
@@ -24,6 +26,8 @@ export const defaultNotificationConfig: NotificationConfig = {
   playSound: true,
   playVoice: true,
   volume: 0.7,
+  voiceRate: 0.95,
+  voicePitch: 1.05,
 };
 
 // Sound effects using Web Audio API
@@ -136,8 +140,45 @@ class VoiceAnnouncer {
       // Wait for voices to load
       const loadVoices = () => {
         const voices = this.synth?.getVoices() || [];
-        // Prefer English voices
+
+        // Prefer natural-sounding voices in order of preference
+        // Priority: Premium/Natural voices > Local voices > Any English voice
+        const preferredVoiceNames = [
+          'Samantha', // macOS natural voice
+          'Google US English', // Google's natural voice
+          'Microsoft Aria Online', // Microsoft natural voice
+          'Alex', // macOS voice
+          'Google UK English Female',
+          'Microsoft Zira', // Windows voice
+          'Karen', // macOS voice
+          'Moira', // macOS voice
+        ];
+
+        // First, try to find a preferred natural voice
+        for (const name of preferredVoiceNames) {
+          const voice = voices.find(v => v.name.includes(name));
+          if (voice) {
+            this.voice = voice;
+            console.log('Selected voice:', voice.name);
+            return;
+          }
+        }
+
+        // Fallback: Find any English voice that's marked as local (usually higher quality)
+        const localEnglishVoice = voices.find(v =>
+          v.lang.startsWith('en') && v.localService
+        );
+        if (localEnglishVoice) {
+          this.voice = localEnglishVoice;
+          console.log('Selected local English voice:', localEnglishVoice.name);
+          return;
+        }
+
+        // Last resort: Any English voice
         this.voice = voices.find(v => v.lang.startsWith('en')) || voices[0] || null;
+        if (this.voice) {
+          console.log('Selected fallback voice:', this.voice.name);
+        }
       };
 
       if (this.synth.getVoices().length > 0) {
@@ -148,7 +189,7 @@ class VoiceAnnouncer {
     }
   }
 
-  speak(text: string, volume: number = 0.7) {
+  speak(text: string, volume: number = 0.7, rate: number = 0.95, pitch: number = 1.05) {
     if (!this.synth) {
       console.warn('Speech synthesis not supported');
       return;
@@ -159,8 +200,8 @@ class VoiceAnnouncer {
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.volume = volume;
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
+    utterance.rate = rate;
+    utterance.pitch = pitch;
 
     if (this.voice) {
       utterance.voice = this.voice;
@@ -240,7 +281,12 @@ export class AttendanceNotificationHandler {
       const message = this.getMessage(notification);
       // Delay voice slightly so it doesn't overlap with sound
       setTimeout(() => {
-        this.voice.speak(message, this.config.volume);
+        this.voice.speak(
+          message,
+          this.config.volume,
+          this.config.voiceRate ?? 0.95,
+          this.config.voicePitch ?? 1.05
+        );
       }, 300);
     }
   }

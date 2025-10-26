@@ -33,7 +33,7 @@ export default function NewMemberPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Breadcrumbs */}
       <Breadcrumb>
         <BreadcrumbList>
@@ -58,8 +58,8 @@ export default function NewMemberPage() {
       </Breadcrumb>
 
       <div>
-        <h1 className="text-3xl font-bold font-headline tracking-tight">Add New Member</h1>
-        <p className="text-muted-foreground">Fill out the form below to create a new member profile.</p>
+        <h1 className="text-2xl md:text-3xl font-bold font-headline tracking-tight">Add New Member</h1>
+        <p className="text-sm md:text-base text-muted-foreground mt-1">Fill out the form below to create a new member profile.</p>
       </div>
       <NewMemberForm plans={plans || []} />
     </div>

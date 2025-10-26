@@ -62,6 +62,8 @@ export default function AttendancePage() {
     playSound: true,
     playVoice: true,
     volume: 0.7,
+    voiceRate: 0.95,
+    voicePitch: 1.05,
   });
   const notificationHandlerRef = useRef<AttendanceNotificationHandler | null>(null);
 
@@ -330,18 +332,139 @@ export default function AttendancePage() {
                 />
               </div>
 
-              <div className="pt-2 border-t">
+              {/* Voice Controls */}
+              {notificationConfig.playVoice && (
+                <>
+                  <div className="space-y-2 pt-2 border-t">
+                    <Label htmlFor="voice-speed" className="text-xs font-semibold">
+                      Voice Settings
+                    </Label>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="voice-speed" className="text-xs">
+                          Speech Speed: {((notificationConfig.voiceRate ?? 0.95) * 100).toFixed(0)}%
+                        </Label>
+                      </div>
+                      <Slider
+                        id="voice-speed"
+                        min={50}
+                        max={200}
+                        step={5}
+                        value={[(notificationConfig.voiceRate ?? 0.95) * 100]}
+                        onValueChange={(value) =>
+                          setNotificationConfig(prev => ({ ...prev, voiceRate: value[0] / 100 }))
+                        }
+                      />
+                      <p className="text-[10px] text-muted-foreground">
+                        {(notificationConfig.voiceRate ?? 0.95) < 0.8 ? "Very Slow" :
+                         (notificationConfig.voiceRate ?? 0.95) < 0.95 ? "Slow" :
+                         (notificationConfig.voiceRate ?? 0.95) < 1.1 ? "Normal" :
+                         (notificationConfig.voiceRate ?? 0.95) < 1.3 ? "Fast" : "Very Fast"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="voice-pitch" className="text-xs">
+                          Voice Pitch: {((notificationConfig.voicePitch ?? 1.05) * 100).toFixed(0)}%
+                        </Label>
+                      </div>
+                      <Slider
+                        id="voice-pitch"
+                        min={75}
+                        max={150}
+                        step={5}
+                        value={[(notificationConfig.voicePitch ?? 1.05) * 100]}
+                        onValueChange={(value) =>
+                          setNotificationConfig(prev => ({ ...prev, voicePitch: value[0] / 100 }))
+                        }
+                      />
+                      <p className="text-[10px] text-muted-foreground">
+                        {(notificationConfig.voicePitch ?? 1.05) < 0.9 ? "Very Low" :
+                         (notificationConfig.voicePitch ?? 1.05) < 1.0 ? "Low" :
+                         (notificationConfig.voicePitch ?? 1.05) < 1.15 ? "Normal" :
+                         (notificationConfig.voicePitch ?? 1.05) < 1.3 ? "High" : "Very High"}
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <div className="pt-2 border-t space-y-2">
+                <Label className="text-xs font-semibold">Test Voice</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (notificationHandlerRef.current) {
+                        notificationHandlerRef.current.notify({
+                          memberName: 'John',
+                          alertType: 'active'
+                        });
+                      }
+                    }}
+                  >
+                    Active
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (notificationHandlerRef.current) {
+                        notificationHandlerRef.current.notify({
+                          memberName: 'Sarah',
+                          alertType: 'expiring-soon',
+                          daysRemaining: 3
+                        });
+                      }
+                    }}
+                  >
+                    Expiring
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (notificationHandlerRef.current) {
+                        notificationHandlerRef.current.notify({
+                          memberName: 'Mike',
+                          alertType: 'expired'
+                        });
+                      }
+                    }}
+                  >
+                    Expired
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (notificationHandlerRef.current) {
+                        notificationHandlerRef.current.notify({
+                          memberName: 'Emma',
+                          alertType: 'pending'
+                        });
+                      }
+                    }}
+                  >
+                    Pending
+                  </Button>
+                </div>
                 <Button
-                  variant="outline"
+                  variant="destructive"
                   size="sm"
                   className="w-full"
                   onClick={() => {
-                    if (notificationHandlerRef.current) {
-                      notificationHandlerRef.current.test();
+                    // Stop speech synthesis
+                    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+                      window.speechSynthesis.cancel();
                     }
                   }}
                 >
-                  Test Notifications
+                  Stop Speech
                 </Button>
               </div>
             </div>

@@ -1,5 +1,4 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
   "/dashboard/attendance/page": "app/dashboard/attendance/page.js",
   "/dashboard/billing/page": "app/dashboard/billing/page.js",
   "/dashboard/members/new/page": "app/dashboard/members/new/page.js",
@@ -7,6 +6,5 @@
   "/dashboard/members/view/[id]/page": "app/dashboard/members/view/[id]/page.js",
   "/dashboard/overview/page": "app/dashboard/overview/page.js",
   "/dashboard/plans/page": "app/dashboard/plans/page.js",
-  "/dashboard/settings/page": "app/dashboard/settings/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js"
+  "/dashboard/settings/page": "app/dashboard/settings/page.js"
 }

@@ -110,7 +110,7 @@ export default function SettingsPage() {
 
       <Tabs defaultValue="gym" className="space-y-4 sm:space-y-6">
         <div className="w-full overflow-x-auto overflow-y-visible sm:overflow-visible scrollbar-hide">
-          <TabsList className="inline-flex sm:grid sm:w-full grid-cols-4 lg:grid-cols-7 gap-1 min-w-max sm:min-w-0">
+          <TabsList className="inline-flex sm:grid sm:w-full grid-cols-4 lg:grid-cols-7 gap-1 w-max sm:w-full justify-start sm:justify-center">
             <TabsTrigger value="gym" className="whitespace-nowrap flex-shrink-0">
               <Building2 className="h-4 w-4 mr-1.5 hidden sm:inline" />
               Gym Info
