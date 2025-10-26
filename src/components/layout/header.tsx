@@ -15,10 +15,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, LogOut, User, PlusCircle, X, Search } from "lucide-react";
+import { Bell, LogOut, User, PlusCircle, X, Search, Trash2, CheckCheck } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useNotifications } from "@/lib/notification-provider";
+
+// Helper function to format timestamp
+function formatTimestamp(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
+}
 
 // Page titles mapping
 const pageTitles: Record<string, string> = {
@@ -28,11 +44,13 @@ const pageTitles: Record<string, string> = {
   "/dashboard/attendance": "Attendance",
   "/dashboard/plans": "Membership Plans",
   "/dashboard/billing": "Billing",
+  "/dashboard/activity": "Activity Log",
   "/dashboard/settings": "Settings",
 };
 
 export function AppHeader() {
   const { user, logout, loading } = useAuth();
+  const { notifications, unreadCount, markAsRead, clearNotification, clearAllNotifications } = useNotifications();
   const [search, setSearch] = useState("");
   const pathname = usePathname();
   const hideMembersControls = pathname.startsWith("/dashboard/members");
@@ -49,12 +67,6 @@ export function AppHeader() {
     // Default
     return "Dashboard";
   };
-
-  // Example notifications (replace with your API/Firestore)
-  const [notifications] = useState([
-    { id: 1, message: "New member added successfully." },
-    { id: 2, message: "Your subscription will expire in 3 days." },
-  ]);
 
   const [isMobileNotifOpen, setIsMobileNotifOpen] = useState(false);
 
@@ -154,29 +166,102 @@ export function AppHeader() {
                 className="relative rounded-full hover:bg-muted/70"
               >
                 <Bell className="h-5 w-5 text-muted-foreground" />
-                {notifications.length > 0 && (
-                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-medium">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
                 )}
               </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end" className="w-72">
-              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-              <DropdownMenuSeparator />
+            <DropdownMenuContent align="end" className="w-96 max-h-[500px] overflow-y-auto p-0">
+              <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-background border-b z-10">
+                <DropdownMenuLabel className="p-0 m-0">Notifications</DropdownMenuLabel>
+                {notifications.length > 0 && (
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        notifications.forEach(n => !n.read && markAsRead(n.id));
+                      }}
+                    >
+                      <CheckCheck className="h-3 w-3 mr-1" />
+                      Mark all
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        clearAllNotifications();
+                      }}
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      Clear
+                    </Button>
+                  </div>
+                )}
+              </div>
 
               {notifications.length === 0 ? (
-                <div className="p-4 text-sm text-muted-foreground text-center">
-                  No new notifications
+                <div className="p-8 text-sm text-muted-foreground text-center">
+                  <Bell className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                  <p>No notifications</p>
                 </div>
               ) : (
-                notifications.map((note) => (
-                  <DropdownMenuItem
-                    key={note.id}
-                    className="text-sm py-2 whitespace-normal"
-                  >
-                    {note.message}
-                  </DropdownMenuItem>
-                ))
+                <div className="divide-y">
+                  {notifications.map((notif) => (
+                    <div
+                      key={notif.id}
+                      className={`group relative px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer ${
+                        !notif.read ? "bg-primary/5" : ""
+                      }`}
+                      onClick={() => !notif.read && markAsRead(notif.id)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`mt-1 h-2 w-2 rounded-full flex-shrink-0 ${
+                            notif.type === "success"
+                              ? "bg-green-500"
+                              : notif.type === "error"
+                              ? "bg-red-500"
+                              : notif.type === "warning"
+                              ? "bg-yellow-500"
+                              : "bg-blue-500"
+                          }`}
+                        />
+                        <div className="flex-1 min-w-0">
+                          {notif.title && (
+                            <p className="text-sm font-medium mb-1">
+                              {notif.title}
+                            </p>
+                          )}
+                          <p className="text-sm text-muted-foreground break-words">
+                            {notif.message}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {formatTimestamp(notif.timestamp)}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            clearNotification(notif.id);
+                          }}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -192,8 +277,10 @@ export function AppHeader() {
             aria-label="Open notifications"
           >
             <Bell className="h-5 w-5 text-muted-foreground" />
-            {notifications.length > 0 && (
-              <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-medium">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
             )}
           </Button>
         </div>
@@ -214,31 +301,85 @@ export function AppHeader() {
               aria-modal="true"
               className="fixed inset-x-0 top-0 z-50 max-h-[90vh] overflow-auto bg-background border-b border-border shadow-lg"
             >
-              <div className="flex items-center justify-between p-4">
-                <h3 className="text-sm font-medium">Notifications</h3>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsMobileNotifOpen(false)}
-                  aria-label="Close notifications"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
+              <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-background">
+                <h3 className="text-base font-medium">Notifications</h3>
+                <div className="flex items-center gap-2">
+                  {notifications.length > 0 && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-xs"
+                        onClick={() => clearAllNotifications()}
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Clear
+                      </Button>
+                    </>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsMobileNotifOpen(false)}
+                    aria-label="Close notifications"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
               </div>
 
-              <div className="p-4">
+              <div>
                 {notifications.length === 0 ? (
-                  <div className="text-sm text-muted-foreground text-center p-6">
-                    No new notifications
+                  <div className="text-sm text-muted-foreground text-center p-12">
+                    <Bell className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                    <p>No notifications</p>
                   </div>
                 ) : (
-                  <div className="flex flex-col divide-y divide-border rounded-md overflow-hidden">
-                    {notifications.map((note) => (
+                  <div className="divide-y">
+                    {notifications.map((notif) => (
                       <div
-                        key={note.id}
-                        className="px-4 py-3 text-sm whitespace-normal"
+                        key={notif.id}
+                        className={`group px-4 py-3 ${
+                          !notif.read ? "bg-primary/5" : ""
+                        }`}
                       >
-                        {note.message}
+                        <div className="flex items-start gap-3">
+                          <div
+                            className={`mt-1 h-2 w-2 rounded-full flex-shrink-0 ${
+                              notif.type === "success"
+                                ? "bg-green-500"
+                                : notif.type === "error"
+                                ? "bg-red-500"
+                                : notif.type === "warning"
+                                ? "bg-yellow-500"
+                                : "bg-blue-500"
+                            }`}
+                          />
+                          <div className="flex-1 min-w-0">
+                            {notif.title && (
+                              <p className="text-sm font-medium mb-1">
+                                {notif.title}
+                              </p>
+                            )}
+                            <p className="text-sm text-muted-foreground break-words">
+                              {notif.message}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {formatTimestamp(notif.timestamp)}
+                            </p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 flex-shrink-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              clearNotification(notif.id);
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>

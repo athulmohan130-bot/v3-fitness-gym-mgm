@@ -4,21 +4,14 @@ import { ColumnDef } from "@tanstack/react-table";
 import type { GymUser } from "@/lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, RefreshCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import Link from "next/link";
 import { format, differenceInDays, isBefore, isAfter } from "date-fns";
 import { RenewPlanDialog } from "./renew-plan-dialogue";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
+import { useNotificationToast } from "@/hooks/use-notification-toast";
+import { logMemberDeleted } from "@/lib/activity-logger";
+import { useAuth } from "@/lib/auth-provider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { deleteDocumentNonBlocking, useFirestore } from "@/firebase";
 import { useQueryClient } from "@tanstack/react-query";
@@ -81,11 +74,12 @@ const MembershipStatusBadge = ({ user }: { user: UserWithPlan }) => {
   );
 };
 
-const DeleteMemberDialog = ({ user }: { user: UserWithPlan }) => {
-  const { toast } = useToast();
+const DeleteMemberButton = ({ user }: { user: UserWithPlan }) => {
+  const { toast } = useNotificationToast();
   const firestore = useFirestore();
   const storage = getStorage();
   const queryClient = useQueryClient();
+  const { user: adminUser } = useAuth();
   const [open, setOpen] = React.useState(false);
 
   const handleDelete = async () => {
@@ -135,8 +129,20 @@ const DeleteMemberDialog = ({ user }: { user: UserWithPlan }) => {
         description: `${user.name} has been removed from the system.`,
       });
 
+      // Log activity
+      if (adminUser) {
+        await logMemberDeleted(firestore, {
+          userId: user.id,
+          userName: user.name,
+          userEmail: user.email,
+          performedBy: adminUser.id,
+          performedByName: adminUser.name || adminUser.email || "Admin",
+        });
+      }
+
       queryClient.invalidateQueries({ queryKey: ["processedMembers"] });
       queryClient.invalidateQueries({ queryKey: ["userSummary"] });
+      queryClient.invalidateQueries({ queryKey: ["activityLogs"] });
 
       // Close the dialog
       setOpen(false);
@@ -152,34 +158,36 @@ const DeleteMemberDialog = ({ user }: { user: UserWithPlan }) => {
   };
 
   return (
-    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-      <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogTrigger asChild>
-          <button className="w-full text-left">
-            <span className="text-destructive text-sm">Delete member</span>
-          </button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              member account for <span className="font-bold">{user.name}</span>{" "}
-              and remove their data from our servers.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-            >
-              Yes, delete member
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </DropdownMenuItem>
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the
+            member account for <span className="font-bold">{user.name}</span>{" "}
+            and remove their data from our servers.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+          >
+            Yes, delete member
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 
@@ -303,55 +311,44 @@ export const getColumns = (
   // },
   {
     id: "actions",
+    header: "Actions",
     cell: ({ row }) => {
       const user = row.original;
-      const membershipEnd = user.membershipEnd
-        ? new Date(user.membershipEnd)
-        : null;
-      const isExpired = membershipEnd && membershipEnd < new Date();
 
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(user.id)}
-            >
-              Copy member ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href={`/dashboard/members/view/${user.id}`}>
-                View details
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={`/dashboard/members/edit/${user.id}`}>
-                Edit member
-              </Link>
-            </DropdownMenuItem>
-            {/* {isExpired && ( */}
-              <DropdownMenuItem
-                onClick={() => {
-                  setSelectedMember(user);
-                  setRenewOpen(true);
-                }}
-              >
-                <span className="flex items-center gap-2 font-medium text-yellow-700 hover:text-white">
-                  Renew Plan
-                </span>
-              </DropdownMenuItem>
-            {/* )} */}
-            <DropdownMenuSeparator />
-            <DeleteMemberDialog user={user} />
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                  onClick={() => {
+                    setSelectedMember(user);
+                    setRenewOpen(true);
+                  }}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Renew Plan</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DeleteMemberButton user={user} />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Delete Member</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       );
     },
   },

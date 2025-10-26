@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarDays } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useNotificationToast } from "@/hooks/use-notification-toast";
 import { MembershipPlan } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
@@ -33,9 +33,12 @@ import { useFirestore } from "@/firebase";
 import { doc, getDoc, serverTimestamp, updateDoc, collection, addDoc, runTransaction, increment } from "firebase/firestore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
+import { logMembershipRenewed } from "@/lib/activity-logger";
+import { useAuth } from "@/lib/auth-provider";
 
 interface RenewPlanDialogProps {
   memberId: string;
+  memberName: string;
   currentEndDate: string;
   availablePlans: MembershipPlan[];
   open: boolean;
@@ -45,6 +48,7 @@ interface RenewPlanDialogProps {
 
 export function RenewPlanDialog({
   memberId,
+  memberName,
   currentEndDate,
   availablePlans,
   open,
@@ -59,9 +63,10 @@ export function RenewPlanDialog({
   );
   const [paidAmount, setPaidAmount] = React.useState<number | undefined>();
   const [paymentMode, setPaymentMode] = React.useState<string>("cash");
-  const { toast } = useToast();
+  const { toast } = useNotificationToast();
   const firestore = useFirestore();
   const queryClient = useQueryClient();
+  const { user: adminUser } = useAuth();
 
   const { mutate: renewMembership, isPending } = useMutation({
     mutationFn: async ({ plan, start, end, amount, mode }: { plan: MembershipPlan, start: Date, end: Date, amount?: number, mode: string }) => {
@@ -91,8 +96,25 @@ export function RenewPlanDialog({
         const newHistoryRef = doc(historyCollectionRef);
         transaction.set(newHistoryRef, newHistoryEntry);
 
-        // 2. Revenue Summary Write
+        // 2. Create payment record (for payment history)
         const paidAmount = amount || 0;
+        if (paidAmount > 0) {
+          const paymentsRef = collection(firestore, "payments");
+          const newPaymentRef = doc(paymentsRef);
+          transaction.set(newPaymentRef, {
+            userId: memberId,
+            planId: plan.id,
+            amount: paidAmount,
+            paymentDate: serverTimestamp(),
+            mode: mode.toUpperCase() as "UPI" | "CARD" | "CASH",
+            status: "success",
+            month: format(start, 'yyyy-MM'),
+            transactionId: `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+            handledBy: adminUser?.name || adminUser?.email || "Admin",
+          });
+        }
+
+        // 3. Revenue Summary Write
         if (paidAmount > 0) {
           const monthKey = format(start, 'yyyy-MM');
           if (!revenueSummaryDoc.exists()) {
@@ -111,12 +133,29 @@ export function RenewPlanDialog({
         }
       });
     },
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       toast({
         title: "Membership Renewed 🎉",
-        description: `Plan: ${variables.plan.name}, valid till ${format(variables.end, "PPP")}`,
+        description: `${memberName}'s membership has been renewed with ${variables.plan.name} plan, valid till ${format(variables.end, "PPP")}`,
       });
+      
+      // Log activity
+      if (firestore && adminUser) {
+        await logMembershipRenewed(firestore, {
+          userId: memberId,
+          userName: memberName,
+          userEmail: "", // We'll need to get this from the member data
+          planName: variables.plan.name,
+          amount: variables.amount || variables.plan.price,
+          validTill: format(variables.end, "PPP"),
+          performedBy: adminUser.id,
+          performedByName: adminUser.name || adminUser.email || "Admin",
+        });
+      }
+      
       queryClient.invalidateQueries({ queryKey: ["revenueSummary"] });
+      queryClient.invalidateQueries({ queryKey: ["activityLogs"] });
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
       onSuccess(); // This will now reliably trigger invalidation
       onOpenChange(false);
     },

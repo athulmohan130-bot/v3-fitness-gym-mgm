@@ -32,7 +32,7 @@ import Link from "next/link";
 import { MemberDetailSkeleton } from "@/components/ui/loading-skeletons";
 import { useEffect, useState } from "react";
 import { differenceInDays, format } from "date-fns";
-import { useToast } from "@/hooks/use-toast";
+import { useNotificationToast } from "@/hooks/use-notification-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { getStorage, ref, deleteObject } from "firebase/storage";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
@@ -46,7 +46,7 @@ export default function ViewMemberPage() {
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [planToDelete, setPlanToDelete] = useState<string | null>(null);
-  const { toast } = useToast();
+  const { toast } = useNotificationToast();
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [selectedHistoryForPayment, setSelectedHistoryForPayment] = useState<any>(null);
   const queryClient = useQueryClient();
@@ -82,7 +82,25 @@ export default function ViewMemberPage() {
   }) || [];
 
   // Use the first active membership (most recently created) or fall back to latest
-  const activeMembership = activeMemberships[0] || membershipHistory?.[0] || null;
+  const currentMembership = activeMemberships[0] || membershipHistory?.[0] || null;
+  
+  // Find the actual last expiry date by checking for future/consecutive plans
+  const getEffectiveExpiryDate = () => {
+    if (!membershipHistory || membershipHistory.length === 0) return null;
+    
+    // Get all plans sorted by end date descending
+    const sortedPlans = [...membershipHistory].sort((a, b) => {
+      const endA = new Date(a.membershipEnd);
+      const endB = new Date(b.membershipEnd);
+      return endB.getTime() - endA.getTime();
+    });
+    
+    // Return the latest end date
+    return sortedPlans[0];
+  };
+  
+  // Use the plan with the latest expiry for display purposes
+  const activeMembership = getEffectiveExpiryDate() || currentMembership;
 
   const handlePaymentUpdate = async (historyId: string, amount: number) => {
     if (!firestore || !id) return;
@@ -232,6 +250,30 @@ export default function ViewMemberPage() {
     setIsDeleteDialogOpen(true);
   };
 
+  const handleUpdateMember = async (updates: Partial<GymUser>) => {
+    if (!firestore || !id) return;
+
+    try {
+      const memberRef = doc(firestore, "users", id);
+      await updateDoc(memberRef, updates);
+
+      toast({
+        title: "Success",
+        description: "Member details updated successfully!",
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["users", id] });
+    } catch (error) {
+      console.error("Error updating member:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update member details.",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   // const planRef = useMemoFirebase(() => {
   //   if (!firestore || !member) return null;
   //   return doc(firestore, "membershipPlans", member.membershipPlanId);
@@ -288,8 +330,8 @@ export default function ViewMemberPage() {
             Member Profile
           </h1>
           <p className="text-muted-foreground">
-            Read-only view of{" "}
-            <span className="font-semibold">{member.name}</span>'s details.
+            Viewing{" "}
+            <span className="font-semibold">{member.name}</span>'s details
           </p>
         </div>
       </div>
@@ -304,6 +346,7 @@ export default function ViewMemberPage() {
         setPaymentOpen={setPaymentOpen}
         selectedHistoryForPayment={selectedHistoryForPayment}
         setSelectedHistoryForPayment={setSelectedHistoryForPayment}
+        onUpdateMember={handleUpdateMember}
       />
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>

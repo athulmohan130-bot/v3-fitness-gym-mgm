@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/hooks/use-toast";
+import { useNotificationToast } from "@/hooks/use-notification-toast";
 import { Loader2, Save, X } from "lucide-react";
 import { MembershipPlan } from "@/lib/types";
 import { planSchema, PlanFormData } from "@/lib/validators/plan";
@@ -37,9 +37,11 @@ interface EditPlanFormProps {
 }
 
 export function EditPlanForm({ plan }: EditPlanFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const { toast } = useNotificationToast();
   const router = useRouter();
   const firestore = useFirestore();
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,

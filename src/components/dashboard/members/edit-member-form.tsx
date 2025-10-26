@@ -41,7 +41,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { useToast } from "@/hooks/use-toast";
+import { useNotificationToast } from "@/hooks/use-notification-toast";
+import { logMemberUpdated } from "@/lib/activity-logger";
+import { useAuth } from "@/lib/auth-provider";
 import { useRouter } from "next/navigation";
 import type { MembershipPlan, GymUser, latestPlan } from "@/lib/types";
 import {
@@ -92,11 +94,12 @@ interface EditMemberFormProps {
 }
 
 export function EditMemberForm({ plans, member }: EditMemberFormProps) {
-  const { toast } = useToast();
+  const { toast } = useNotificationToast();
   const router = useRouter();
   const firestore = useFirestore();
   const storage = getStorage();
   const queryClient = useQueryClient();
+  const { user: adminUser } = useAuth();
 
   const placeholderImageUrl = "https://picsum.photos/seed/defaultuser/400/225";
   const initialProfilePicture = member.profileImageUrl || placeholderImageUrl;
@@ -306,14 +309,27 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
 
       return updateDoc(memberDocRef, updatedUserData);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       toast({
         title: "Member Updated Successfully",
         description: `${variables.name}'s profile has been updated.`,
       });
+      
+      // Log activity
+      if (firestore && adminUser) {
+        await logMemberUpdated(firestore, {
+          userId: member.id,
+          userName: variables.name,
+          userEmail: variables.email,
+          performedBy: adminUser.id,
+          performedByName: adminUser.name || adminUser.email || "Admin",
+        });
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['users'] });
       queryClient.invalidateQueries({ queryKey: ['processedMembers'] });
       queryClient.invalidateQueries({ queryKey: ['userSummary'] });
+      queryClient.invalidateQueries({ queryKey: ['activityLogs'] });
       router.push("/dashboard/members");
     },
     onError: (error) => {

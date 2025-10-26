@@ -97,7 +97,8 @@ export default function MembersPage() {
           // Get membership status by checking ALL history entries
           const membershipStatus = getMembershipStatus(historySnap.docs);
 
-          // For display purposes, find the currently active plan or the latest one
+          // For display purposes, find the plan with the latest end date
+          // This ensures we show the actual expiry date considering future plans
           const now = new Date();
           const activePlan = historySnap.docs.find(doc => {
             const data = doc.data();
@@ -107,10 +108,23 @@ export default function MembersPage() {
             return now >= start && now <= end;
           });
 
-          // If no active plan, use the latest one (could be future or expired)
-          const displayPlan = activePlan || historySnap.docs[0];
+          // Find the plan with the latest expiry date (could be current, future, or past)
+          const planWithLatestExpiry = historySnap.docs.reduce((latest, current) => {
+            if (!latest) return current;
+            const latestData = latest.data();
+            const currentData = current.data();
+            const latestEnd = new Date(latestData?.membershipEnd || 0);
+            const currentEnd = new Date(currentData?.membershipEnd || 0);
+            return currentEnd > latestEnd ? current : latest;
+          }, historySnap.docs[0]);
+
+          // Use the plan with latest expiry for display
+          const displayPlan = planWithLatestExpiry;
           const planData = displayPlan?.data();
-          const startDate = safeParseDate(planData?.membershipStart);
+          
+          // For start date, use the active plan's start if available, otherwise use latest plan's start
+          const activePlanData = activePlan?.data();
+          const startDate = safeParseDate(activePlanData?.membershipStart || planData?.membershipStart);
           const endDate = safeParseDate(planData?.membershipEnd);
 
           return {
@@ -233,7 +247,7 @@ export default function MembersPage() {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold font-headline tracking-tight">Members</h1>
-          <p className="text-sm text-muted-foreground hidden sm:block">Manage all members of GymFlex.</p>
+          <p className="text-sm text-muted-foreground hidden sm:block">Manage all members of V3 Fitness.</p>
         </div>
         <Button asChild disabled={showSkeleton} className="w-full sm:w-auto">
           <Link href="/dashboard/members/new">
@@ -338,6 +352,7 @@ export default function MembersPage() {
       {selectedMember && plansData && (
         <RenewPlanDialog
           memberId={selectedMember.id}
+          memberName={selectedMember.name}
           currentEndDate={selectedMember.membershipEnd}
           availablePlans={plansData}
           open={renewOpen}

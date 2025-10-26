@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -9,11 +8,12 @@ import {
   HeartPulse,
   Dumbbell,
   Settings,
-  CreditCard,
+  Wallet,
   LogOut,
   ChevronLeft,
   ChevronRight,
   Loader2,
+  Activity,
 } from "lucide-react";
 
 import {
@@ -24,6 +24,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/lib/auth-provider";
 import { useNavigationLoading } from "@/hooks/use-navigation-loading";
@@ -64,8 +65,14 @@ const menuGroups = [
       {
         href: "/dashboard/billing",
         label: "Billing",
-        icon: CreditCard,
+        icon: Wallet,
         roles: ["admin"],
+      },
+      {
+        href: "/dashboard/activity",
+        label: "Activity Log",
+        icon: Activity,
+        roles: ["admin", "trainer"],
       },
       {
         href: "/dashboard/settings",
@@ -82,7 +89,8 @@ export function AppSidebar() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const userRole = user?.role || "member";
-  const [collapsed, setCollapsed] = useState(false);
+  const { state, toggleSidebar, setOpenMobile, isMobile } = useSidebar();
+  const collapsed = state === "collapsed";
   const { isNavigating, targetPath, startNavigation } = useNavigationLoading();
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -90,15 +98,18 @@ export function AppSidebar() {
       e.preventDefault();
       startNavigation(href);
       router.push(href);
+      
+      // Auto-close mobile sidebar after navigation
+      if (isMobile) {
+        setOpenMobile(false);
+      }
     }
   };
 
   return (
     <Sidebar
-      className={`hidden lg:flex lg:flex-col bg-card/50 backdrop-blur-sm text-foreground border-r border-border/50 font-sans shadow-sm
-      transition-[width] duration-300 ease-in-out ${
-        collapsed ? "w-16" : "w-64"
-      }`}
+      collapsible="icon"
+      className="hidden lg:flex lg:flex-col bg-card/50 backdrop-blur-sm text-foreground border-r border-border/50 font-sans shadow-sm"
     >
       {/* --- Header --- */}
       {/* --- Header --- */}
@@ -133,13 +144,13 @@ export function AppSidebar() {
 
     {/* Logo Text */}
     <span
-      className={`transition-all duration-300 ease-in-out transform origin-left ${
+      className={`whitespace-nowrap transition-all duration-300 ease-in-out transform origin-left font-semibold text-lg ${
         collapsed
           ? "opacity-0 scale-95 w-0 overflow-hidden"
           : "opacity-100 scale-100 w-auto"
       }`}
     >
-      V3Fitness
+      V3 Fitness
     </span>
   </Link>
 </SidebarHeader>
@@ -202,15 +213,16 @@ export function AppSidebar() {
       {/* --- Footer (Collapse + Logout) --- */}
       <SidebarFooter className="border-t border-border px-3 py-3 w-full">
         <div
-          className={`flex items-center justify-between ${
-            collapsed ? "flex-col gap-2" : "flex-row"
+          className={`flex items-center ${
+            collapsed ? "flex-col gap-2 justify-center" : "flex-row justify-between"
           }`}
         >
           {/* Logout Button */}
           <button
             onClick={logout}
-            className={`flex items-center gap-2 rounded-lg px-3 py-2 w-full justify-start 
-        text-destructive hover:bg-destructive/10 hover:text-destructive transition-all duration-200`}
+            className={`flex items-center gap-2 rounded-lg transition-all duration-200
+        text-destructive hover:bg-destructive/10 hover:text-destructive
+        ${collapsed ? "w-10 h-10 justify-center p-2" : "px-3 py-2 w-full justify-start"}`}
             aria-label="Logout"
             title="Logout"
           >
@@ -220,10 +232,10 @@ export function AppSidebar() {
 
           {/* Collapse Button */}
           <button
-            onClick={() => setCollapsed(!collapsed)}
-            className={`flex items-center justify-center rounded-lg p-2 transition-colors
-        ${collapsed ? "w-8 h-8" : "ml-2"}
-        hover:bg-muted text-muted-foreground hover:text-foreground`}
+            onClick={toggleSidebar}
+            className={`flex items-center justify-center rounded-lg transition-colors
+        hover:bg-muted text-muted-foreground hover:text-foreground
+        ${collapsed ? "w-10 h-10 p-2" : "w-10 h-10 p-2 ml-2"}`}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >

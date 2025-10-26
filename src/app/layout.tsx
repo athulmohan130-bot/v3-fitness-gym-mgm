@@ -8,6 +8,16 @@ import { QueryProvider } from "@/providers/query-client-provider";
 export const metadata: Metadata = {
   title: "V3 Fitness",
   description: "The ultimate gym management system.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "V3 Fitness",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  themeColor: "#3b82f6",
 };
 
 export default function RootLayout({
@@ -19,6 +29,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="UTF-8" />
+        <meta name="application-name" content="V3 Fitness" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="V3 Fitness" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
+        
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"

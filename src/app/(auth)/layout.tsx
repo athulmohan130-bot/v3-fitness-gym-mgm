@@ -35,7 +35,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           >
             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
           </svg>
-          V3Fitness
+          V3 Fitness
         </div>
         <div className="relative z-20 mt-auto">
           <blockquote className="space-y-2">

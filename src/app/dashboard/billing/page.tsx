@@ -24,7 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
 import { format } from "date-fns";
-import { Search, Download, DollarSign, CreditCard, Clock, XCircle, ExternalLink } from "lucide-react";
+import { Search, Download, IndianRupee, CreditCard, Clock, XCircle, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import Currency from "@/components/ui/currency";
 
@@ -46,6 +46,20 @@ interface GymUser {
   name: string;
   email: string;
   profileImageUrl?: string;
+}
+
+// Helper to safely parse payment date
+function parsePaymentDate(paymentDate: any): Date {
+  if (!paymentDate) return new Date();
+  
+  // Handle Firestore Timestamp
+  if (paymentDate.toDate && typeof paymentDate.toDate === 'function') {
+    return paymentDate.toDate();
+  }
+  
+  // Handle ISO string or number
+  const date = new Date(paymentDate);
+  return isNaN(date.getTime()) ? new Date() : date;
 }
 
 export default function PaymentHistoryPage() {
@@ -95,16 +109,14 @@ export default function PaymentHistoryPage() {
 
     let filtered = [...payments];
 
-    // Search by member name, transaction ID, or user ID
+    // Search by member name or email
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(payment => {
         const user = userMap.get(payment.userId);
         return (
           user?.name.toLowerCase().includes(query) ||
-          user?.email.toLowerCase().includes(query) ||
-          payment.transactionId.toLowerCase().includes(query) ||
-          payment.userId.toLowerCase().includes(query)
+          user?.email.toLowerCase().includes(query)
         );
       });
     }
@@ -144,16 +156,15 @@ export default function PaymentHistoryPage() {
   const handleExport = () => {
     if (!filteredPayments.length) return;
 
-    const headers = ["Date", "Time", "Member Name", "Email", "Transaction ID", "Amount", "Mode", "Status", "Month"];
+    const headers = ["Date", "Time", "Member Name", "Email", "Amount", "Mode", "Status", "Month"];
     const rows = filteredPayments.map(payment => {
       const user = userMap.get(payment.userId);
-      const date = new Date(payment.paymentDate);
+      const date = parsePaymentDate(payment.paymentDate);
       return [
         format(date, "dd MMM, yyyy"),
         format(date, "hh:mm a"),
         user?.name || "Unknown",
         user?.email || "N/A",
-        payment.transactionId,
         payment.amount,
         payment.mode,
         payment.status,
@@ -194,7 +205,7 @@ export default function PaymentHistoryPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-2xl sm:text-3xl font-bold font-headline tracking-tight">Payment History</h1>
-        <Button onClick={handleExport} disabled={!filteredPayments.length} className="w-full sm:w-auto">
+        <Button onClick={handleExport} disabled={!filteredPayments.length}>
           <Download className="mr-2 h-4 w-4" />
           Export CSV
         </Button>
@@ -216,7 +227,7 @@ export default function PaymentHistoryPage() {
                 </p>
               </div>
               <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
-                <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600" />
+                <IndianRupee className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600" />
               </div>
             </div>
           </CardContent>
@@ -297,7 +308,7 @@ export default function PaymentHistoryPage() {
               <div className="lg:col-span-2 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by name, email, or transaction ID..."
+                  placeholder="Search by name or email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
@@ -369,7 +380,7 @@ export default function PaymentHistoryPage() {
               <div className="md:hidden space-y-4">
                 {filteredPayments.map((payment) => {
                   const user = userMap.get(payment.userId);
-                  const paymentDate = new Date(payment.paymentDate);
+                  const paymentDate = parsePaymentDate(payment.paymentDate);
 
                   return (
                     <Card key={payment.id} className="overflow-hidden">
@@ -432,14 +443,6 @@ export default function PaymentHistoryPage() {
                           </div>
                         </div>
 
-                        {/* Transaction ID */}
-                        <div className="mt-3 pt-3 border-t">
-                          <div className="text-muted-foreground text-xs mb-1">Transaction ID</div>
-                          <div className="font-mono text-xs bg-muted px-2 py-1 rounded inline-block">
-                            {payment.transactionId}
-                          </div>
-                        </div>
-
                         {/* View Member Button */}
                         {user && (
                           <Button asChild variant="outline" size="sm" className="w-full mt-3">
@@ -461,7 +464,6 @@ export default function PaymentHistoryPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Member</TableHead>
-                    <TableHead>Transaction ID</TableHead>
                     <TableHead>Date & Time</TableHead>
                     <TableHead>Amount</TableHead>
                     <TableHead>Mode</TableHead>
@@ -473,7 +475,7 @@ export default function PaymentHistoryPage() {
                 <TableBody>
                   {filteredPayments.map((payment) => {
                     const user = userMap.get(payment.userId);
-                    const paymentDate = new Date(payment.paymentDate);
+                    const paymentDate = parsePaymentDate(payment.paymentDate);
 
                     return (
                       <TableRow key={payment.id} className="hover:bg-muted/50">
@@ -490,13 +492,6 @@ export default function PaymentHistoryPage() {
                               <div className="font-medium">{user?.name || "Unknown Member"}</div>
                               <div className="text-xs text-muted-foreground">{user?.email || "N/A"}</div>
                             </div>
-                          </div>
-                        </TableCell>
-
-                        {/* Transaction ID */}
-                        <TableCell>
-                          <div className="font-mono text-xs bg-muted px-2 py-1 rounded inline-block">
-                            {payment.transactionId}
                           </div>
                         </TableCell>
 

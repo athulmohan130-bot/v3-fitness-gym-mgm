@@ -55,3 +55,9 @@ out/
 
 # Optional: type check cache (e.g., for SWC or tsc)
 *.tsbuildinfo
+
+# PWA files (auto-generated)
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map

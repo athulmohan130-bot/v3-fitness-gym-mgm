@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DollarSign, Users, Activity, CreditCard, ArrowUp, TrendingUp, UserPlus, TrendingDown, Plus, FileText, Calendar } from "lucide-react";
+import { IndianRupee, Users, Activity, CreditCard, ArrowUp, TrendingUp, UserPlus, TrendingDown, Plus, FileText, Calendar } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useFirestore } from "@/firebase";
 import { doc, getDoc, query, collection, orderBy, limit, getDocs } from "firebase/firestore";
@@ -210,7 +210,7 @@ export function AdminDashboard() {
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">This Month Revenue</CardTitle>
             <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
-              <DollarSign className="h-5 w-5 text-emerald-600" />
+              <IndianRupee className="h-5 w-5 text-emerald-600" />
             </div>
           </CardHeader>
           <CardContent className="space-y-3">

@@ -43,7 +43,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, add } from "date-fns";
-import { useToast } from "@/hooks/use-toast";
+import { useNotificationToast } from "@/hooks/use-notification-toast";
+import { logMemberAdded } from "@/lib/activity-logger";
 import { useRouter } from "next/navigation";
 import type { MembershipPlan } from "@/lib/types";
 import {
@@ -153,7 +154,7 @@ interface NewMemberFormProps {
 
 export function NewMemberForm({ plans }: NewMemberFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const { toast } = useToast();
+  const { toast } = useNotificationToast();
   const router = useRouter();
   const firestore = useFirestore();
   const realtimeDb = useRealtimeDb();
@@ -530,11 +531,23 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
         }
       }
 
+      // Log activity
+      if (firestore && adminUser) {
+        await logMemberAdded(firestore, {
+          userId: data.userId,
+          userName: fullName,
+          userEmail: variables.email,
+          performedBy: adminUser.id,
+          performedByName: adminUser.name || adminUser.email || "Admin",
+        });
+      }
+
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["processedMembers"] });
       queryClient.invalidateQueries({ queryKey: ["userSummary"] });
       queryClient.invalidateQueries({ queryKey: ["revenueSummary"] });
       queryClient.invalidateQueries({ queryKey: ["recentUsersDashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["activityLogs"] });
       router.push("/dashboard/members");
     },
     onError: (error) => {
