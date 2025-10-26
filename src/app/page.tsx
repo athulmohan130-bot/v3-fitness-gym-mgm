@@ -1,5 +1,4 @@
-import { redirect } from 'next/navigation';
-
+// This page should never be reached due to middleware redirect
 export default function Home() {
-  redirect('/dashboard/overview');
+  return null;
 }

@@ -11,11 +11,12 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/login");
+      router.replace("/login");
     }
   }, [user, loading, router]);
 
-  if (loading) {
+  // Show loading screen while checking auth OR while redirecting
+  if (loading || !user) {
     return (
       <div className="fixed inset-0 z-50 flex h-screen w-full flex-col items-center justify-center bg-background transition-opacity duration-500 animate-fadeIn">
         {/* Logo / App name */}
@@ -33,14 +34,10 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
         {/* Loading text */}
         <p className="mt-6 text-sm text-muted-foreground animate-pulse">
-          Loading...
+          {!user && !loading ? "Redirecting to login..." : "Loading..."}
         </p>
       </div>
     );
-  }
-
-  if (!user) {
-    return null; // Will redirect in useEffect
   }
 
   return <>{children}</>;

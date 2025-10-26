@@ -117,9 +117,9 @@ useEffect(() => {
 
     const isAuthPage = pathname === '/login';
 
-    if (!user && !isAuthPage) {
-      router.replace('/login');
-    } else if (user && isAuthPage) {
+    // Only redirect logged-in users away from login page
+    // ProtectedRoute handles redirecting unauthenticated users to login
+    if (user && isAuthPage) {
       router.replace('/dashboard/overview');
     }
   }, [user, loading, pathname, router, hasInitialized]);
@@ -147,7 +147,7 @@ useEffect(() => {
   const value = useMemo(() => ({ user, loading, login, logout }), [user, loading, login, logout]);
   const isAuthPage = pathname === '/login';
 
-  // If we are still loading user state, show shimmer
+  // If we are still loading user state, show loading screen
   if (loading || isUserLoading) {
     return (
       <AuthContext.Provider value={value}>
@@ -156,8 +156,7 @@ useEffect(() => {
     );
   }
 
-  // ✅ Prevent flicker:
-  // If the user is authenticated and we are on the login page, show loading until redirect happens
+  // If the user is authenticated and on the login page, show loading until redirect happens
   if (user && isAuthPage) {
     return (
       <AuthContext.Provider value={value}>
@@ -166,15 +165,8 @@ useEffect(() => {
     );
   }
 
-  // If the user is not logged in and we’re not on the login page, show loading while redirecting
-  if (!user && !isAuthPage) {
-    return (
-      <AuthContext.Provider value={value}>
-        <LoadingScreen />
-      </AuthContext.Provider>
-    );
-  }
-
+  // For all other cases (including unauthenticated users on dashboard pages),
+  // let the ProtectedRoute component handle the redirect and loading screen
   return (
     <AuthContext.Provider value={value}>
       {children}
