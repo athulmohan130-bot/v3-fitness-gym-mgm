@@ -68,6 +68,7 @@ export default function AttendancePage() {
     voicePitch: 1.05,
   });
   const notificationHandlerRef = useRef<AttendanceNotificationHandler | null>(null);
+  const [audioInitialized, setAudioInitialized] = useState(false);
 
   // Save view mode to localStorage
   useEffect(() => {
@@ -269,6 +270,39 @@ export default function AttendancePage() {
 
   return (
     <div className="space-y-6">
+      {/* Enable Audio Banner */}
+      {!audioInitialized && (notificationConfig.playSound || notificationConfig.playVoice) && (
+        <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900">
+          <CardContent className="py-3">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Volume2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <div>
+                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Enable Audio Notifications</p>
+                  <p className="text-xs text-blue-700 dark:text-blue-300">Click to activate voice announcements for check-ins</p>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => {
+                  // Initialize audio by playing a test sound
+                  if (notificationHandlerRef.current) {
+                    notificationHandlerRef.current.notify({
+                      memberName: 'Audio',
+                      alertType: 'active'
+                    });
+                  }
+                  setAudioInitialized(true);
+                }}
+                className="shrink-0"
+              >
+                Enable
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Compact Header with Breadcrumbs and Settings */}
       <div className="flex items-center justify-between">
         <Breadcrumb>

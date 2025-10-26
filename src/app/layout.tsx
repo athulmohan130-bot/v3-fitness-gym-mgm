@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import AuthProvider from "@/lib/auth-provider";
 import { FirebaseClientProvider } from "@/firebase";
 import { QueryProvider } from "@/providers/query-client-provider";
+import { NotificationProvider } from "@/lib/notification-provider";
 
 export const metadata: Metadata = {
   title: "V3 Fitness",
@@ -52,8 +53,10 @@ export default function RootLayout({
         <FirebaseClientProvider>
           <QueryProvider>
             <AuthProvider>
-              {children}
-              <Toaster />
+              <NotificationProvider>
+                {children}
+                <Toaster />
+              </NotificationProvider>
             </AuthProvider>
           </QueryProvider>
         </FirebaseClientProvider>
