@@ -2,11 +2,12 @@
   "name": "V3 Fitness - Gym Management",
   "short_name": "V3 Fitness",
   "description": "Complete gym management system for V3 Fitness",
-  "start_url": "/dashboard/overview",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#3b82f6",
   "orientation": "portrait-primary",
+  "scope": "/",
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
