@@ -96,22 +96,31 @@ export function RenewPlanDialog({
   const { user: adminUser } = useAuth();
 
   const { mutate: renewMembership, isPending } = useMutation({
-    mutationFn: async ({ plan, start, end, amount, mode }: { plan: MembershipPlan, start: Date, end: Date, amount?: number, mode: string }) => {
+    mutationFn: async ({ plan, start, end, amount, mode, proration }: { plan: MembershipPlan; start: Date; end: Date; amount?: number; mode: string; proration?: ProrationCalculation | null }) => {
       if (!firestore) throw new Error("Firestore not available");
 
       const historyCollectionRef = collection(firestore, "users", memberId, "membershipHistory");
-      
+      const effectivePrice = proration ? proration.finalPayableAmount : plan.price || 0;
+      const resolvedPaidAmount = amount ?? effectivePrice;
+
       const newHistoryEntry = {
         membershipPlanId: plan.id,
         membershipPlan: plan.name,
         membershipStart: start.toISOString(),
         membershipEnd: end.toISOString(),
-        price: plan.price || 0,
-        paidAmount: amount || 0,
+        price: effectivePrice,
+        paidAmount: resolvedPaidAmount,
         paymentMode: mode,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
+
+      if (proration) {
+        (newHistoryEntry as any).prorationDetails = {
+          ...proration,
+          originalPlanPrice: plan.price,
+        };
+      }
 
       return runTransaction(firestore, async (transaction) => {
         // All reads must come before all writes.
@@ -124,7 +133,7 @@ export function RenewPlanDialog({
         transaction.set(newHistoryRef, newHistoryEntry);
 
         // 2. Create payment record (for payment history)
-        const paidAmount = amount || 0;
+        const paidAmount = resolvedPaidAmount;
         if (paidAmount > 0) {
           const paymentsRef = collection(firestore, "payments");
           const newPaymentRef = doc(paymentsRef);
@@ -183,6 +192,8 @@ export function RenewPlanDialog({
       queryClient.invalidateQueries({ queryKey: ["revenueSummary"] });
       queryClient.invalidateQueries({ queryKey: ["activityLogs"] });
       queryClient.invalidateQueries({ queryKey: ["payments"] });
+      queryClient.invalidateQueries({ queryKey: ["membershipHistory", memberId] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       onSuccess(); // This will now reliably trigger invalidation
       onOpenChange(false);
     },
@@ -265,7 +276,15 @@ export function RenewPlanDialog({
 
   const handleSubmit = () => {
     if (!selectedPlan || !startDate || !endDate) return;
-    renewMembership({ plan: selectedPlan, start: startDate, end: endDate, amount: paidAmount, mode: paymentMode });
+    const fallbackAmount = prorationCalc ? prorationCalc.finalPayableAmount : selectedPlan.price;
+    renewMembership({
+      plan: selectedPlan,
+      start: startDate,
+      end: endDate,
+      amount: paidAmount ?? fallbackAmount,
+      mode: paymentMode,
+      proration: prorationCalc,
+    });
   };
 
   return (
