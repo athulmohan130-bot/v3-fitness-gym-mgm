@@ -35,11 +35,19 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { logMembershipRenewed } from "@/lib/activity-logger";
 import { useAuth } from "@/lib/auth-provider";
+import { calculateProratedAmount, getPlanChangeType, type ProrationCalculation } from "@/lib/plan-proration";
+import { differenceInDays, parseISO as parseISODate, isBefore } from "date-fns";
+import { AlertCircle, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 
 interface RenewPlanDialogProps {
   memberId: string;
   memberName: string;
   currentEndDate: string;
+  currentPlanId?: string; // Current active plan ID
+  currentPlanPrice?: number; // Current plan price for proration
+  currentPlanDuration?: number; // Current plan duration in days
   availablePlans: MembershipPlan[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -50,11 +58,29 @@ export function RenewPlanDialog({
   memberId,
   memberName,
   currentEndDate,
+  currentPlanId,
+  currentPlanPrice,
+  currentPlanDuration,
   availablePlans,
   open,
   onOpenChange,
   onSuccess,
 }: RenewPlanDialogProps) {
+  // Debug: Log props when dialog opens
+  React.useEffect(() => {
+    if (open) {
+      console.log('🔧 RenewPlanDialog opened with props:', {
+        memberId,
+        memberName,
+        currentEndDate,
+        currentPlanId,
+        currentPlanPrice,
+        currentPlanDuration,
+        availablePlansCount: availablePlans?.length
+      });
+    }
+  }, [open, memberId, currentPlanId, currentPlanPrice, currentPlanDuration]);
+
   const [selectedPlan, setSelectedPlan] = React.useState<MembershipPlan | null>(
     null
   );
@@ -63,6 +89,7 @@ export function RenewPlanDialog({
   );
   const [paidAmount, setPaidAmount] = React.useState<number | undefined>();
   const [paymentMode, setPaymentMode] = React.useState<string>("cash");
+  const [prorationCalc, setProrationCalc] = React.useState<ProrationCalculation | null>(null);
   const { toast } = useNotificationToast();
   const firestore = useFirestore();
   const queryClient = useQueryClient();
@@ -174,15 +201,65 @@ export function RenewPlanDialog({
       ? addDays(startDate, selectedPlan.durationInDays)
       : null;
 
+  // Calculate proration when plan selection changes
+  React.useEffect(() => {
+    console.log('💰 Proration calculation triggered:', {
+      selectedPlan: selectedPlan?.name,
+      currentPlanPrice,
+      currentPlanDuration,
+      currentEndDate,
+      hasAllData: !!(selectedPlan && currentPlanPrice && currentPlanDuration && currentEndDate)
+    });
+
+    if (selectedPlan && currentPlanPrice && currentPlanDuration && currentEndDate) {
+      const now = new Date();
+      const endDate = parseISODate(currentEndDate);
+      const isEarlyUpgrade = isBefore(now, endDate);
+      
+      console.log('📅 Date check:', {
+        now: now.toISOString(),
+        endDate: endDate.toISOString(),
+        isEarlyUpgrade
+      });
+      
+      // Only calculate proration if it's an early upgrade
+      if (isEarlyUpgrade) {
+        const calc = calculateProratedAmount(
+          currentPlanPrice,
+          currentPlanDuration,
+          currentEndDate,
+          selectedPlan.price,
+          selectedPlan.durationInDays
+        );
+        console.log('✅ Proration calculated:', calc);
+        setProrationCalc(calc);
+        setPaidAmount(calc.finalPayableAmount);
+      } else {
+        console.log('⏰ Plan expired - no proration');
+        // Plan expired, no proration
+        setProrationCalc(null);
+        setPaidAmount(selectedPlan.price);
+      }
+    } else {
+      console.log('❌ Missing data for proration calculation');
+      setProrationCalc(null);
+      if (selectedPlan) {
+        setPaidAmount(selectedPlan.price);
+      }
+    }
+  }, [selectedPlan, currentPlanPrice, currentPlanDuration, currentEndDate]);
+
   React.useEffect(() => {
     if (open) {
       setStartDate(currentEndDate ? parseISO(currentEndDate) : new Date());
       setSelectedPlan(null);
       setPaidAmount(undefined);
       setPaymentMode("cash");
+      setProrationCalc(null);
     } else {
       setSelectedPlan(null);
       setStartDate(currentEndDate ? parseISO(currentEndDate) : new Date());
+      setProrationCalc(null);
     }
   }, [open, currentEndDate]);
 
@@ -231,6 +308,46 @@ export function RenewPlanDialog({
               <Label>Plan Price</Label>
               <Input value={`₹${selectedPlan.price}`} disabled />
             </div>
+          )}
+
+          {/* Proration Breakdown */}
+          {prorationCalc && prorationCalc.isEarlyUpgrade && (
+            <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-900">
+              <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <AlertDescription className="text-sm space-y-3 ml-1">
+                <div>
+                  <p className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                    Early Upgrade Discount Applied! 🎉
+                  </p>
+                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                    {prorationCalc.upgradeMessage}
+                  </p>
+                </div>
+                
+                <Separator className="bg-blue-200 dark:bg-blue-800" />
+                
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="text-blue-700 dark:text-blue-300">New Plan Price:</span>
+                    <span className="font-semibold text-blue-900 dark:text-blue-100">₹{prorationCalc.newPlanPrice}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-green-700 dark:text-green-400">
+                    <span>Unused Value Discount:</span>
+                    <span className="font-semibold">- ₹{prorationCalc.proratedDiscount}</span>
+                  </div>
+                  <Separator className="bg-blue-200 dark:bg-blue-800" />
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-blue-900 dark:text-blue-100">You Pay:</span>
+                    <span className="font-bold text-lg text-blue-900 dark:text-blue-100">₹{prorationCalc.finalPayableAmount}</span>
+                  </div>
+                  {prorationCalc.savingsPercentage > 0 && (
+                    <p className="text-center text-green-600 dark:text-green-400 font-medium pt-1">
+                      You save {prorationCalc.savingsPercentage}% on this upgrade!
+                    </p>
+                  )}
+                </div>
+              </AlertDescription>
+            </Alert>
           )}
 
           <div className="grid grid-cols-2 gap-4">

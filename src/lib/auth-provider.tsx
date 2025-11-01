@@ -117,18 +117,13 @@ useEffect(() => {
 
     const isAuthPage = pathname === '/login';
 
-    // Only redirect logged-in users away from login page
+    // Only redirect logged-in users away from login page to overview
+    // Don't redirect on other pages - stay where you are
     // ProtectedRoute handles redirecting unauthenticated users to login
     if (user && isAuthPage) {
       router.replace('/dashboard/overview');
     }
   }, [user, loading, pathname, router, hasInitialized]);
-
-  useEffect(() => {
-  if (!loading) return;
-  const timer = setTimeout(() => setLoading(false), 400);
-  return () => clearTimeout(timer);
-}, [user]);
 
   const login = useCallback(async (email: string, password: string) => {
     if (!auth) throw new Error('Auth service not initialized');

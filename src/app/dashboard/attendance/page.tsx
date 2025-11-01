@@ -9,9 +9,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { MemberCardGridSkeleton, SearchBarSkeleton } from "@/components/ui/loading-skeletons";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
-import { format } from "date-fns";
-import { Search, Users, Volume2, VolumeX, Settings, Home, Grid3x3, List, LayoutList, CheckCircle, BarChart, Clock, TrendingUp, CalendarIcon } from "lucide-react";
+import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
+import { format, differenceInDays } from "date-fns";
+import { Search, Users, Volume2, VolumeX, Settings, Home, Grid3x3, List, LayoutList, CheckCircle, BarChart, Clock, TrendingUp, CalendarIcon, RefreshCw } from "lucide-react";
 import type { AttendanceRecord } from "@/lib/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
@@ -33,12 +33,18 @@ import {
   getMembershipAlertType,
   type NotificationConfig
 } from "@/lib/attendance-notifications";
+import { RenewPlanDialog } from "@/components/dashboard/members/renew-plan-dialogue";
+import type { MembershipPlan } from "@/lib/types";
+import { useQueryClient } from '@tanstack/react-query';
 
 // View mode type
 type ViewMode = "grid" | "list" | "compact";
 
 export default function AttendancePage() {
+  console.log('🎬 AttendancePage rendering');
+  
   const firestore = useFirestore();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [filterStatus, setFilterStatus] = useState("all");
@@ -47,6 +53,24 @@ export default function AttendancePage() {
   const prevRecordsRef = useRef<AttendanceRecord[]>([]);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+  
+  // Renewal dialog state
+  const [selectedMember, setSelectedMember] = useState<{
+    id: string;
+    name: string;
+    currentEndDate: string;
+    currentPlanId?: string; // Will be populated by useEffect after fetching from Firestore
+  } | null>(null);
+  const [currentPlanDetails, setCurrentPlanDetails] = useState<{
+    price: number;
+    duration: number;
+  } | null>(null);
+  const [isFetchingPlanDetails, setIsFetchingPlanDetails] = useState(false);
+
+  // Debug: Log when selectedMember changes
+  console.log('👤 selectedMember state:', selectedMember);
+  console.log('💾 currentPlanDetails state:', currentPlanDetails);
+  console.log('⏳ isFetchingPlanDetails:', isFetchingPlanDetails);
 
   // View mode state with localStorage persistence
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -91,6 +115,98 @@ export default function AttendancePage() {
   }, [firestore]);
 
   const { data: allUsers } = useCollection(usersQuery);
+
+  // Query for membership plans
+  const plansQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, "membershipPlans");
+  }, [firestore]);
+
+  const { data: plansData } = useCollection<MembershipPlan>(plansQuery);
+
+  // Fetch current plan details from user's membership history when member is selected for renewal
+  useEffect(() => {
+    console.log('⚡⚡⚡ useEffect DEFINITELY triggered:', {
+      selectedMember: selectedMember,
+      selectedMemberId: selectedMember?.id,
+      hasFirestore: !!firestore,
+      hasPlansData: !!plansData,
+      plansDataLength: plansData?.length
+    });
+
+    if (!selectedMember?.id || !firestore || !plansData) {
+      console.log('⛔ Early return - missing dependencies:', {
+        selectedMemberId: selectedMember?.id,
+        hasFirestore: !!firestore,
+        hasPlansData: !!plansData
+      });
+      setCurrentPlanDetails(null);
+      setIsFetchingPlanDetails(false);
+      return;
+    }
+
+    const fetchCurrentPlanDetails = async () => {
+      setIsFetchingPlanDetails(true);
+      console.log('🔄 Fetching plan details for user:', selectedMember.id);
+
+      try {
+        // Fetch the user's latest membership from membershipHistory subcollection
+        const historyRef = collection(firestore, "users", selectedMember.id, "membershipHistory");
+        const historyQuery = query(historyRef, orderBy("createdAt", "desc"), limit(1));
+        const snapshot = await getDocs(historyQuery);
+        
+        if (!snapshot.empty) {
+          const latestMembership = snapshot.docs[0].data();
+          const planId = latestMembership.membershipPlanId;
+          
+          console.log('📋 Latest membership from history:', {
+            planId,
+            planName: latestMembership.membershipPlan,
+            membershipEnd: latestMembership.membershipEnd,
+            price: latestMembership.price
+          });
+          
+          // Find the plan in available plans to get accurate pricing
+          const plan = plansData.find(p => p.id === planId);
+          if (plan) {
+            console.log('✅ Found current plan details:', {
+              planId: plan.id,
+              planName: plan.name,
+              price: plan.price,
+              duration: plan.durationInDays
+            });
+            setCurrentPlanDetails({
+              price: plan.price,
+              duration: plan.durationInDays,
+            });
+            
+            // Update selectedMember with the planId for reference
+            setSelectedMember(prev => prev ? { ...prev, currentPlanId: planId } : null);
+          } else {
+            console.log('⚠️ Plan not found in membershipPlans collection. Using history data.');
+            // Fallback to using data from membership history
+            setCurrentPlanDetails({
+              price: latestMembership.price || 0,
+              duration: latestMembership.membershipEnd && latestMembership.membershipStart 
+                ? differenceInDays(new Date(latestMembership.membershipEnd), new Date(latestMembership.membershipStart))
+                : 30, // default 30 days
+            });
+            setSelectedMember(prev => prev ? { ...prev, currentPlanId: planId } : null);
+          }
+        } else {
+          console.log('❌ No membership history found for user:', selectedMember.id);
+          setCurrentPlanDetails(null);
+        }
+      } catch (error) {
+        console.error('Error fetching membership history:', error);
+        setCurrentPlanDetails(null);
+      } finally {
+        setIsFetchingPlanDetails(false);
+      }
+    };
+
+    fetchCurrentPlanDetails();
+  }, [selectedMember?.id, firestore, plansData, selectedMember?.currentEndDate]);
 
   // Calculate attendance stats
   const attendanceStats = useMemo(() => {
@@ -887,16 +1003,17 @@ export default function AttendancePage() {
                 const isActive = record.membershipStatus === "active";
 
                 return (
-                  <Link href={`/dashboard/members/view/${record.userId}`} key={record.id}>
-                    <Card
-                      className={`group overflow-hidden transition-all duration-300 cursor-pointer rounded-[20px] ${
-                        isActive
-                          ? "bg-gradient-to-b from-white to-green-50/30 border-t-4 border-t-green-500 shadow-[0_2px_8px_rgba(0,0,0,0.08),0_0_1px_rgba(0,0,0,0.1),0_4px_20px_rgba(16,185,129,0.15)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.12),0_0_1px_rgba(0,0,0,0.1),0_8px_32px_rgba(16,185,129,0.2)] hover:-translate-y-2 dark:bg-gradient-to-b dark:from-gray-800 dark:to-gray-800/95 dark:border-t-green-500 dark:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
-                          : "bg-white opacity-60 border-2 border-dashed border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] hover:-translate-y-1 dark:bg-gray-800 dark:opacity-50 dark:border-gray-700"
-                      } ${isNew ? "animate-pulse-glow" : ""}`}
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
+                  <Card
+                    key={record.id}
+                    className={`group overflow-hidden transition-all duration-300 rounded-[20px] ${
+                      isActive
+                        ? "bg-gradient-to-b from-white to-green-50/30 border-t-4 border-t-green-500 shadow-[0_2px_8px_rgba(0,0,0,0.08),0_0_1px_rgba(0,0,0,0.1),0_4px_20px_rgba(16,185,129,0.15)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.12),0_0_1px_rgba(0,0,0,0.1),0_8px_32px_rgba(16,185,129,0.2)] hover:-translate-y-2 dark:bg-gradient-to-b dark:from-gray-800 dark:to-gray-800/95 dark:border-t-green-500 dark:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                        : "bg-white opacity-60 border-2 border-dashed border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] hover:-translate-y-1 dark:bg-gray-800 dark:opacity-50 dark:border-gray-700"
+                    } ${isNew ? "animate-pulse-glow" : ""}`}
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
                     <CardContent className="p-8">
+                      <Link href={`/dashboard/members/view/${record.userId}`} className="cursor-pointer">
                       <div className="flex flex-col items-center text-center space-y-5">
                         {/* Avatar with Enhanced Ring */}
                         <div className="relative mb-2">
@@ -939,9 +1056,28 @@ export default function AttendancePage() {
                           </div>
                         )}
                       </div>
+                      </Link>
+
+                      {/* Renew Membership Button - Outside Link */}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full mt-4 gap-2 hover:bg-green-50 hover:border-green-500 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          setSelectedMember({
+                            id: record.userId,
+                            name: record.name,
+                            currentEndDate: record.membershipEnd || new Date().toISOString(),
+                          });
+                        }}
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                        Renew
+                      </Button>
                     </CardContent>
                   </Card>
-                  </Link>
                 );
               })}
             </div>
@@ -957,12 +1093,13 @@ export default function AttendancePage() {
                     const isNew = newRecordIds.has(record.id);
 
                     return (
-                      <Link href={`/dashboard/members/view/${record.userId}`} key={record.id}>
-                        <div
-                          className={`flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer ${
-                            isNew ? "bg-green-50 border-l-4 border-l-green-500" : ""
-                          }`}
-                        >
+                      <div
+                        key={record.id}
+                        className={`flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors ${
+                          isNew ? "bg-green-50 border-l-4 border-l-green-500" : ""
+                        }`}
+                      >
+                        <Link href={`/dashboard/members/view/${record.userId}`} className="flex items-center gap-4 flex-1 cursor-pointer">
                         {/* Avatar */}
                         <div className="relative flex-shrink-0">
                           <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
@@ -1017,14 +1154,33 @@ export default function AttendancePage() {
                           )}
                         </div>
 
-                        {/* Mobile Check-in (visible on mobile) */}
+                        {/* Mobile Check-in (visible on mobile inside link) */}
                         <div className="sm:hidden text-right">
                           <p className="font-semibold text-xs">
                             {format(new Date(record.checkInTime), "hh:mm a")}
                           </p>
                         </div>
+                        </Link>
+
+                        {/* Renew Button - Outside Link */}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-2 hover:bg-green-50 hover:border-green-500 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            setSelectedMember({
+                              id: record.userId,
+                              name: record.name,
+                              currentEndDate: record.membershipEnd || new Date().toISOString(),
+                            });
+                          }}
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                          <span className="hidden xl:inline">Renew</span>
+                        </Button>
                       </div>
-                      </Link>
                     );
                   })}
                 </div>
@@ -1041,12 +1197,13 @@ export default function AttendancePage() {
                     const isNew = newRecordIds.has(record.id);
 
                     return (
-                      <Link href={`/dashboard/members/view/${record.userId}`} key={record.id}>
-                        <div
-                          className={`flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors cursor-pointer ${
-                            isNew ? "bg-green-50 border-l-4 border-l-green-500" : ""
-                          }`}
-                        >
+                      <div
+                        key={record.id}
+                        className={`flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors ${
+                          isNew ? "bg-green-50 border-l-4 border-l-green-500" : ""
+                        }`}
+                      >
+                        <Link href={`/dashboard/members/view/${record.userId}`} className="flex items-center gap-3 flex-1 cursor-pointer">
                         {/* Avatar */}
                         <div className="relative flex-shrink-0">
                           <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
@@ -1074,8 +1231,26 @@ export default function AttendancePage() {
                             {format(new Date(record.checkInTime), "MMM dd")}
                           </p>
                         </div>
+                        </Link>
+
+                        {/* Renew Button - Outside Link */}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="p-2 hover:bg-green-50 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            setSelectedMember({
+                              id: record.userId,
+                              name: record.name,
+                              currentEndDate: record.membershipEnd || new Date().toISOString(),
+                            });
+                          }}
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
                       </div>
-                      </Link>
                     );
                   })}
                 </div>
@@ -1084,6 +1259,39 @@ export default function AttendancePage() {
           )}
         </>
       )}
+
+      {/* Renew Membership Dialog */}
+      {selectedMember && plansData && !isFetchingPlanDetails && (() => {
+        console.log('🎨 Rendering RenewPlanDialog with:', {
+          currentPlanPrice: currentPlanDetails?.price,
+          currentPlanDuration: currentPlanDetails?.duration,
+          isFetchingPlanDetails,
+          selectedMemberId: selectedMember.id
+        });
+        return (
+          <RenewPlanDialog
+            memberId={selectedMember.id}
+            memberName={selectedMember.name}
+            currentEndDate={selectedMember.currentEndDate}
+            currentPlanId={selectedMember.currentPlanId}
+            currentPlanPrice={currentPlanDetails?.price}
+            currentPlanDuration={currentPlanDetails?.duration}
+            availablePlans={plansData}
+            open={!!selectedMember && !isFetchingPlanDetails}
+            onOpenChange={(open) => {
+              if (!open) {
+                setSelectedMember(null);
+                setCurrentPlanDetails(null);
+              }
+            }}
+            onSuccess={() => {
+              // Invalidate queries to refresh the data
+              queryClient.invalidateQueries({ queryKey: ["users"] });
+              setCurrentPlanDetails(null);
+            }}
+          />
+        );
+      })()}
     </div>
   );
 }

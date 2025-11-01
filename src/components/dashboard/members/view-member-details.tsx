@@ -908,11 +908,11 @@ export function ViewMemberDetails({
                       View Membership History
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-lg">
+                  <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
                     <DialogHeader>
                       <DialogTitle>Membership History for {member.name}</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-2 mt-4">
+                    <div className="space-y-2 mt-4 overflow-y-auto max-h-[60vh] pr-2">
                       {availablePlans
                         .slice()
                         .reverse() // latest first

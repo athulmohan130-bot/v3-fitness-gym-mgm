@@ -3,38 +3,39 @@
   "middleware": {
     "/": {
       "files": [
-        "server/edge-runtime-webpack.js",
-        "server/src/middleware.js"
+        "server/edge/chunks/_0d3699dc._.js",
+        "server/edge/chunks/[root-of-the-server]__dc15d093._.js",
+        "server/edge/chunks/edge-wrapper_594fdf6a.js"
       ],
-      "name": "src/middleware",
+      "name": "middleware",
       "page": "/",
       "matchers": [
         {
-          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/(\\/?index|\\/?index\\.json))?[\\/#\\?]?$",
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/(\\/?index|\\/?index\\\\.json))?[\\/#\\?]?$",
           "originalSource": "/"
         },
         {
-          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/dashboard(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(\\.json)?[\\/#\\?]?$",
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/dashboard(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(\\\\.json)?[\\/#\\?]?$",
           "originalSource": "/dashboard/:path*"
         },
         {
-          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/login(\\.json)?[\\/#\\?]?$",
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/login(\\\\.json)?[\\/#\\?]?$",
           "originalSource": "/login"
         }
       ],
       "wasm": [],
       "assets": [],
       "env": {
-        "__NEXT_BUILD_ID": "CKXq5VgMnXYKCqvZsEouS",
-        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "UPBQ1xAfIR+2JIg62ZbA64ZbuVK2zbxZXKbmUnFMuA8=",
-        "__NEXT_PREVIEW_MODE_ID": "3f0b66abc678e6a64693966fb95022da",
-        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "7155e28c41bd586f44fa572b11a85e9fbb3c7a343a9cefaf8971ef7c7cfaeb9c",
-        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "0d09bd093cdb9572ff7b1ece0673f1f4312248127a082b054cfb0967553fb4ba"
+        "__NEXT_BUILD_ID": "development",
+        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "45pSp3tJX0dZJajc2WCvZn3X0y6P7Bdh2xF8T0vvqX8=",
+        "__NEXT_PREVIEW_MODE_ID": "132ca09224ace8796ef45f3ebb60ede8",
+        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "3d250d3a4761ad99494d0de32c19b0b03982bcb857e7311494297c2848d8c520",
+        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "297299cb76312b178d8e4143c5f211a2264339f70d32d7ed3e55a17fa8cc2683"
       }
     }
   },
-  "functions": {},
   "sortedMiddleware": [
     "/"
-  ]
+  ],
+  "functions": {}
 }

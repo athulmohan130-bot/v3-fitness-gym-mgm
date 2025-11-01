@@ -3,7 +3,16 @@
 import { useCallback, useMemo, useState, useEffect } from "react";
 import { Timestamp } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
-import { collection, getDocs, orderBy, query, where, doc, runTransaction, increment } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  orderBy,
+  query,
+  where,
+  doc,
+  runTransaction,
+  increment,
+} from "firebase/firestore";
 import { getColumns } from "@/components/dashboard/members/columns";
 import { DataTable } from "@/components/dashboard/members/data-table";
 import { Button } from "@/components/ui/button";
@@ -11,13 +20,23 @@ import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RenewPlanDialog } from "@/components/dashboard/members/renew-plan-dialogue";
-import { TableSkeleton, PageHeaderSkeleton } from "@/components/ui/loading-skeletons";
+import {
+  TableSkeleton,
+  PageHeaderSkeleton,
+} from "@/components/ui/loading-skeletons";
 import type { UserWithPlan, MembershipPlan } from "@/lib/types";
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React from "react";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Home, Phone, Mail, Calendar, CreditCard } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -35,7 +54,7 @@ const CACHE_TIME = 1000 * 60 * 5; // 5 minutes
 const safeParseDate = (date: any): Date | null => {
   if (!date) return null;
   if (date instanceof Timestamp) return date.toDate();
-  if (typeof date === 'string') return new Date(date);
+  if (typeof date === "string") return new Date(date);
   return null;
 };
 
@@ -44,55 +63,70 @@ export default function MembersPage() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const [renewOpen, setRenewOpen] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<UserWithMembership | null>(null);
+  const [selectedMember, setSelectedMember] =
+    useState<UserWithMembership | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
 
-  const getMembershipStatus = useCallback((historyDocs: any[]): MembershipStatus => {
-    if (!historyDocs || historyDocs.length === 0) return "pending";
+  const getMembershipStatus = useCallback(
+    (historyDocs: any[]): MembershipStatus => {
+      if (!historyDocs || historyDocs.length === 0) return "pending";
 
-    const now = new Date();
+      const now = new Date();
 
-    // Check if ANY membership period covers today's date
-    const hasActiveMembership = historyDocs.some(doc => {
-      const data = doc.data();
-      if (!data.membershipStart || !data.membershipEnd) return false;
+      // Check if ANY membership period covers today's date
+      const hasActiveMembership = historyDocs.some((doc) => {
+        const data = doc.data();
+        if (!data.membershipStart || !data.membershipEnd) return false;
 
-      const start = new Date(data.membershipStart);
-      const end = new Date(data.membershipEnd);
+        const start = new Date(data.membershipStart);
+        const end = new Date(data.membershipEnd);
 
-      // Member is active if today is between start and end dates
-      return now >= start && now <= end;
-    });
+        // Member is active if today is between start and end dates
+        return now >= start && now <= end;
+      });
 
-    if (hasActiveMembership) return "active";
+      if (hasActiveMembership) return "active";
 
-    // If no active membership, check if there's a future one
-    const hasFutureMembership = historyDocs.some(doc => {
-      const data = doc.data();
-      if (!data.membershipStart) return false;
-      const start = new Date(data.membershipStart);
-      return now < start;
-    });
+      // If no active membership, check if there's a future one
+      const hasFutureMembership = historyDocs.some((doc) => {
+        const data = doc.data();
+        if (!data.membershipStart) return false;
+        const start = new Date(data.membershipStart);
+        return now < start;
+      });
 
-    if (hasFutureMembership) return "pending";
+      if (hasFutureMembership) return "pending";
 
-    // All memberships have expired
-    return "expired";
-  }, []);
+      // All memberships have expired
+      return "expired";
+    },
+    []
+  );
 
-  const { data: processedData, isLoading: isMembersLoading } = useQuery<UserWithMembership[]>({ 
-    queryKey: ['processedMembers'],
+  const { data: processedData, isLoading: isMembersLoading } = useQuery<
+    UserWithMembership[]
+  >({
+    queryKey: ["processedMembers"],
     queryFn: async () => {
       if (!firestore) return [];
       const usersCollection = collection(firestore, "users");
       const q = query(usersCollection, where("role", "!=", "admin"));
       const snapshot = await getDocs(q);
-      const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as UserWithPlan));
+      const usersData = snapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() } as UserWithPlan)
+      );
 
       return Promise.all(
         usersData.map(async (user) => {
-          const historyRef = collection(firestore, "users", user.id, "membershipHistory");
-          const historySnap = await getDocs(query(historyRef, orderBy("createdAt", "desc")));
+          const historyRef = collection(
+            firestore,
+            "users",
+            user.id,
+            "membershipHistory"
+          );
+          const historySnap = await getDocs(
+            query(historyRef, orderBy("createdAt", "desc"))
+          );
 
           // Get membership status by checking ALL history entries
           const membershipStatus = getMembershipStatus(historySnap.docs);
@@ -100,7 +134,7 @@ export default function MembersPage() {
           // For display purposes, find the plan with the latest end date
           // This ensures we show the actual expiry date considering future plans
           const now = new Date();
-          const activePlan = historySnap.docs.find(doc => {
+          const activePlan = historySnap.docs.find((doc) => {
             const data = doc.data();
             if (!data.membershipStart || !data.membershipEnd) return false;
             const start = new Date(data.membershipStart);
@@ -109,30 +143,43 @@ export default function MembersPage() {
           });
 
           // Find the plan with the latest expiry date (could be current, future, or past)
-          const planWithLatestExpiry = historySnap.docs.reduce((latest, current) => {
-            if (!latest) return current;
-            const latestData = latest.data();
-            const currentData = current.data();
-            const latestEnd = new Date(latestData?.membershipEnd || 0);
-            const currentEnd = new Date(currentData?.membershipEnd || 0);
-            return currentEnd > latestEnd ? current : latest;
-          }, historySnap.docs[0]);
+          const planWithLatestExpiry = historySnap.docs.reduce(
+            (latest, current) => {
+              if (!latest) return current;
+              const latestData = latest.data();
+              const currentData = current.data();
+              const latestEnd = new Date(latestData?.membershipEnd || 0);
+              const currentEnd = new Date(currentData?.membershipEnd || 0);
+              return currentEnd > latestEnd ? current : latest;
+            },
+            historySnap.docs[0]
+          );
 
           // Use the plan with latest expiry for display
           const displayPlan = planWithLatestExpiry;
           const planData = displayPlan?.data();
-          
+
           // For start date, use the active plan's start if available, otherwise use latest plan's start
           const activePlanData = activePlan?.data();
-          const startDate = safeParseDate(activePlanData?.membershipStart || planData?.membershipStart);
+          const startDate = safeParseDate(
+            activePlanData?.membershipStart || planData?.membershipStart
+          );
           const endDate = safeParseDate(planData?.membershipEnd);
 
+          // return {
+          //   ...user,
+          //   planName: planData?.membershipPlan || "N/A",
+          //   membershipStatus,
+          //   membershipStart: startDate?.toISOString() ?? "",
+          //   membershipEnd: endDate?.toISOString() ?? "",
+          // };
           return {
             ...user,
             planName: planData?.membershipPlan || "N/A",
             membershipStatus,
-            membershipStart: startDate?.toISOString() ?? '',
-            membershipEnd: endDate?.toISOString() ?? '',
+            membershipStart: startDate?.toISOString() ?? "",
+            membershipEnd: endDate?.toISOString() ?? "",
+            membershipPlanId: planData?.membershipPlanId || "",
           };
         })
       );
@@ -142,24 +189,39 @@ export default function MembersPage() {
     gcTime: CACHE_TIME * 2,
   });
 
-  const { data: plansData, isLoading: isPlansLoading } = useQuery<MembershipPlan[]>({ 
-    queryKey: ['plans'],
+  const { data: plansData, isLoading: isPlansLoading } = useQuery<
+    MembershipPlan[]
+  >({
+    queryKey: ["plans"],
     queryFn: async () => {
       if (!firestore) return [];
       const plansCollection = collection(firestore, "membershipPlans");
       const q = query(plansCollection, where("status", "==", "active"));
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MembershipPlan));
+      return snapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() } as MembershipPlan)
+      );
     },
     enabled: !!firestore,
     staleTime: CACHE_TIME,
     gcTime: CACHE_TIME * 2,
   });
 
-  const handlePaymentSubmit = async (memberId: string, historyId: string, amount: number, paymentDate: Date) => {
+  const handlePaymentSubmit = async (
+    memberId: string,
+    historyId: string,
+    amount: number,
+    paymentDate: Date
+  ) => {
     if (!firestore) return;
 
-    const historyDocRef = doc(firestore, "users", memberId, "membershipHistory", historyId);
+    const historyDocRef = doc(
+      firestore,
+      "users",
+      memberId,
+      "membershipHistory",
+      historyId
+    );
     const revenueSummaryRef = doc(firestore, "stats/revenueSummary");
 
     try {
@@ -169,14 +231,14 @@ export default function MembersPage() {
 
         // Now, perform all write operations.
         // 1. Update the membership history payment
-        transaction.update(historyDocRef, { 
+        transaction.update(historyDocRef, {
           paidAmount: increment(amount),
           updatedAt: Timestamp.now(),
         });
 
         // 2. Revenue Summary Write
         if (amount > 0) {
-          const monthKey = format(paymentDate, 'yyyy-MM');
+          const monthKey = format(paymentDate, "yyyy-MM");
           if (!revenueSummaryDoc.exists()) {
             transaction.set(revenueSummaryRef, {
               totalRevenueAllTime: amount,
@@ -194,16 +256,21 @@ export default function MembersPage() {
       });
 
       // Invalidate queries to refetch data
-      queryClient.invalidateQueries({ queryKey: ['processedMembers'] });
-      queryClient.invalidateQueries({ queryKey: ['revenueSummary'] });
-
+      queryClient.invalidateQueries({ queryKey: ["processedMembers"] });
+      queryClient.invalidateQueries({ queryKey: ["revenueSummary"] });
     } catch (error) {
       console.error("Payment transaction failed: ", error);
     }
   };
 
   const columns = useMemo(
-    () => getColumns(setRenewOpen, setSelectedMember, plansData || [], handlePaymentSubmit),
+    () =>
+      getColumns(
+        setRenewOpen,
+        setSelectedMember,
+        plansData || [],
+        handlePaymentSubmit
+      ),
     [plansData]
   );
 
@@ -216,8 +283,8 @@ export default function MembersPage() {
   const showSkeleton = initialLoading;
 
   const handleRenewalSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ['users'] });
-    queryClient.invalidateQueries({ queryKey: ['processedMembers'] });
+    queryClient.invalidateQueries({ queryKey: ["users"] });
+    queryClient.invalidateQueries({ queryKey: ["processedMembers"] });
   };
 
   const handleRowClick = (member: UserWithMembership) => {
@@ -246,8 +313,12 @@ export default function MembersPage() {
       {/* Always show the header - looks more polished */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold font-headline tracking-tight">Members</h1>
-          <p className="text-sm text-muted-foreground hidden sm:block">Manage all members of V3 Fitness.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold font-headline tracking-tight">
+            Members
+          </h1>
+          <p className="text-sm text-muted-foreground hidden sm:block">
+            Manage all members of V3 Fitness.
+          </p>
         </div>
         <Button asChild disabled={showSkeleton} className="w-full sm:w-auto">
           <Link href="/dashboard/members/new">
@@ -275,13 +346,18 @@ export default function MembersPage() {
                     {/* Member Header */}
                     <div className="flex items-start gap-3 mb-4">
                       <Avatar className="h-14 w-14">
-                        <AvatarImage src={member.profileImageUrl} alt={member.name} />
+                        <AvatarImage
+                          src={member.profileImageUrl}
+                          alt={member.name}
+                        />
                         <AvatarFallback className="bg-primary/10 text-primary font-semibold text-lg">
                           {member.name?.charAt(0).toUpperCase() || "?"}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-base truncate">{member.name}</h3>
+                        <h3 className="font-semibold text-base truncate">
+                          {member.name}
+                        </h3>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge
                             variant={
@@ -293,7 +369,8 @@ export default function MembersPage() {
                             }
                             className="text-xs"
                           >
-                            {member.membershipStatus.charAt(0).toUpperCase() + member.membershipStatus.slice(1)}
+                            {member.membershipStatus.charAt(0).toUpperCase() +
+                              member.membershipStatus.slice(1)}
                           </Badge>
                         </div>
                       </div>
@@ -315,13 +392,19 @@ export default function MembersPage() {
                       )}
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <CreditCard className="h-4 w-4 shrink-0" />
-                        <span className="font-medium">{member.planName || "No Plan"}</span>
+                        <span className="font-medium">
+                          {member.planName || "No Plan"}
+                        </span>
                       </div>
                       {member.membershipEnd && (
                         <div className="flex items-center gap-2 text-muted-foreground">
                           <Calendar className="h-4 w-4 shrink-0" />
                           <span className="text-xs">
-                            Expires: {format(new Date(member.membershipEnd), "MMM dd, yyyy")}
+                            Expires:{" "}
+                            {format(
+                              new Date(member.membershipEnd),
+                              "MMM dd, yyyy"
+                            )}
                           </span>
                         </div>
                       )}
@@ -348,12 +431,32 @@ export default function MembersPage() {
           </div>
         </>
       )}
-
+      {/* 
       {selectedMember && plansData && (
         <RenewPlanDialog
           memberId={selectedMember.id}
           memberName={selectedMember.name}
           currentEndDate={selectedMember.membershipEnd}
+          availablePlans={plansData}
+          open={renewOpen}
+          onOpenChange={setRenewOpen}
+          onSuccess={handleRenewalSuccess}
+        />
+      )} */}
+      {selectedMember && plansData && (
+        <RenewPlanDialog
+          memberId={selectedMember.id}
+          memberName={selectedMember.name}
+          currentEndDate={selectedMember.membershipEnd}
+          currentPlanId={selectedMember.membershipPlanId}
+          currentPlanPrice={
+            plansData.find((p) => p.id === selectedMember.membershipPlanId)
+              ?.price
+          }
+          currentPlanDuration={
+            plansData.find((p) => p.id === selectedMember.membershipPlanId)
+              ?.durationInDays
+          }
           availablePlans={plansData}
           open={renewOpen}
           onOpenChange={setRenewOpen}
