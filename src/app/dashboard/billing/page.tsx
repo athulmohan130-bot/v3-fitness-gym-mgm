@@ -24,7 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
 import { format } from "date-fns";
-import { Search, Download, IndianRupee, CreditCard, Clock, XCircle, ExternalLink, ChevronLeft, ChevronRight, X, ArrowUpDown, ArrowUp, ArrowDown, FileText } from "lucide-react";
+import { Search, Download, IndianRupee, CreditCard, Clock, XCircle, ExternalLink, ChevronLeft, ChevronRight, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import Link from "next/link";
 import Currency from "@/components/ui/currency";
 
@@ -548,12 +548,6 @@ export default function PaymentHistoryPage() {
                             <div className="text-xs text-muted-foreground">{format(paymentDate, "hh:mm a")}</div>
                           </div>
                           <div>
-                            <div className="text-muted-foreground text-xs mb-1">Transaction ID</div>
-                            <div className="text-sm font-mono">
-                              {payment.transactionId || "N/A"}
-                            </div>
-                          </div>
-                          <div>
                             <div className="text-muted-foreground text-xs mb-1">Mode</div>
                             <Badge variant="outline" className="font-medium">
                               {payment.mode}
@@ -562,22 +556,16 @@ export default function PaymentHistoryPage() {
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="grid grid-cols-2 gap-2 mt-3">
-                          {user && (
-                            <Button asChild variant="outline" size="sm">
+                        {user && (
+                          <div className="mt-3">
+                            <Button asChild variant="outline" size="sm" className="w-full">
                               <Link href={`/dashboard/members/view/${payment.userId}`}>
                                 <ExternalLink className="h-3 w-3 mr-1" />
                                 View Member
                               </Link>
                             </Button>
-                          )}
-                          {payment.status === "success" && (
-                            <Button variant="outline" size="sm">
-                              <FileText className="h-3 w-3 mr-1" />
-                              Receipt
-                            </Button>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   );
@@ -634,7 +622,6 @@ export default function PaymentHistoryPage() {
                         )}
                       </Button>
                     </TableHead>
-                    <TableHead>Transaction ID</TableHead>
                     <TableHead>Mode</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -676,13 +663,6 @@ export default function PaymentHistoryPage() {
                           </div>
                         </TableCell>
 
-                        {/* Transaction ID */}
-                        <TableCell>
-                          <div className="text-sm font-mono text-muted-foreground">
-                            {payment.transactionId || "N/A"}
-                          </div>
-                        </TableCell>
-
                         {/* Payment Mode */}
                         <TableCell>
                           <Badge variant="outline" className="font-medium">
@@ -711,22 +691,14 @@ export default function PaymentHistoryPage() {
 
                         {/* Actions */}
                         <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            {payment.status === "success" && (
-                              <Button variant="ghost" size="sm">
-                                <FileText className="h-4 w-4 mr-1" />
-                                Receipt
-                              </Button>
-                            )}
-                            {user && (
-                              <Button asChild variant="ghost" size="sm">
-                                <Link href={`/dashboard/members/view/${payment.userId}`}>
-                                  <ExternalLink className="h-4 w-4 mr-1" />
-                                  View
-                                </Link>
-                              </Button>
-                            )}
-                          </div>
+                          {user && (
+                            <Button asChild variant="ghost" size="sm">
+                              <Link href={`/dashboard/members/view/${payment.userId}`}>
+                                <ExternalLink className="h-4 w-4 mr-1" />
+                                View
+                              </Link>
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     );

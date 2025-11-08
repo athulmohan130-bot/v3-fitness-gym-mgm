@@ -15,11 +15,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, LogOut, User, PlusCircle, X, Search, Trash2, CheckCheck } from "lucide-react";
+import { Bell, LogOut, User, PlusCircle, X, Search, Trash2, CheckCheck, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useNotifications } from "@/lib/notification-provider";
+import { useNavigationLoading } from "@/hooks/use-navigation-loading";
 
 // Helper function to format timestamp
 function formatTimestamp(date: Date): string {
@@ -53,7 +54,12 @@ export function AppHeader() {
   const { notifications, unreadCount, markAsRead, clearNotification, clearAllNotifications } = useNotifications();
   const [search, setSearch] = useState("");
   const pathname = usePathname();
+  const router = useRouter();
+  const { isNavigating, targetPath, startNavigation } = useNavigationLoading();
   const hideMembersControls = pathname.startsWith("/dashboard/members");
+
+  const addMemberPath = "/dashboard/members/new";
+  const isAddMemberLoading = isNavigating && targetPath === addMemberPath;
 
   // Get page title
   const getPageTitle = () => {
@@ -148,11 +154,21 @@ export function AppHeader() {
       {/* Right */}
       <div className="flex items-center gap-2 sm:gap-3">
         {!hideMembersControls && (
-          <Button asChild className="hidden sm:flex bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all rounded-full px-6">
-            <Link href="/dashboard/members/new">
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              startNavigation(addMemberPath);
+              router.push(addMemberPath);
+            }}
+            disabled={isAddMemberLoading}
+            className="hidden sm:flex bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all rounded-full px-6"
+          >
+            {isAddMemberLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
               <PlusCircle className="mr-2 h-4 w-4" />
-              Add Member
-            </Link>
+            )}
+            Add Member
           </Button>
         )}
 

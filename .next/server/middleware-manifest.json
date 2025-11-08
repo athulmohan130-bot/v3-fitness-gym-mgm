@@ -3,39 +3,38 @@
   "middleware": {
     "/": {
       "files": [
-        "server/edge/chunks/_0d3699dc._.js",
-        "server/edge/chunks/[root-of-the-server]__dc15d093._.js",
-        "server/edge/chunks/edge-wrapper_594fdf6a.js"
+        "server/edge-runtime-webpack.js",
+        "server/src/middleware.js"
       ],
-      "name": "middleware",
+      "name": "src/middleware",
       "page": "/",
       "matchers": [
         {
-          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/(\\/?index|\\/?index\\\\.json))?[\\/#\\?]?$",
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/(\\/?index|\\/?index\\.json))?[\\/#\\?]?$",
           "originalSource": "/"
         },
         {
-          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/dashboard(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(\\\\.json)?[\\/#\\?]?$",
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/dashboard(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(\\.json)?[\\/#\\?]?$",
           "originalSource": "/dashboard/:path*"
         },
         {
-          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/login(\\\\.json)?[\\/#\\?]?$",
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/login(\\.json)?[\\/#\\?]?$",
           "originalSource": "/login"
         }
       ],
       "wasm": [],
       "assets": [],
       "env": {
-        "__NEXT_BUILD_ID": "development",
+        "__NEXT_BUILD_ID": "skEaK9fi7hQXQSRAHvu-N",
         "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "fgiiiDGk1P6hLP9hCwWSntxCqex1gUJzRMOAxXHqbIY=",
-        "__NEXT_PREVIEW_MODE_ID": "2a18cb8e4e70467ccc74fb5abd39b464",
-        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "259b98dd9f8b80d14ea36642ce9b7556a3ce1562daf3f0e371dbe2a2c9cdb91c",
-        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "c99a628de202b3b34dc240a627da2e47867ffbf7cee157395b37f6dada19d23d"
+        "__NEXT_PREVIEW_MODE_ID": "f8fe64a6196431ecd209cab05b418088",
+        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "59c862f5859dd76b138d181721a57415f1b8832ef9d30f3c7b93e21d7a330d9a",
+        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "a40c295661f6beb40db48024889513a04196c3d1805346982715de27aee758f2"
       }
     }
   },
+  "functions": {},
   "sortedMiddleware": [
     "/"
-  ],
-  "functions": {}
+  ]
 }
