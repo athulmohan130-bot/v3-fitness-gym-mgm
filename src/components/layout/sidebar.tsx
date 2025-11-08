@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -98,13 +99,22 @@ export function AppSidebar() {
       e.preventDefault();
       startNavigation(href);
       router.push(href);
-      
-      // Auto-close mobile sidebar after navigation
-      if (isMobile) {
-        setOpenMobile(false);
-      }
+
+      // Don't auto-close mobile sidebar immediately
+      // It will close when navigation completes (handled by useEffect below)
     }
   };
+
+  // Close mobile sidebar when navigation is complete
+  useEffect(() => {
+    if (!isNavigating && isMobile) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setOpenMobile(false);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isNavigating, isMobile, setOpenMobile]);
 
   return (
     <Sidebar
