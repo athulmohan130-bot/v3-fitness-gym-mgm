@@ -71,13 +71,13 @@ export function TableSkeleton({ rows = 5 }: { rows?: number }) {
     <div className="space-y-4">
       <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
         {/* Search and Columns Controls - matches DataTable */}
-        <div className="flex items-center p-4">
-          <Skeleton className="h-10 max-w-sm flex-1 rounded-md" /> {/* Search input */}
-          <Skeleton className="h-10 w-28 ml-auto rounded-md" /> {/* Columns button */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-4">
+          <Skeleton className="h-10 w-full sm:max-w-sm sm:flex-1 rounded-md" /> {/* Search input */}
+          <Skeleton className="h-10 w-full sm:w-28 rounded-md" /> {/* Columns button */}
         </div>
 
-        {/* Table */}
-        <div className="border-t">
+        {/* Table - Desktop */}
+        <div className="border-t hidden md:block overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -137,17 +137,41 @@ export function TableSkeleton({ rows = 5 }: { rows?: number }) {
             </TableBody>
           </Table>
         </div>
+
+        {/* Mobile List View */}
+        <div className="md:hidden border-t divide-y">
+          {Array.from({ length: rows }).map((_, i) => (
+            <div
+              key={i}
+              className="p-4 animate-in fade-in-50"
+              style={{ animationDelay: `${i * 50}ms` }}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+                <Skeleton className="h-6 w-16 rounded-full" />
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Pagination - matches DataTable pagination */}
-      <div className="flex items-center justify-between px-2">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2">
         <Skeleton className="h-4 w-40" />
-        <div className="flex items-center space-x-2">
-          <Skeleton className="h-8 w-24 rounded-md" />
-          <Skeleton className="h-8 w-20 rounded-md" />
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-8 w-20 sm:w-24 rounded-md hidden sm:block" />
+          <Skeleton className="h-8 w-16 sm:w-20 rounded-md" />
           <Skeleton className="h-8 w-8 rounded-md" />
           <Skeleton className="h-8 w-8 rounded-md" />
-          <Skeleton className="h-8 w-20 rounded-md" />
+          <Skeleton className="h-8 w-16 sm:w-20 rounded-md" />
         </div>
       </div>
     </div>
@@ -405,6 +429,79 @@ export function SearchBarSkeleton() {
       <Skeleton className="h-10 flex-1 rounded-md" />
       <Skeleton className="h-10 w-32 rounded-md" />
       <Skeleton className="h-10 w-24 rounded-md" />
+    </div>
+  );
+}
+
+// Activity Log skeleton with stats
+export function ActivityLogSkeleton() {
+  return (
+    <div className="space-y-6 animate-in fade-in-50 duration-300">
+      {/* Stats Cards */}
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i}>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg flex-shrink-0" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-7 w-12" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Activity List Card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between gap-3">
+            <Skeleton className="h-7 w-32" />
+            <Skeleton className="h-9 w-9 rounded-md" />
+          </div>
+          <Skeleton className="h-4 w-64 mt-2" />
+        </CardHeader>
+        <CardContent>
+          {/* Filters */}
+          <div className="space-y-3 mb-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Skeleton className="h-10 flex-1 rounded-md" />
+              <Skeleton className="h-10 w-full sm:w-[180px] rounded-md" />
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Skeleton className="h-10 w-full sm:w-[200px] rounded-md" />
+            </div>
+          </div>
+
+          {/* Results count */}
+          <div className="mb-3 pb-3 border-b">
+            <Skeleton className="h-4 w-48" />
+          </div>
+
+          {/* Activity Items */}
+          <div className="space-y-2">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-start gap-3 p-3 sm:p-3.5 rounded-lg border">
+                <Skeleton className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg flex-shrink-0" />
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-5 w-5 rounded-full" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

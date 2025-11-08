@@ -9,10 +9,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { MemberCardGridSkeleton, SearchBarSkeleton } from "@/components/ui/loading-skeletons";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+<<<<<<< HEAD
 import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { format, differenceInDays } from "date-fns";
 import { Search, Users, Volume2, VolumeX, Settings, Home, Grid3x3, List, LayoutList, CheckCircle, BarChart, Clock, TrendingUp, CalendarIcon, RefreshCw } from "lucide-react";
 import type { AttendanceRecord } from "@/lib/types";
+=======
+import { collection, query, where } from "firebase/firestore";
+import { format } from "date-fns";
+import { Search, Users, Volume2, VolumeX, Settings, Home, Grid3x3, List, LayoutList, CheckCircle, BarChart, Clock, TrendingUp, CalendarIcon, X, RefreshCw } from "lucide-react";
+import type { AttendanceRecord, MembershipPlan } from "@/lib/types";
+import { useQueryClient } from "@tanstack/react-query";
+>>>>>>> fe9bd05 (added pagination and mobile friendly views)
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import Link from "next/link";
@@ -34,8 +42,11 @@ import {
   type NotificationConfig
 } from "@/lib/attendance-notifications";
 import { RenewPlanDialog } from "@/components/dashboard/members/renew-plan-dialogue";
+<<<<<<< HEAD
 import type { MembershipPlan } from "@/lib/types";
 import { useQueryClient } from '@tanstack/react-query';
+=======
+>>>>>>> fe9bd05 (added pagination and mobile friendly views)
 
 // View mode type
 type ViewMode = "grid" | "list" | "compact";
@@ -53,6 +64,7 @@ export default function AttendancePage() {
   const prevRecordsRef = useRef<AttendanceRecord[]>([]);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+<<<<<<< HEAD
   
   // Renewal dialog state
   const [selectedMember, setSelectedMember] = useState<{
@@ -71,6 +83,10 @@ export default function AttendancePage() {
   console.log('👤 selectedMember state:', selectedMember);
   console.log('💾 currentPlanDetails state:', currentPlanDetails);
   console.log('⏳ isFetchingPlanDetails:', isFetchingPlanDetails);
+=======
+  const [renewOpen, setRenewOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<AttendanceRecord | null>(null);
+>>>>>>> fe9bd05 (added pagination and mobile friendly views)
 
   // View mode state with localStorage persistence
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -93,6 +109,7 @@ export default function AttendancePage() {
   });
   const notificationHandlerRef = useRef<AttendanceNotificationHandler | null>(null);
   const [audioInitialized, setAudioInitialized] = useState(false);
+  const [audioBannerDismissed, setAudioBannerDismissed] = useState(false);
 
   // Save view mode to localStorage
   useEffect(() => {
@@ -116,6 +133,7 @@ export default function AttendancePage() {
 
   const { data: allUsers } = useCollection(usersQuery);
 
+<<<<<<< HEAD
   // Query for membership plans
   const plansQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -207,6 +225,15 @@ export default function AttendancePage() {
 
     fetchCurrentPlanDetails();
   }, [selectedMember?.id, firestore, plansData, selectedMember?.currentEndDate]);
+=======
+  // Query for active membership plans
+  const plansQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, "membershipPlans"), where("status", "==", "active"));
+  }, [firestore]);
+
+  const { data: membershipPlans } = useCollection<MembershipPlan>(plansQuery);
+>>>>>>> fe9bd05 (added pagination and mobile friendly views)
 
   // Calculate attendance stats
   const attendanceStats = useMemo(() => {
@@ -387,33 +414,43 @@ export default function AttendancePage() {
   return (
     <div className="space-y-6">
       {/* Enable Audio Banner */}
-      {!audioInitialized && (notificationConfig.playSound || notificationConfig.playVoice) && (
+      {!audioInitialized && !audioBannerDismissed && (notificationConfig.playSound || notificationConfig.playVoice) && (
         <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900">
           <CardContent className="py-3">
             <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <Volume2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                <div>
+              <div className="flex items-center gap-3 flex-1">
+                <Volume2 className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0" />
+                <div className="flex-1">
                   <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Enable Audio Notifications</p>
                   <p className="text-xs text-blue-700 dark:text-blue-300">Click to activate voice announcements for check-ins</p>
                 </div>
               </div>
-              <Button
-                size="sm"
-                onClick={() => {
-                  // Initialize audio by playing a test sound
-                  if (notificationHandlerRef.current) {
-                    notificationHandlerRef.current.notify({
-                      memberName: 'Audio',
-                      alertType: 'active'
-                    });
-                  }
-                  setAudioInitialized(true);
-                }}
-                className="shrink-0"
-              >
-                Enable
-              </Button>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    // Initialize audio by playing a test sound
+                    if (notificationHandlerRef.current) {
+                      notificationHandlerRef.current.notify({
+                        memberName: 'Audio',
+                        alertType: 'active'
+                      });
+                    }
+                    setAudioInitialized(true);
+                  }}
+                >
+                  Enable
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setAudioBannerDismissed(true)}
+                  className="h-8 w-8 p-0 text-blue-600 hover:text-blue-900 hover:bg-blue-100 dark:text-blue-400 dark:hover:text-blue-100 dark:hover:bg-blue-900/50"
+                  aria-label="Dismiss notification"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -1003,6 +1040,7 @@ export default function AttendancePage() {
                 const isActive = record.membershipStatus === "active";
 
                 return (
+<<<<<<< HEAD
                   <Card
                     key={record.id}
                     className={`group overflow-hidden transition-all duration-300 rounded-[20px] ${
@@ -1078,6 +1116,83 @@ export default function AttendancePage() {
                       </Button>
                     </CardContent>
                   </Card>
+=======
+                  <div key={record.id} className="relative">
+                    <Card
+                      className={`overflow-hidden rounded-[20px] ${
+                        isActive
+                          ? "bg-gradient-to-b from-white to-green-50/30 border-t-4 border-t-green-500 shadow-[0_2px_8px_rgba(0,0,0,0.08),0_0_1px_rgba(0,0,0,0.1),0_4px_20px_rgba(16,185,129,0.15)] dark:bg-gradient-to-b dark:from-gray-800 dark:to-gray-800/95 dark:border-t-green-500 dark:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                          : "bg-white opacity-60 border-2 border-dashed border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:bg-gray-800 dark:opacity-50 dark:border-gray-700"
+                      } ${isNew ? "animate-pulse-glow" : ""}`}
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <CardContent className="p-8 pb-20">
+                        <div className="flex flex-col items-center text-center space-y-5">
+                          {/* Avatar with Enhanced Ring */}
+                          <div className="relative mb-2">
+                            <Avatar className={`h-28 w-28 border-4 border-white ${
+                              isActive
+                                ? "shadow-[0_4px_12px_rgba(0,0,0,0.1),0_0_0_4px_rgba(16,185,129,0.4)] dark:border-gray-700 dark:shadow-[0_4px_12px_rgba(0,0,0,0.5),0_0_0_4px_rgba(16,185,129,0.5)]"
+                                : "grayscale-[60%] opacity-70 shadow-[0_4px_12px_rgba(0,0,0,0.08)] dark:border-gray-600/30"
+                            }`}>
+                              <AvatarImage src={record.profileImageUrl} alt={record.name} className={isActive ? "" : "grayscale-[60%]"} />
+                              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-2xl">
+                                {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                              </AvatarFallback>
+                            </Avatar>
+                            {isNew && (
+                              <div className="absolute -top-1 -right-1 h-5 w-5 bg-green-500 rounded-full animate-ping" />
+                            )}
+                          </div>
+
+                          {/* Name */}
+                          <div className="w-full">
+                            <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 truncate mb-2">{record.name}</h3>
+                          </div>
+
+                          {/* Check-in Time - Hero Element */}
+                          <div className="w-full">
+                            <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                              {format(new Date(record.checkInTime), "hh:mm a")}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {getRelativeTime(record.checkInTime)}
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Action Buttons */}
+                    <div className="absolute bottom-4 left-4 right-4 flex gap-2 z-10">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 bg-white/90 backdrop-blur-sm hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800"
+                        onClick={() => {
+                          window.location.href = `/dashboard/members/view/${record.userId}`;
+                        }}
+                      >
+                        <Users className="h-3 w-3 mr-1" />
+                        View
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="flex-1 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelectedMember(record);
+                          setRenewOpen(true);
+                        }}
+                      >
+                        <RefreshCw className="h-3 w-3 mr-1" />
+                        Renew
+                      </Button>
+                    </div>
+                  </div>
+>>>>>>> fe9bd05 (added pagination and mobile friendly views)
                 );
               })}
             </div>
@@ -1093,6 +1208,7 @@ export default function AttendancePage() {
                     const isNew = newRecordIds.has(record.id);
 
                     return (
+<<<<<<< HEAD
                       <div
                         key={record.id}
                         className={`flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors ${
@@ -1112,48 +1228,70 @@ export default function AttendancePage() {
                             <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full animate-ping" />
                           )}
                         </div>
+=======
+                      <div key={record.id} className="relative">
+                        <Link href={`/dashboard/members/view/${record.userId}`}>
+                          <div
+                            className={`flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer ${
+                              isNew ? "bg-green-50 border-l-4 border-l-green-500" : ""
+                            }`}
+                          >
+                          {/* Avatar */}
+                          <div className="relative flex-shrink-0">
+                            <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
+                              <AvatarImage src={record.profileImageUrl} alt={record.name} />
+                              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                                {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                              </AvatarFallback>
+                            </Avatar>
+                            {isNew && (
+                              <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full animate-ping" />
+                            )}
+                          </div>
+>>>>>>> fe9bd05 (added pagination and mobile friendly views)
 
-                        {/* Name and Email */}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-sm truncate">{record.name}</h3>
-                          <p className="text-xs text-muted-foreground truncate">{record.email || "No email"}</p>
-                        </div>
+                          {/* Name and Email */}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-sm truncate">{record.name}</h3>
+                            <p className="text-xs text-muted-foreground truncate">{record.email || "No email"}</p>
+                          </div>
 
-                        {/* Check-in Time */}
-                        <div className="hidden sm:flex flex-col items-end">
-                          <p className="text-xs text-muted-foreground">Check-in</p>
-                          <p className="font-semibold text-sm">
-                            {format(new Date(record.checkInTime), "hh:mm a")}
-                          </p>
-                        </div>
+                          {/* Check-in Time */}
+                          <div className="hidden sm:flex flex-col items-end">
+                            <p className="text-xs text-muted-foreground">Check-in</p>
+                            <p className="font-semibold text-sm">
+                              {format(new Date(record.checkInTime), "hh:mm a")}
+                            </p>
+                          </div>
 
-                        {/* ESSL ID */}
-                        <div className="hidden md:block">
-                          {record.biometricDeviceId && (
-                            <Badge variant="outline" className="text-xs">
-                              {record.biometricDeviceId}
-                            </Badge>
-                          )}
-                        </div>
+                          {/* ESSL ID */}
+                          <div className="hidden md:block">
+                            {record.biometricDeviceId && (
+                              <Badge variant="outline" className="text-xs">
+                                {record.biometricDeviceId}
+                              </Badge>
+                            )}
+                          </div>
 
-                        {/* Membership Status */}
-                        <div className="hidden lg:block">
-                          {membershipInfo && (
-                            <Badge
-                              variant={
-                                record.membershipStatus === "active"
-                                  ? "default"
-                                  : record.membershipStatus === "expired"
-                                  ? "destructive"
-                                  : "secondary"
-                              }
-                              className="text-xs"
-                            >
-                              {record.membershipStatus?.charAt(0).toUpperCase() + record.membershipStatus?.slice(1)}
-                            </Badge>
-                          )}
-                        </div>
+                          {/* Membership Status */}
+                          <div className="hidden lg:block">
+                            {membershipInfo && (
+                              <Badge
+                                variant={
+                                  record.membershipStatus === "active"
+                                    ? "default"
+                                    : record.membershipStatus === "expired"
+                                    ? "destructive"
+                                    : "secondary"
+                                }
+                                className="text-xs"
+                              >
+                                {record.membershipStatus?.charAt(0).toUpperCase() + record.membershipStatus?.slice(1)}
+                              </Badge>
+                            )}
+                          </div>
 
+<<<<<<< HEAD
                         {/* Mobile Check-in (visible on mobile inside link) */}
                         <div className="sm:hidden text-right">
                           <p className="font-semibold text-xs">
@@ -1180,6 +1318,32 @@ export default function AttendancePage() {
                           <RefreshCw className="h-4 w-4" />
                           <span className="hidden xl:inline">Renew</span>
                         </Button>
+=======
+                          {/* Mobile Check-in (visible on mobile) */}
+                          <div className="sm:hidden text-right">
+                            <p className="font-semibold text-xs">
+                              {format(new Date(record.checkInTime), "hh:mm a")}
+                            </p>
+                          </div>
+
+                          {/* Renew Plan Button */}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-shrink-0"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSelectedMember(record);
+                              setRenewOpen(true);
+                            }}
+                          >
+                            <RefreshCw className="h-3 w-3 mr-1" />
+                            <span className="hidden sm:inline">Renew</span>
+                          </Button>
+                        </div>
+                        </Link>
+>>>>>>> fe9bd05 (added pagination and mobile friendly views)
                       </div>
                     );
                   })}
@@ -1197,6 +1361,7 @@ export default function AttendancePage() {
                     const isNew = newRecordIds.has(record.id);
 
                     return (
+<<<<<<< HEAD
                       <div
                         key={record.id}
                         className={`flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors ${
@@ -1216,22 +1381,60 @@ export default function AttendancePage() {
                             <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-green-500 rounded-full animate-ping" />
                           )}
                         </div>
+=======
+                      <div key={record.id} className="relative">
+                        <Link href={`/dashboard/members/view/${record.userId}`}>
+                          <div
+                            className={`flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors cursor-pointer ${
+                              isNew ? "bg-green-50 border-l-4 border-l-green-500" : ""
+                            }`}
+                          >
+                          {/* Avatar */}
+                          <div className="relative flex-shrink-0">
+                            <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
+                              <AvatarImage src={record.profileImageUrl} alt={record.name} />
+                              <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                                {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                              </AvatarFallback>
+                            </Avatar>
+                            {isNew && (
+                              <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-green-500 rounded-full animate-ping" />
+                            )}
+                          </div>
+>>>>>>> fe9bd05 (added pagination and mobile friendly views)
 
-                        {/* Name */}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-sm truncate">{record.name}</h3>
-                        </div>
+                          {/* Name */}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-sm truncate">{record.name}</h3>
+                          </div>
 
-                        {/* Check-in Time */}
-                        <div className="text-right flex-shrink-0">
-                          <p className="font-semibold text-sm">
-                            {format(new Date(record.checkInTime), "hh:mm a")}
-                          </p>
-                          <p className="text-xs text-muted-foreground hidden sm:block">
-                            {format(new Date(record.checkInTime), "MMM dd")}
-                          </p>
+                          {/* Check-in Time */}
+                          <div className="text-right flex-shrink-0">
+                            <p className="font-semibold text-sm">
+                              {format(new Date(record.checkInTime), "hh:mm a")}
+                            </p>
+                            <p className="text-xs text-muted-foreground hidden sm:block">
+                              {format(new Date(record.checkInTime), "MMM dd")}
+                            </p>
+                          </div>
+
+                          {/* Renew Plan Button */}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-shrink-0 h-8 w-8 p-0"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSelectedMember(record);
+                              setRenewOpen(true);
+                            }}
+                          >
+                            <RefreshCw className="h-3 w-3" />
+                          </Button>
                         </div>
                         </Link>
+<<<<<<< HEAD
 
                         {/* Renew Button - Outside Link */}
                         <Button
@@ -1250,6 +1453,8 @@ export default function AttendancePage() {
                         >
                           <RefreshCw className="h-4 w-4" />
                         </Button>
+=======
+>>>>>>> fe9bd05 (added pagination and mobile friendly views)
                       </div>
                     );
                   })}
@@ -1260,6 +1465,7 @@ export default function AttendancePage() {
         </>
       )}
 
+<<<<<<< HEAD
       {/* Renew Membership Dialog */}
       {selectedMember && plansData && !isFetchingPlanDetails && (() => {
         console.log('🎨 Rendering RenewPlanDialog with:', {
@@ -1292,6 +1498,26 @@ export default function AttendancePage() {
           />
         );
       })()}
+=======
+      {/* Renew Plan Dialog */}
+      {selectedMember && membershipPlans && (
+        <RenewPlanDialog
+          memberId={selectedMember.userId}
+          memberName={selectedMember.name}
+          currentEndDate={selectedMember.membershipEnd || new Date().toISOString()}
+          availablePlans={membershipPlans}
+          open={renewOpen}
+          onOpenChange={setRenewOpen}
+          onSuccess={() => {
+            // Invalidate queries to refresh data
+            queryClient.invalidateQueries({ queryKey: ['processedMembers'] });
+            queryClient.invalidateQueries({ queryKey: ['revenueSummary'] });
+            queryClient.invalidateQueries({ queryKey: ['activityLogs'] });
+            queryClient.invalidateQueries({ queryKey: ['payments'] });
+          }}
+        />
+      )}
+>>>>>>> fe9bd05 (added pagination and mobile friendly views)
     </div>
   );
 }

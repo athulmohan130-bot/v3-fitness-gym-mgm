@@ -1,7 +1,7 @@
 
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useFirebase } from '@/firebase/provider';
 import { doc, getDoc } from 'firebase/firestore';
@@ -52,20 +52,31 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Track the actual page path at mount time (before Next.js can mess it up)
+  const [initialPath] = useState(() =>
+    typeof window !== 'undefined' ? window.location.pathname : '/'
+  );
+  const [hasCheckedInitialRedirect, setHasCheckedInitialRedirect] = useState(false);
+
 useEffect(() => {
   let isMounted = true;
 
   const handleAuthChange = async () => {
+    // Don't do anything while Firebase is still checking auth
     if (isUserLoading) return;
-    setLoading(true);
 
     if (!firebaseUser) {
+      // Firebase has confirmed there's no user
       if (isMounted) {
         setUser(null);
         setLoading(false);
+        setHasInitialized(true);
       }
       return;
     }
+
+    // We have a Firebase user, fetch their profile
+    setLoading(true);
 
     if (!firestore) {
       setLoading(false);
@@ -109,22 +120,51 @@ useEffect(() => {
     isMounted = false;
   };
 }, [firebaseUser, isUserLoading, firestore, auth]);
-  
+
+  // Handle redirect on initial page load using the browser's actual URL
   useEffect(() => {
-    // Don't redirect until auth has been fully initialized
     if (!hasInitialized) return;
     if (loading) return;
+    if (hasCheckedInitialRedirect) return;
 
-    const isAuthPage = pathname === '/login';
+    setHasCheckedInitialRedirect(true);
 
+    // Use the initial path captured from window.location, NOT usePathname()
+    const isAuthPage = initialPath === '/login';
+
+    console.log('[AuthProvider] Initial redirect check:', {
+      initialPath,
+      pathname,
+      isAuthPage,
+      hasUser: !!user,
+      willRedirect: user && isAuthPage
+    });
+
+<<<<<<< HEAD
     // Only redirect logged-in users away from login page to overview
     // Don't redirect on other pages - stay where you are
     // ProtectedRoute handles redirecting unauthenticated users to login
+=======
+    // Only redirect logged-in users away from login page
+>>>>>>> fe9bd05 (added pagination and mobile friendly views)
     if (user && isAuthPage) {
-      router.replace('/dashboard/overview');
-    }
-  }, [user, loading, pathname, router, hasInitialized]);
+      // Check if there's a return URL stored
+      const returnUrl = typeof window !== 'undefined' ? sessionStorage.getItem('returnUrl') : null;
 
+<<<<<<< HEAD
+=======
+      if (returnUrl && returnUrl !== '/login') {
+        console.log('[AuthProvider] REDIRECTING to stored return URL:', returnUrl);
+        sessionStorage.removeItem('returnUrl'); // Clear it
+        router.replace(returnUrl);
+      } else {
+        console.log('[AuthProvider] REDIRECTING from login to dashboard/overview');
+        router.replace('/dashboard/overview');
+      }
+    }
+  }, [user, loading, hasInitialized, initialPath, pathname, hasCheckedInitialRedirect, router]);
+
+>>>>>>> fe9bd05 (added pagination and mobile friendly views)
   const login = useCallback(async (email: string, password: string) => {
     if (!auth) throw new Error('Auth service not initialized');
     await signInWithEmailAndPassword(auth, email, password);
@@ -140,7 +180,9 @@ useEffect(() => {
   }, [auth]);
 
   const value = useMemo(() => ({ user, loading, login, logout }), [user, loading, login, logout]);
-  const isAuthPage = pathname === '/login';
+
+  // Use initial path for loading screen decisions to avoid Next.js pathname bugs
+  const isAuthPage = initialPath === '/login';
 
   // If we are still loading user state, show loading screen
   if (loading || isUserLoading) {

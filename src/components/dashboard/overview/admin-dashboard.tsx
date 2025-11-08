@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { IndianRupee, Users, Activity, CreditCard, ArrowUp, TrendingUp, UserPlus, TrendingDown, Plus, FileText, Calendar } from "lucide-react";
+import { IndianRupee, Users, Activity, CreditCard, ArrowUp, TrendingUp, UserPlus, TrendingDown, Plus, FileText, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useFirestore } from "@/firebase";
 import { doc, getDoc, query, collection, orderBy, limit, getDocs } from "firebase/firestore";
@@ -47,6 +47,8 @@ const CACHE_TIME = 1000 * 60 * 5; // 5 minutes
 export function AdminDashboard() {
   const firestore = useFirestore();
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+  const [recentMembersPage, setRecentMembersPage] = useState(1);
+  const MEMBERS_PER_PAGE = 7;
 
   const { data: userSummary, isLoading: userSummaryLoading } = useQuery<UserSummary | null>({
     queryKey: ['userSummary'],
@@ -76,13 +78,23 @@ export function AdminDashboard() {
     queryKey: ['recentUsersDashboard'],
     queryFn: async () => {
       if (!firestore) return [];
-      const q = query(collection(firestore, "users"), orderBy("joinDate", "desc"), limit(8));
+      const q = query(collection(firestore, "users"), orderBy("joinDate", "desc"), limit(50));
       const snapshot = await getDocs(q);
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GymUser));
     },
     enabled: !!firestore,
     staleTime: CACHE_TIME,
   });
+
+  // Paginate recent members
+  const paginatedRecentMembers = useMemo(() => {
+    if (!recentUsersData) return [];
+    const startIndex = (recentMembersPage - 1) * MEMBERS_PER_PAGE;
+    const endIndex = startIndex + MEMBERS_PER_PAGE;
+    return recentUsersData.slice(startIndex, endIndex);
+  }, [recentUsersData, recentMembersPage, MEMBERS_PER_PAGE]);
+
+  const totalMembersPages = Math.ceil((recentUsersData?.length || 0) / MEMBERS_PER_PAGE);
 
   // Calculate current month revenue and trends
   const monthlyRevenueData = useMemo(() => {
@@ -420,21 +432,18 @@ export function AdminDashboard() {
               </Button>
             </div>
             <CardDescription className="mt-2">
-              {recentUsersData && recentUsersData.length < totalMembers
-                ? `Showing ${recentUsersData.length} most recent of ${totalMembers} total members`
-                : `All ${totalMembers} member${totalMembers !== 1 ? 's' : ''}`
-              }
+              Showing {paginatedRecentMembers.length} of {recentUsersData?.length || 0} recent members
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <div className="space-y-4">
-              {recentUsersData && recentUsersData.length > 0 ? (
-                recentUsersData.map((user, index) => (
+              {paginatedRecentMembers && paginatedRecentMembers.length > 0 ? (
+                paginatedRecentMembers.map((user, index) => (
                   <div
                     key={user.id}
                     className={cn(
                       "flex items-center gap-3 p-2 rounded-lg hover:bg-background/80 transition-colors cursor-pointer",
-                      index < recentUsersData.length - 1 && "border-b border-border/50 pb-4"
+                      index < paginatedRecentMembers.length - 1 && "border-b border-border/50 pb-4"
                     )}
                   >
                     <Avatar className="h-10 w-10 border-2 border-primary/10">
@@ -461,6 +470,35 @@ export function AdminDashboard() {
                 </div>
               )}
             </div>
+
+            {/* Pagination Controls */}
+            {totalMembersPages > 1 && (
+              <div className="flex items-center justify-between pt-4 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRecentMembersPage(prev => Math.max(1, prev - 1))}
+                  disabled={recentMembersPage === 1}
+                  className="h-8"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+
+                <div className="text-xs text-muted-foreground">
+                  Page {recentMembersPage} of {totalMembersPages}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRecentMembersPage(prev => Math.min(totalMembersPages, prev + 1))}
+                  disabled={recentMembersPage === totalMembersPages}
+                  className="h-8"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

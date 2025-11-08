@@ -3,20 +3,28 @@
 import { useAuth } from "@/lib/auth-provider";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    // Only redirect once auth check is complete
+    if (loading) return;
+
+    // If no user after loading complete, redirect to login
+    if (!user) {
+      // Store the current path to return to after login
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/login') {
+        sessionStorage.setItem('returnUrl', currentPath);
+      }
       router.replace("/login");
     }
   }, [user, loading, router]);
 
-  // Show loading screen while checking auth OR while redirecting
-  if (loading || !user) {
+  // Show loading screen ONLY while checking auth
+  if (loading) {
     return (
       <div className="fixed inset-0 z-50 flex h-screen w-full flex-col items-center justify-center bg-background transition-opacity duration-500 animate-fadeIn">
         {/* Logo / App name */}
@@ -34,10 +42,15 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
         {/* Loading text */}
         <p className="mt-6 text-sm text-muted-foreground animate-pulse">
-          {!user && !loading ? "Redirecting to login..." : "Loading..."}
+          Loading...
         </p>
       </div>
     );
+  }
+
+  // If not loading and no user, don't render anything (redirect is happening)
+  if (!user) {
+    return null;
   }
 
   return <>{children}</>;
