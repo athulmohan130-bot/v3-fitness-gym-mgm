@@ -9,18 +9,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { MemberCardGridSkeleton, SearchBarSkeleton } from "@/components/ui/loading-skeletons";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-<<<<<<< HEAD
-import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
+import { collection, query, orderBy, limit, getDocs, where } from "firebase/firestore";
 import { format, differenceInDays } from "date-fns";
-import { Search, Users, Volume2, VolumeX, Settings, Home, Grid3x3, List, LayoutList, CheckCircle, BarChart, Clock, TrendingUp, CalendarIcon, RefreshCw } from "lucide-react";
-import type { AttendanceRecord } from "@/lib/types";
-=======
-import { collection, query, where } from "firebase/firestore";
-import { format } from "date-fns";
 import { Search, Users, Volume2, VolumeX, Settings, Home, Grid3x3, List, LayoutList, CheckCircle, BarChart, Clock, TrendingUp, CalendarIcon, X, RefreshCw } from "lucide-react";
 import type { AttendanceRecord, MembershipPlan } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
->>>>>>> fe9bd05 (added pagination and mobile friendly views)
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import Link from "next/link";
@@ -42,11 +35,6 @@ import {
   type NotificationConfig
 } from "@/lib/attendance-notifications";
 import { RenewPlanDialog } from "@/components/dashboard/members/renew-plan-dialogue";
-<<<<<<< HEAD
-import type { MembershipPlan } from "@/lib/types";
-import { useQueryClient } from '@tanstack/react-query';
-=======
->>>>>>> fe9bd05 (added pagination and mobile friendly views)
 
 // View mode type
 type ViewMode = "grid" | "list" | "compact";
@@ -64,9 +52,9 @@ export default function AttendancePage() {
   const prevRecordsRef = useRef<AttendanceRecord[]>([]);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
-<<<<<<< HEAD
-  
+
   // Renewal dialog state
+  const [renewOpen, setRenewOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<{
     id: string;
     name: string;
@@ -83,10 +71,6 @@ export default function AttendancePage() {
   console.log('👤 selectedMember state:', selectedMember);
   console.log('💾 currentPlanDetails state:', currentPlanDetails);
   console.log('⏳ isFetchingPlanDetails:', isFetchingPlanDetails);
-=======
-  const [renewOpen, setRenewOpen] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<AttendanceRecord | null>(null);
->>>>>>> fe9bd05 (added pagination and mobile friendly views)
 
   // View mode state with localStorage persistence
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -133,7 +117,6 @@ export default function AttendancePage() {
 
   const { data: allUsers } = useCollection(usersQuery);
 
-<<<<<<< HEAD
   // Query for membership plans
   const plansQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -172,18 +155,18 @@ export default function AttendancePage() {
         const historyRef = collection(firestore, "users", selectedMember.id, "membershipHistory");
         const historyQuery = query(historyRef, orderBy("createdAt", "desc"), limit(1));
         const snapshot = await getDocs(historyQuery);
-        
+
         if (!snapshot.empty) {
           const latestMembership = snapshot.docs[0].data();
           const planId = latestMembership.membershipPlanId;
-          
+
           console.log('📋 Latest membership from history:', {
             planId,
             planName: latestMembership.membershipPlan,
             membershipEnd: latestMembership.membershipEnd,
             price: latestMembership.price
           });
-          
+
           // Find the plan in available plans to get accurate pricing
           const plan = plansData.find(p => p.id === planId);
           if (plan) {
@@ -197,7 +180,7 @@ export default function AttendancePage() {
               price: plan.price,
               duration: plan.durationInDays,
             });
-            
+
             // Update selectedMember with the planId for reference
             setSelectedMember(prev => prev ? { ...prev, currentPlanId: planId } : null);
           } else {
@@ -205,7 +188,7 @@ export default function AttendancePage() {
             // Fallback to using data from membership history
             setCurrentPlanDetails({
               price: latestMembership.price || 0,
-              duration: latestMembership.membershipEnd && latestMembership.membershipStart 
+              duration: latestMembership.membershipEnd && latestMembership.membershipStart
                 ? differenceInDays(new Date(latestMembership.membershipEnd), new Date(latestMembership.membershipStart))
                 : 30, // default 30 days
             });
@@ -225,15 +208,6 @@ export default function AttendancePage() {
 
     fetchCurrentPlanDetails();
   }, [selectedMember?.id, firestore, plansData, selectedMember?.currentEndDate]);
-=======
-  // Query for active membership plans
-  const plansQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, "membershipPlans"), where("status", "==", "active"));
-  }, [firestore]);
-
-  const { data: membershipPlans } = useCollection<MembershipPlan>(plansQuery);
->>>>>>> fe9bd05 (added pagination and mobile friendly views)
 
   // Calculate attendance stats
   const attendanceStats = useMemo(() => {
@@ -1040,126 +1014,60 @@ export default function AttendancePage() {
                 const isActive = record.membershipStatus === "active";
 
                 return (
-<<<<<<< HEAD
-                  <Card
-                    key={record.id}
-                    className={`group overflow-hidden transition-all duration-300 rounded-[20px] ${
-                      isActive
-                        ? "bg-gradient-to-b from-white to-green-50/30 border-t-4 border-t-green-500 shadow-[0_2px_8px_rgba(0,0,0,0.08),0_0_1px_rgba(0,0,0,0.1),0_4px_20px_rgba(16,185,129,0.15)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.12),0_0_1px_rgba(0,0,0,0.1),0_8px_32px_rgba(16,185,129,0.2)] hover:-translate-y-2 dark:bg-gradient-to-b dark:from-gray-800 dark:to-gray-800/95 dark:border-t-green-500 dark:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
-                        : "bg-white opacity-60 border-2 border-dashed border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] hover:-translate-y-1 dark:bg-gray-800 dark:opacity-50 dark:border-gray-700"
-                    } ${isNew ? "animate-pulse-glow" : ""}`}
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    <CardContent className="p-8">
-                      <Link href={`/dashboard/members/view/${record.userId}`} className="cursor-pointer">
-                      <div className="flex flex-col items-center text-center space-y-5">
-                        {/* Avatar with Enhanced Ring */}
-                        <div className="relative mb-2">
-                          <Avatar className={`h-28 w-28 border-4 border-white transition-all duration-300 group-hover:scale-105 ${
-                            isActive
-                              ? "shadow-[0_4px_12px_rgba(0,0,0,0.1),0_0_0_4px_rgba(16,185,129,0.4)] dark:border-gray-700 dark:shadow-[0_4px_12px_rgba(0,0,0,0.5),0_0_0_4px_rgba(16,185,129,0.5)]"
-                              : "grayscale-[60%] opacity-70 shadow-[0_4px_12px_rgba(0,0,0,0.08)] dark:border-gray-600/30"
-                          }`}>
-                            <AvatarImage src={record.profileImageUrl} alt={record.name} className={isActive ? "" : "grayscale-[60%]"} />
-                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-2xl">
-                              {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-                            </AvatarFallback>
-                          </Avatar>
-                          {isNew && (
-                            <div className="absolute -top-1 -right-1 h-5 w-5 bg-green-500 rounded-full animate-ping" />
-                          )}
-                        </div>
-
-                        {/* Name */}
-                        <div className="w-full">
-                          <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 truncate mb-2">{record.name}</h3>
-                        </div>
-
-                        {/* Check-in Time - Hero Element */}
-                        <div className="w-full">
-                          <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-                            {format(new Date(record.checkInTime), "hh:mm a")}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {getRelativeTime(record.checkInTime)}
-                          </p>
-                        </div>
-
-                        {/* Device ID Badge */}
-                        {record.biometricDeviceId && (
-                          <div className="mt-2">
-                            <Badge variant="outline" className="text-[10px] text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 px-2 py-0.5">
-                              #{record.biometricDeviceId}
-                            </Badge>
-                          </div>
-                        )}
-                      </div>
-                      </Link>
-
-                      {/* Renew Membership Button - Outside Link */}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full mt-4 gap-2 hover:bg-green-50 hover:border-green-500 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          setSelectedMember({
-                            id: record.userId,
-                            name: record.name,
-                            currentEndDate: record.membershipEnd || new Date().toISOString(),
-                          });
-                        }}
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                        Renew
-                      </Button>
-                    </CardContent>
-                  </Card>
-=======
                   <div key={record.id} className="relative">
                     <Card
-                      className={`overflow-hidden rounded-[20px] ${
+                      className={`group overflow-hidden transition-all duration-300 rounded-[20px] ${
                         isActive
-                          ? "bg-gradient-to-b from-white to-green-50/30 border-t-4 border-t-green-500 shadow-[0_2px_8px_rgba(0,0,0,0.08),0_0_1px_rgba(0,0,0,0.1),0_4px_20px_rgba(16,185,129,0.15)] dark:bg-gradient-to-b dark:from-gray-800 dark:to-gray-800/95 dark:border-t-green-500 dark:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
-                          : "bg-white opacity-60 border-2 border-dashed border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:bg-gray-800 dark:opacity-50 dark:border-gray-700"
+                          ? "bg-gradient-to-b from-white to-green-50/30 border-t-4 border-t-green-500 shadow-[0_2px_8px_rgba(0,0,0,0.08),0_0_1px_rgba(0,0,0,0.1),0_4px_20px_rgba(16,185,129,0.15)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.12),0_0_1px_rgba(0,0,0,0.1),0_8px_32px_rgba(16,185,129,0.2)] hover:-translate-y-2 dark:bg-gradient-to-b dark:from-gray-800 dark:to-gray-800/95 dark:border-t-green-500 dark:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                          : "bg-white opacity-60 border-2 border-dashed border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] hover:-translate-y-1 dark:bg-gray-800 dark:opacity-50 dark:border-gray-700"
                       } ${isNew ? "animate-pulse-glow" : ""}`}
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
                       <CardContent className="p-8 pb-20">
-                        <div className="flex flex-col items-center text-center space-y-5">
-                          {/* Avatar with Enhanced Ring */}
-                          <div className="relative mb-2">
-                            <Avatar className={`h-28 w-28 border-4 border-white ${
-                              isActive
-                                ? "shadow-[0_4px_12px_rgba(0,0,0,0.1),0_0_0_4px_rgba(16,185,129,0.4)] dark:border-gray-700 dark:shadow-[0_4px_12px_rgba(0,0,0,0.5),0_0_0_4px_rgba(16,185,129,0.5)]"
-                                : "grayscale-[60%] opacity-70 shadow-[0_4px_12px_rgba(0,0,0,0.08)] dark:border-gray-600/30"
-                            }`}>
-                              <AvatarImage src={record.profileImageUrl} alt={record.name} className={isActive ? "" : "grayscale-[60%]"} />
-                              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-2xl">
-                                {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-                              </AvatarFallback>
-                            </Avatar>
-                            {isNew && (
-                              <div className="absolute -top-1 -right-1 h-5 w-5 bg-green-500 rounded-full animate-ping" />
+                        <Link href={`/dashboard/members/view/${record.userId}`} className="cursor-pointer">
+                          <div className="flex flex-col items-center text-center space-y-5">
+                            {/* Avatar with Enhanced Ring */}
+                            <div className="relative mb-2">
+                              <Avatar className={`h-28 w-28 border-4 border-white transition-all duration-300 group-hover:scale-105 ${
+                                isActive
+                                  ? "shadow-[0_4px_12px_rgba(0,0,0,0.1),0_0_0_4px_rgba(16,185,129,0.4)] dark:border-gray-700 dark:shadow-[0_4px_12px_rgba(0,0,0,0.5),0_0_0_4px_rgba(16,185,129,0.5)]"
+                                  : "grayscale-[60%] opacity-70 shadow-[0_4px_12px_rgba(0,0,0,0.08)] dark:border-gray-600/30"
+                              }`}>
+                                <AvatarImage src={record.profileImageUrl} alt={record.name} className={isActive ? "" : "grayscale-[60%]"} />
+                                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-2xl">
+                                  {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                                </AvatarFallback>
+                              </Avatar>
+                              {isNew && (
+                                <div className="absolute -top-1 -right-1 h-5 w-5 bg-green-500 rounded-full animate-ping" />
+                              )}
+                            </div>
+
+                            {/* Name */}
+                            <div className="w-full">
+                              <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 truncate mb-2">{record.name}</h3>
+                            </div>
+
+                            {/* Check-in Time - Hero Element */}
+                            <div className="w-full">
+                              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                                {format(new Date(record.checkInTime), "hh:mm a")}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {getRelativeTime(record.checkInTime)}
+                              </p>
+                            </div>
+
+                            {/* Device ID Badge */}
+                            {record.biometricDeviceId && (
+                              <div className="mt-2">
+                                <Badge variant="outline" className="text-[10px] text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 px-2 py-0.5">
+                                  #{record.biometricDeviceId}
+                                </Badge>
+                              </div>
                             )}
                           </div>
-
-                          {/* Name */}
-                          <div className="w-full">
-                            <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 truncate mb-2">{record.name}</h3>
-                          </div>
-
-                          {/* Check-in Time - Hero Element */}
-                          <div className="w-full">
-                            <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-                              {format(new Date(record.checkInTime), "hh:mm a")}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {getRelativeTime(record.checkInTime)}
-                            </p>
-                          </div>
-                        </div>
+                        </Link>
                       </CardContent>
                     </Card>
 
@@ -1183,7 +1091,11 @@ export default function AttendancePage() {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          setSelectedMember(record);
+                          setSelectedMember({
+                            id: record.userId,
+                            name: record.name,
+                            currentEndDate: record.membershipEnd || new Date().toISOString(),
+                          });
                           setRenewOpen(true);
                         }}
                       >
@@ -1192,7 +1104,6 @@ export default function AttendancePage() {
                       </Button>
                     </div>
                   </div>
->>>>>>> fe9bd05 (added pagination and mobile friendly views)
                 );
               })}
             </div>
@@ -1208,27 +1119,6 @@ export default function AttendancePage() {
                     const isNew = newRecordIds.has(record.id);
 
                     return (
-<<<<<<< HEAD
-                      <div
-                        key={record.id}
-                        className={`flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors ${
-                          isNew ? "bg-green-50 border-l-4 border-l-green-500" : ""
-                        }`}
-                      >
-                        <Link href={`/dashboard/members/view/${record.userId}`} className="flex items-center gap-4 flex-1 cursor-pointer">
-                        {/* Avatar */}
-                        <div className="relative flex-shrink-0">
-                          <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
-                            <AvatarImage src={record.profileImageUrl} alt={record.name} />
-                            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                              {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-                            </AvatarFallback>
-                          </Avatar>
-                          {isNew && (
-                            <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full animate-ping" />
-                          )}
-                        </div>
-=======
                       <div key={record.id} className="relative">
                         <Link href={`/dashboard/members/view/${record.userId}`}>
                           <div
@@ -1236,19 +1126,18 @@ export default function AttendancePage() {
                               isNew ? "bg-green-50 border-l-4 border-l-green-500" : ""
                             }`}
                           >
-                          {/* Avatar */}
-                          <div className="relative flex-shrink-0">
-                            <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
-                              <AvatarImage src={record.profileImageUrl} alt={record.name} />
-                              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                                {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-                              </AvatarFallback>
-                            </Avatar>
-                            {isNew && (
-                              <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full animate-ping" />
-                            )}
-                          </div>
->>>>>>> fe9bd05 (added pagination and mobile friendly views)
+                            {/* Avatar */}
+                            <div className="relative flex-shrink-0">
+                              <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
+                                <AvatarImage src={record.profileImageUrl} alt={record.name} />
+                                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                                  {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                                </AvatarFallback>
+                              </Avatar>
+                              {isNew && (
+                                <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full animate-ping" />
+                              )}
+                            </div>
 
                           {/* Name and Email */}
                           <div className="flex-1 min-w-0">
@@ -1291,34 +1180,6 @@ export default function AttendancePage() {
                             )}
                           </div>
 
-<<<<<<< HEAD
-                        {/* Mobile Check-in (visible on mobile inside link) */}
-                        <div className="sm:hidden text-right">
-                          <p className="font-semibold text-xs">
-                            {format(new Date(record.checkInTime), "hh:mm a")}
-                          </p>
-                        </div>
-                        </Link>
-
-                        {/* Renew Button - Outside Link */}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="gap-2 hover:bg-green-50 hover:border-green-500 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            setSelectedMember({
-                              id: record.userId,
-                              name: record.name,
-                              currentEndDate: record.membershipEnd || new Date().toISOString(),
-                            });
-                          }}
-                        >
-                          <RefreshCw className="h-4 w-4" />
-                          <span className="hidden xl:inline">Renew</span>
-                        </Button>
-=======
                           {/* Mobile Check-in (visible on mobile) */}
                           <div className="sm:hidden text-right">
                             <p className="font-semibold text-xs">
@@ -1330,20 +1191,23 @@ export default function AttendancePage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-shrink-0"
+                            className="flex-shrink-0 gap-2 hover:bg-green-50 hover:border-green-500 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400"
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              setSelectedMember(record);
+                              setSelectedMember({
+                                id: record.userId,
+                                name: record.name,
+                                currentEndDate: record.membershipEnd || new Date().toISOString(),
+                              });
                               setRenewOpen(true);
                             }}
                           >
-                            <RefreshCw className="h-3 w-3 mr-1" />
-                            <span className="hidden sm:inline">Renew</span>
+                            <RefreshCw className="h-3 w-3" />
+                            <span className="hidden xl:inline">Renew</span>
                           </Button>
                         </div>
                         </Link>
->>>>>>> fe9bd05 (added pagination and mobile friendly views)
                       </div>
                     );
                   })}
@@ -1361,27 +1225,6 @@ export default function AttendancePage() {
                     const isNew = newRecordIds.has(record.id);
 
                     return (
-<<<<<<< HEAD
-                      <div
-                        key={record.id}
-                        className={`flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors ${
-                          isNew ? "bg-green-50 border-l-4 border-l-green-500" : ""
-                        }`}
-                      >
-                        <Link href={`/dashboard/members/view/${record.userId}`} className="flex items-center gap-3 flex-1 cursor-pointer">
-                        {/* Avatar */}
-                        <div className="relative flex-shrink-0">
-                          <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
-                            <AvatarImage src={record.profileImageUrl} alt={record.name} />
-                            <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
-                              {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-                            </AvatarFallback>
-                          </Avatar>
-                          {isNew && (
-                            <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-green-500 rounded-full animate-ping" />
-                          )}
-                        </div>
-=======
                       <div key={record.id} className="relative">
                         <Link href={`/dashboard/members/view/${record.userId}`}>
                           <div
@@ -1389,72 +1232,54 @@ export default function AttendancePage() {
                               isNew ? "bg-green-50 border-l-4 border-l-green-500" : ""
                             }`}
                           >
-                          {/* Avatar */}
-                          <div className="relative flex-shrink-0">
-                            <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
-                              <AvatarImage src={record.profileImageUrl} alt={record.name} />
-                              <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
-                                {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-                              </AvatarFallback>
-                            </Avatar>
-                            {isNew && (
-                              <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-green-500 rounded-full animate-ping" />
-                            )}
-                          </div>
->>>>>>> fe9bd05 (added pagination and mobile friendly views)
+                            {/* Avatar */}
+                            <div className="relative flex-shrink-0">
+                              <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
+                                <AvatarImage src={record.profileImageUrl} alt={record.name} />
+                                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                                  {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                                </AvatarFallback>
+                              </Avatar>
+                              {isNew && (
+                                <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-green-500 rounded-full animate-ping" />
+                              )}
+                            </div>
 
-                          {/* Name */}
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-sm truncate">{record.name}</h3>
-                          </div>
+                            {/* Name */}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-sm truncate">{record.name}</h3>
+                            </div>
 
-                          {/* Check-in Time */}
-                          <div className="text-right flex-shrink-0">
-                            <p className="font-semibold text-sm">
-                              {format(new Date(record.checkInTime), "hh:mm a")}
-                            </p>
-                            <p className="text-xs text-muted-foreground hidden sm:block">
-                              {format(new Date(record.checkInTime), "MMM dd")}
-                            </p>
-                          </div>
+                            {/* Check-in Time */}
+                            <div className="text-right flex-shrink-0">
+                              <p className="font-semibold text-sm">
+                                {format(new Date(record.checkInTime), "hh:mm a")}
+                              </p>
+                              <p className="text-xs text-muted-foreground hidden sm:block">
+                                {format(new Date(record.checkInTime), "MMM dd")}
+                              </p>
+                            </div>
 
-                          {/* Renew Plan Button */}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-shrink-0 h-8 w-8 p-0"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setSelectedMember(record);
-                              setRenewOpen(true);
-                            }}
-                          >
-                            <RefreshCw className="h-3 w-3" />
-                          </Button>
-                        </div>
+                            {/* Renew Plan Button */}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="flex-shrink-0 h-8 w-8 p-0 hover:bg-green-50 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setSelectedMember({
+                                  id: record.userId,
+                                  name: record.name,
+                                  currentEndDate: record.membershipEnd || new Date().toISOString(),
+                                });
+                                setRenewOpen(true);
+                              }}
+                            >
+                              <RefreshCw className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </Link>
-<<<<<<< HEAD
-
-                        {/* Renew Button - Outside Link */}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="p-2 hover:bg-green-50 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            setSelectedMember({
-                              id: record.userId,
-                              name: record.name,
-                              currentEndDate: record.membershipEnd || new Date().toISOString(),
-                            });
-                          }}
-                        >
-                          <RefreshCw className="h-4 w-4" />
-                        </Button>
-=======
->>>>>>> fe9bd05 (added pagination and mobile friendly views)
                       </div>
                     );
                   })}
@@ -1465,7 +1290,6 @@ export default function AttendancePage() {
         </>
       )}
 
-<<<<<<< HEAD
       {/* Renew Membership Dialog */}
       {selectedMember && plansData && !isFetchingPlanDetails && (() => {
         console.log('🎨 Rendering RenewPlanDialog with:', {
@@ -1483,8 +1307,9 @@ export default function AttendancePage() {
             currentPlanPrice={currentPlanDetails?.price}
             currentPlanDuration={currentPlanDetails?.duration}
             availablePlans={plansData}
-            open={!!selectedMember && !isFetchingPlanDetails}
+            open={renewOpen && !!selectedMember && !isFetchingPlanDetails}
             onOpenChange={(open) => {
+              setRenewOpen(open);
               if (!open) {
                 setSelectedMember(null);
                 setCurrentPlanDetails(null);
@@ -1493,31 +1318,15 @@ export default function AttendancePage() {
             onSuccess={() => {
               // Invalidate queries to refresh the data
               queryClient.invalidateQueries({ queryKey: ["users"] });
+              queryClient.invalidateQueries({ queryKey: ['processedMembers'] });
+              queryClient.invalidateQueries({ queryKey: ['revenueSummary'] });
+              queryClient.invalidateQueries({ queryKey: ['activityLogs'] });
+              queryClient.invalidateQueries({ queryKey: ['payments'] });
               setCurrentPlanDetails(null);
             }}
           />
         );
       })()}
-=======
-      {/* Renew Plan Dialog */}
-      {selectedMember && membershipPlans && (
-        <RenewPlanDialog
-          memberId={selectedMember.userId}
-          memberName={selectedMember.name}
-          currentEndDate={selectedMember.membershipEnd || new Date().toISOString()}
-          availablePlans={membershipPlans}
-          open={renewOpen}
-          onOpenChange={setRenewOpen}
-          onSuccess={() => {
-            // Invalidate queries to refresh data
-            queryClient.invalidateQueries({ queryKey: ['processedMembers'] });
-            queryClient.invalidateQueries({ queryKey: ['revenueSummary'] });
-            queryClient.invalidateQueries({ queryKey: ['activityLogs'] });
-            queryClient.invalidateQueries({ queryKey: ['payments'] });
-          }}
-        />
-      )}
->>>>>>> fe9bd05 (added pagination and mobile friendly views)
     </div>
   );
 }

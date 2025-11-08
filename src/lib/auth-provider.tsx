@@ -140,19 +140,13 @@ useEffect(() => {
       willRedirect: user && isAuthPage
     });
 
-<<<<<<< HEAD
     // Only redirect logged-in users away from login page to overview
     // Don't redirect on other pages - stay where you are
     // ProtectedRoute handles redirecting unauthenticated users to login
-=======
-    // Only redirect logged-in users away from login page
->>>>>>> fe9bd05 (added pagination and mobile friendly views)
     if (user && isAuthPage) {
       // Check if there's a return URL stored
       const returnUrl = typeof window !== 'undefined' ? sessionStorage.getItem('returnUrl') : null;
 
-<<<<<<< HEAD
-=======
       if (returnUrl && returnUrl !== '/login') {
         console.log('[AuthProvider] REDIRECTING to stored return URL:', returnUrl);
         sessionStorage.removeItem('returnUrl'); // Clear it
@@ -163,8 +157,6 @@ useEffect(() => {
       }
     }
   }, [user, loading, hasInitialized, initialPath, pathname, hasCheckedInitialRedirect, router]);
-
->>>>>>> fe9bd05 (added pagination and mobile friendly views)
   const login = useCallback(async (email: string, password: string) => {
     if (!auth) throw new Error('Auth service not initialized');
     await signInWithEmailAndPassword(auth, email, password);
