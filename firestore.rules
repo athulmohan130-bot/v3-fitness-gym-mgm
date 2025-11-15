@@ -73,5 +73,11 @@ service cloud.firestore {
       allow read: if isAuth() && isAdmin();
       allow write: if isAuth() && isAdmin();
     }
+
+    // Settings collection - for gym settings
+    match /settings/{document} {
+      allow read: if isAuth();
+      allow write: if isAuth() && isAdmin();
+    }
   }
 }

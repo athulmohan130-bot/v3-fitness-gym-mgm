@@ -12,7 +12,7 @@ import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, limit, getDocs, where } from "firebase/firestore";
 import { format, differenceInDays } from "date-fns";
 import { useGymSettings } from "@/hooks/use-gym-settings";
-import { Search, Users, Volume2, VolumeX, Settings, Home, Grid3x3, List, LayoutList, CheckCircle, BarChart, Clock, TrendingUp, CalendarIcon, X, RefreshCw } from "lucide-react";
+import { Search, Users, Volume2, VolumeX, Settings, Home, Grid3x3, List, LayoutList, CheckCircle, BarChart, Clock, TrendingUp, CalendarIcon, X, RefreshCw, Loader2 } from "lucide-react";
 import type { AttendanceRecord, MembershipPlan } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -69,6 +69,9 @@ export default function AttendancePage() {
   } | null>(null);
   const [isFetchingPlanDetails, setIsFetchingPlanDetails] = useState(false);
 
+  // Loading state for button actions - track both member ID and action type
+  const [loadingState, setLoadingState] = useState<{ memberId: string; action: 'view' | 'renew' } | null>(null);
+
   // Debug: Log when selectedMember changes
   console.log('👤 selectedMember state:', selectedMember);
   console.log('💾 currentPlanDetails state:', currentPlanDetails);
@@ -78,11 +81,10 @@ export default function AttendancePage() {
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('attendance-view-mode');
-      // Default to list view on mobile, grid on desktop
-      const isMobile = window.innerWidth < 768;
-      return (saved as ViewMode) || (isMobile ? 'list' : 'grid');
+      // Default to compact view for better space utilization
+      return (saved as ViewMode) || 'compact';
     }
-    return 'grid';
+    return 'compact';
   });
 
   // Notification settings - using global gym settings
@@ -400,7 +402,7 @@ export default function AttendancePage() {
 
   if (error) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3">
         <h1 className="text-3xl font-bold font-headline tracking-tight">Gym Attendance</h1>
         <Card>
           <CardContent className="pt-6">
@@ -412,7 +414,7 @@ export default function AttendancePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Enable Audio Banner */}
       {!audioInitialized && !audioBannerDismissed && (notificationConfig.playSound || notificationConfig.playVoice) && (
         <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900">
@@ -741,23 +743,23 @@ export default function AttendancePage() {
         </Card>
       </Collapsible>
 
-      {/* Desktop Filters - Always Visible */}
+      {/* Desktop Filters - Always Visible - Compact */}
       <Card className="hidden md:block bg-gray-50/50 dark:bg-gray-800/50 border-0 shadow-sm dark:border dark:border-white/5">
-        <CardContent className="pt-6 pb-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+        <CardContent className="py-3 px-4">
+          <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center justify-between">
             {/* Left Side: Search and Filters */}
-            <div className="flex flex-col sm:flex-row gap-3 flex-1 w-full lg:w-auto">
+            <div className="flex flex-col sm:flex-row gap-2 flex-1 w-full lg:w-auto">
               <div className="relative flex-1 sm:max-w-xs">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
                 <Input
                   placeholder="Search members..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-10 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500/20"
+                  className="pl-8 h-8 text-sm rounded-lg border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-full sm:w-[150px] h-10 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 shadow-sm">
+                <SelectTrigger className="w-full sm:w-[130px] h-8 text-sm rounded-lg border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 shadow-sm">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -768,7 +770,7 @@ export default function AttendancePage() {
                 </SelectContent>
               </Select>
               <Select value={filterTimeSlot} onValueChange={setFilterTimeSlot}>
-                <SelectTrigger className="w-full sm:w-[160px] h-10 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 shadow-sm">
+                <SelectTrigger className="w-full sm:w-[140px] h-8 text-sm rounded-lg border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 shadow-sm">
                   <SelectValue placeholder="Time Slot" />
                 </SelectTrigger>
                 <SelectContent>
@@ -783,10 +785,10 @@ export default function AttendancePage() {
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full sm:w-auto h-10 justify-start text-left font-normal rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 shadow-sm"
+                      "w-full sm:w-auto h-8 text-sm justify-start text-left font-normal rounded-lg border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 shadow-sm px-3"
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <CalendarIcon className="mr-2 h-3.5 w-3.5" />
                     {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
@@ -802,39 +804,39 @@ export default function AttendancePage() {
             </div>
 
             {/* Right Side: Member Count and View Toggle */}
-            <div className="flex items-center gap-4 w-full lg:w-auto justify-between lg:justify-end">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {filteredRecords.length} {filteredRecords.length === 1 ? 'Member' : 'Members'} Checked In
+            <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
+              <div className="flex items-center gap-1.5">
+                <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                  {filteredRecords.length} {filteredRecords.length === 1 ? 'Member' : 'Members'}
                 </span>
               </div>
-              <div className="inline-flex rounded-xl border-0 bg-white dark:bg-gray-700 shadow-sm p-1 gap-1">
+              <div className="inline-flex rounded-lg border-0 bg-white dark:bg-gray-700 shadow-sm p-0.5 gap-0.5">
                 <Button
                   variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("grid")}
-                  className="h-8 px-3 gap-2 rounded-lg dark:text-gray-300"
+                  className="h-7 px-2 gap-1.5 rounded-md dark:text-gray-300"
                 >
-                  <Grid3x3 className="h-4 w-4" />
+                  <Grid3x3 className="h-3.5 w-3.5" />
                   <span className="text-xs hidden sm:inline">Grid</span>
                 </Button>
                 <Button
                   variant={viewMode === "list" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("list")}
-                  className="h-8 px-3 gap-2 rounded-lg dark:text-gray-300"
+                  className="h-7 px-2 gap-1.5 rounded-md dark:text-gray-300"
                 >
-                  <List className="h-4 w-4" />
+                  <List className="h-3.5 w-3.5" />
                   <span className="text-xs hidden sm:inline">List</span>
                 </Button>
                 <Button
                   variant={viewMode === "compact" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("compact")}
-                  className="h-8 px-3 gap-2 rounded-lg dark:text-gray-300"
+                  className="h-7 px-2 gap-1.5 rounded-md dark:text-gray-300"
                 >
-                  <LayoutList className="h-4 w-4" />
+                  <LayoutList className="h-3.5 w-3.5" />
                   <span className="text-xs hidden sm:inline">Compact</span>
                 </Button>
               </div>
@@ -890,74 +892,66 @@ export default function AttendancePage() {
             </Card>
           </Collapsible>
 
-          {/* Desktop: Always Visible Stats */}
-          <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Desktop: Always Visible Stats - Compact */}
+          <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-3">
             {/* Today's Attendance Card */}
-            <Card className="gradient-green-subtle border-0 overflow-hidden relative transition-all duration-200 hover:shadow-md hover:-translate-y-1 dark:bg-gray-800/95 dark:border-t-2 dark:border-t-green-500 dark:border-0 dark:shadow-none">
-              <CardContent className="pt-8 pb-6 px-6">
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today's Attendance</p>
-                    <CheckCircle className="h-10 w-10 text-green-500/40 dark:text-green-500/20" />
-                  </div>
-                  <div className="flex items-baseline gap-2 mb-2">
-                    <p className="text-5xl font-bold text-gray-900 dark:text-gray-100">{attendanceStats.totalCheckedIn}</p>
-                    <p className="text-lg text-gray-500 dark:text-gray-400 font-medium">/ {attendanceStats.totalMembers}</p>
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-500 font-medium">
-                    {attendanceStats.percentage}% checked in today
-                  </p>
+            <Card className="gradient-green-subtle border-0 overflow-hidden dark:bg-gray-800/95 dark:border-t dark:border-t-green-500">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Today's Attendance</p>
+                  <CheckCircle className="h-5 w-5 text-green-500/40 dark:text-green-500/30" />
                 </div>
+                <div className="flex items-baseline gap-1.5 mb-1">
+                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{attendanceStats.totalCheckedIn}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">/ {attendanceStats.totalMembers}</p>
+                </div>
+                <p className="text-[10px] text-gray-500 dark:text-gray-500">
+                  {attendanceStats.percentage}% checked in
+                </p>
               </CardContent>
             </Card>
 
             {/* Total Check-ins Card */}
-            <Card className="gradient-blue-subtle border-0 overflow-hidden relative transition-all duration-200 hover:shadow-md hover:-translate-y-1 dark:bg-gray-800/95 dark:border-t-2 dark:border-t-blue-500 dark:border-0 dark:shadow-none">
-              <CardContent className="pt-8 pb-6 px-6">
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Check-ins</p>
-                    <BarChart className="h-10 w-10 text-blue-500/40 dark:text-blue-500/20" />
-                  </div>
-                  <p className="text-5xl font-bold text-gray-900 dark:text-gray-100 mb-2">{attendanceStats.totalCheckedIn}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-500 font-medium">
-                    {format(new Date(selectedDate), "MMM dd, yyyy")}
-                  </p>
+            <Card className="gradient-blue-subtle border-0 overflow-hidden dark:bg-gray-800/95 dark:border-t dark:border-t-blue-500">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Total Check-ins</p>
+                  <BarChart className="h-5 w-5 text-blue-500/40 dark:text-blue-500/30" />
                 </div>
+                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">{attendanceStats.totalCheckedIn}</p>
+                <p className="text-[10px] text-gray-500 dark:text-gray-500">
+                  {format(new Date(selectedDate), "MMM dd, yyyy")}
+                </p>
               </CardContent>
             </Card>
 
             {/* Peak Hour Card */}
-            <Card className="gradient-purple-subtle border-0 overflow-hidden relative transition-all duration-200 hover:shadow-md hover:-translate-y-1 dark:bg-gray-800/95 dark:border-t-2 dark:border-t-purple-500 dark:border-0 dark:shadow-none">
-              <CardContent className="pt-8 pb-6 px-6">
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Peak Hour</p>
-                    <Clock className="h-10 w-10 text-purple-500/40 dark:text-purple-500/20" />
-                  </div>
-                  <p className="text-5xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                    {attendanceStats.peakHour || "-"}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-500 font-medium">
-                    Most active time
-                  </p>
+            <Card className="gradient-purple-subtle border-0 overflow-hidden dark:bg-gray-800/95 dark:border-t dark:border-t-purple-500">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Peak Hour</p>
+                  <Clock className="h-5 w-5 text-purple-500/40 dark:text-purple-500/30" />
                 </div>
+                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                  {attendanceStats.peakHour || "-"}
+                </p>
+                <p className="text-[10px] text-gray-500 dark:text-gray-500">
+                  Most active time
+                </p>
               </CardContent>
             </Card>
 
             {/* Avg Daily Attendance Card */}
-            <Card className="gradient-orange-subtle border-0 overflow-hidden relative transition-all duration-200 hover:shadow-md hover:-translate-y-1 dark:bg-gray-800/95 dark:border-t-2 dark:border-t-orange-500 dark:border-0 dark:shadow-none">
-              <CardContent className="pt-8 pb-6 px-6">
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Avg Daily Attendance</p>
-                    <TrendingUp className="h-10 w-10 text-orange-500/40 dark:text-orange-500/20" />
-                  </div>
-                  <p className="text-5xl font-bold text-gray-900 dark:text-gray-100 mb-2">{attendanceStats.totalCheckedIn}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-500 font-medium">
-                    Based on today's data
-                  </p>
+            <Card className="gradient-orange-subtle border-0 overflow-hidden dark:bg-gray-800/95 dark:border-t dark:border-t-orange-500">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Avg Daily</p>
+                  <TrendingUp className="h-5 w-5 text-orange-500/40 dark:text-orange-500/30" />
                 </div>
+                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">{attendanceStats.totalCheckedIn}</p>
+                <p className="text-[10px] text-gray-500 dark:text-gray-500">
+                  Based on today
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -987,105 +981,129 @@ export default function AttendancePage() {
         </Card>
       ) : (
         <>
-          {/* Grid View */}
+          {/* Grid View - Cards */}
           {viewMode === "grid" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 animate-in fade-in-50 duration-300 px-2">
-              {filteredRecords.map((record, index) => {
-                const membershipInfo = getMembershipInfo(record);
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 animate-in fade-in-50 duration-300">
+              {filteredRecords.map((record) => {
                 const isNew = newRecordIds.has(record.id);
                 const isActive = record.membershipStatus === "active";
+                const isViewLoading = loadingState?.memberId === record.userId && loadingState?.action === 'view';
+                const isRenewLoading = loadingState?.memberId === record.userId && loadingState?.action === 'renew';
+                const isAnyLoading = isViewLoading || isRenewLoading;
 
                 return (
-                  <div key={record.id} className="relative">
-                    <Card
-                      className={`group overflow-hidden transition-all duration-300 rounded-[20px] ${
-                        isActive
-                          ? "bg-gradient-to-b from-white to-green-50/30 border-t-4 border-t-green-500 shadow-[0_2px_8px_rgba(0,0,0,0.08),0_0_1px_rgba(0,0,0,0.1),0_4px_20px_rgba(16,185,129,0.15)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.12),0_0_1px_rgba(0,0,0,0.1),0_8px_32px_rgba(16,185,129,0.2)] hover:-translate-y-2 dark:bg-gradient-to-b dark:from-gray-800 dark:to-gray-800/95 dark:border-t-green-500 dark:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
-                          : "bg-white opacity-60 border-2 border-dashed border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] hover:-translate-y-1 dark:bg-gray-800 dark:opacity-50 dark:border-gray-700"
-                      } ${isNew ? "animate-pulse-glow" : ""}`}
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      <CardContent className="p-8 pb-20">
-                        <Link href={`/dashboard/members/view/${record.userId}`} className="cursor-pointer">
-                          <div className="flex flex-col items-center text-center space-y-5">
-                            {/* Avatar with Enhanced Ring */}
-                            <div className="relative mb-2">
-                              <Avatar className={`h-28 w-28 border-4 border-white transition-all duration-300 group-hover:scale-105 ${
-                                isActive
-                                  ? "shadow-[0_4px_12px_rgba(0,0,0,0.1),0_0_0_4px_rgba(16,185,129,0.4)] dark:border-gray-700 dark:shadow-[0_4px_12px_rgba(0,0,0,0.5),0_0_0_4px_rgba(16,185,129,0.5)]"
-                                  : "grayscale-[60%] opacity-70 shadow-[0_4px_12px_rgba(0,0,0,0.08)] dark:border-gray-600/30"
-                              }`}>
-                                <AvatarImage src={record.profileImageUrl} alt={record.name} className={isActive ? "" : "grayscale-[60%]"} />
-                                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-2xl">
-                                  {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-                                </AvatarFallback>
-                              </Avatar>
-                              {isNew && (
-                                <div className="absolute -top-1 -right-1 h-5 w-5 bg-green-500 rounded-full animate-ping" />
-                              )}
+                  <Card
+                    key={record.id}
+                    className={`group relative overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
+                      isActive
+                        ? "bg-white border-t-2 border-t-green-500 dark:bg-gray-800 dark:border-t-green-500"
+                        : "bg-gray-50 border border-gray-200 opacity-70 dark:bg-gray-900 dark:border-gray-700"
+                    } ${isNew ? "ring-2 ring-green-500 ring-offset-2" : ""}`}
+                  >
+                    <CardContent className="p-4">
+                      <Link href={`/dashboard/members/view/${record.userId}`} className="block">
+                        {/* Avatar */}
+                        <div className="relative mx-auto w-fit mb-3">
+                          <Avatar className={`h-16 w-16 border-2 transition-all ${
+                            isActive
+                              ? "border-green-500/30"
+                              : "border-gray-300 grayscale"
+                          }`}>
+                            <AvatarImage
+                              src={record.profileImageUrl}
+                              alt={record.name}
+                              className={!isActive ? "grayscale" : ""}
+                            />
+                            <AvatarFallback className={`text-sm font-bold ${
+                              isActive
+                                ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
+                                : "bg-gray-100 text-gray-500"
+                            }`}>
+                              {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          {isNew && (
+                            <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full animate-pulse ring-2 ring-white dark:ring-gray-900" />
+                          )}
+                          {isActive && (
+                            <div className="absolute -bottom-0.5 -right-0.5">
+                              <CheckCircle className="h-5 w-5 text-green-500 bg-white dark:bg-gray-800 rounded-full" />
                             </div>
+                          )}
+                        </div>
 
-                            {/* Name */}
-                            <div className="w-full">
-                              <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 truncate mb-2">{record.name}</h3>
-                            </div>
+                        {/* Name - HERO */}
+                        <h3 className={`font-semibold text-center truncate mb-1 ${
+                          isActive
+                            ? "text-base text-gray-900 dark:text-gray-100"
+                            : "text-sm text-gray-500 dark:text-gray-500"
+                        }`}>
+                          {record.name}
+                        </h3>
 
-                            {/* Check-in Time - Hero Element */}
-                            <div className="w-full">
-                              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-                                {format(new Date(record.checkInTime), "hh:mm a")}
-                              </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                {getRelativeTime(record.checkInTime)}
-                              </p>
-                            </div>
+                        {/* Time - Secondary */}
+                        <p className="text-xs text-center text-muted-foreground mb-2">
+                          {format(new Date(record.checkInTime), "h:mm a")}
+                        </p>
 
-                            {/* Device ID Badge */}
-                            {record.biometricDeviceId && (
-                              <div className="mt-2">
-                                <Badge variant="outline" className="text-[10px] text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 px-2 py-0.5">
-                                  #{record.biometricDeviceId}
-                                </Badge>
-                              </div>
-                            )}
+                        {/* Device ID */}
+                        {record.biometricDeviceId && (
+                          <div className="text-center mb-2">
+                            <Badge variant="outline" className="h-4 px-2 text-[10px] font-normal">
+                              #{record.biometricDeviceId}
+                            </Badge>
                           </div>
-                        </Link>
-                      </CardContent>
-                    </Card>
+                        )}
+                      </Link>
 
-                    {/* Action Buttons */}
-                    <div className="absolute bottom-4 left-4 right-4 flex gap-2 z-10">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 bg-white/90 backdrop-blur-sm hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800"
-                        onClick={() => {
-                          window.location.href = `/dashboard/members/view/${record.userId}`;
-                        }}
-                      >
-                        <Users className="h-3 w-3 mr-1" />
-                        View
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="flex-1 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setSelectedMember({
-                            id: record.userId,
-                            name: record.name,
-                            currentEndDate: record.membershipEnd || new Date().toISOString(),
-                          });
-                          setRenewOpen(true);
-                        }}
-                      >
-                        <RefreshCw className="h-3 w-3 mr-1" />
-                        Renew
-                      </Button>
-                    </div>
-                  </div>
+                      {/* Quick Actions */}
+                      <div className="flex gap-1.5 mt-3">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 h-8 text-xs px-2 gap-1"
+                          disabled={isAnyLoading}
+                          onClick={() => {
+                            setLoadingState({ memberId: record.userId, action: 'view' });
+                            window.location.href = `/dashboard/members/view/${record.userId}`;
+                          }}
+                        >
+                          {isViewLoading ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Users className="h-3.5 w-3.5" />
+                          )}
+                          <span className="hidden sm:inline">View</span>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 h-8 text-xs px-2 gap-1 hover:bg-green-50 hover:border-green-500 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400"
+                          disabled={isAnyLoading}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setLoadingState({ memberId: record.userId, action: 'renew' });
+                            setSelectedMember({
+                              id: record.userId,
+                              name: record.name,
+                              currentEndDate: record.membershipEnd || new Date().toISOString(),
+                            });
+                            setRenewOpen(true);
+                            // Reset loading after dialog opens
+                            setTimeout(() => setLoadingState(null), 500);
+                          }}
+                        >
+                          {isRenewLoading ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <RefreshCw className="h-3.5 w-3.5" />
+                          )}
+                          <span className="hidden sm:inline">Renew</span>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 );
               })}
             </div>
@@ -1198,70 +1216,146 @@ export default function AttendancePage() {
             </Card>
           )}
 
-          {/* Compact List View */}
+          {/* Compact List View - Ultra-efficient design */}
           {viewMode === "compact" && (
             <Card className="animate-in fade-in-50 duration-300">
               <CardContent className="p-0">
-                <div className="divide-y">
+                <div className="divide-y divide-gray-100 dark:divide-gray-800">
                   {filteredRecords.map((record) => {
                     const isNew = newRecordIds.has(record.id);
+                    const isActive = record.membershipStatus === "active";
+                    const membershipInfo = getMembershipInfo(record);
+                    const isViewLoading = loadingState?.memberId === record.userId && loadingState?.action === 'view';
+                    const isRenewLoading = loadingState?.memberId === record.userId && loadingState?.action === 'renew';
+                    const isAnyLoading = isViewLoading || isRenewLoading;
 
                     return (
-                      <div key={record.id} className="relative">
-                        <Link href={`/dashboard/members/view/${record.userId}`}>
-                          <div
-                            className={`flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors cursor-pointer ${
-                              isNew ? "bg-green-50 border-l-4 border-l-green-500" : ""
-                            }`}
-                          >
-                            {/* Avatar */}
-                            <div className="relative flex-shrink-0">
-                              <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
-                                <AvatarImage src={record.profileImageUrl} alt={record.name} />
-                                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
-                                  {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-                                </AvatarFallback>
-                              </Avatar>
-                              {isNew && (
-                                <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-green-500 rounded-full animate-ping" />
-                              )}
-                            </div>
+                      <div
+                        key={record.id}
+                        className={`group relative ${
+                          isNew
+                            ? "bg-green-50/50 dark:bg-green-950/20 border-l-2 border-l-green-500"
+                            : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/30 transition-colors">
+                          {/* Avatar - Small and compact */}
+                          <div className="relative flex-shrink-0">
+                            <Avatar className={`h-9 w-9 border-2 transition-all ${
+                              isActive
+                                ? "border-green-500/30 dark:border-green-500/50"
+                                : "border-gray-200 dark:border-gray-700 opacity-60"
+                            }`}>
+                              <AvatarImage
+                                src={record.profileImageUrl}
+                                alt={record.name}
+                                className={!isActive ? "grayscale" : ""}
+                              />
+                              <AvatarFallback className={`text-[10px] font-bold ${
+                                isActive
+                                  ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
+                                  : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500"
+                              }`}>
+                                {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                              </AvatarFallback>
+                            </Avatar>
+                            {isNew && (
+                              <div className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-green-500 rounded-full animate-pulse ring-2 ring-white dark:ring-gray-900" />
+                            )}
+                          </div>
 
-                            {/* Name */}
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-sm truncate">{record.name}</h3>
-                            </div>
+                          {/* Member Info - Name is HERO element */}
+                          <div className="flex-1 min-w-0">
+                            <Link href={`/dashboard/members/view/${record.userId}`} className="block">
+                              <div className="flex items-center gap-2">
+                                <h3 className={`font-semibold truncate ${
+                                  isActive
+                                    ? "text-base text-gray-900 dark:text-gray-100"
+                                    : "text-sm text-gray-500 dark:text-gray-500"
+                                }`}>
+                                  {record.name}
+                                </h3>
+                                {isActive && (
+                                  <CheckCircle className="h-3.5 w-3.5 text-green-500 flex-shrink-0" />
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <p className="text-[11px] text-muted-foreground">
+                                  {format(new Date(record.checkInTime), "h:mm a")}
+                                  <span className="mx-1">•</span>
+                                  {getRelativeTime(record.checkInTime)}
+                                </p>
+                                {record.biometricDeviceId && (
+                                  <>
+                                    <span className="text-[11px] text-muted-foreground">•</span>
+                                    <Badge variant="outline" className="h-4 px-1.5 text-[9px] font-normal border-gray-200 dark:border-gray-700">
+                                      #{record.biometricDeviceId}
+                                    </Badge>
+                                  </>
+                                )}
+                                {!isActive && membershipInfo && record.membershipStatus && (
+                                  <>
+                                    <span className="text-[11px] text-muted-foreground">•</span>
+                                    <Badge
+                                      variant={
+                                        record.membershipStatus === "expired" ? "destructive" : "secondary"
+                                      }
+                                      className="h-4 px-1.5 text-[9px] font-normal"
+                                    >
+                                      {record.membershipStatus.charAt(0).toUpperCase() + record.membershipStatus.slice(1)}
+                                    </Badge>
+                                  </>
+                                )}
+                              </div>
+                            </Link>
+                          </div>
 
-                            {/* Check-in Time */}
-                            <div className="text-right flex-shrink-0">
-                              <p className="font-semibold text-sm">
-                                {format(new Date(record.checkInTime), "hh:mm a")}
-                              </p>
-                              <p className="text-xs text-muted-foreground hidden sm:block">
-                                {format(new Date(record.checkInTime), "MMM dd")}
-                              </p>
-                            </div>
-
-                            {/* Renew Plan Button */}
+                          {/* Actions - Compact buttons */}
+                          <div className="flex items-center gap-1 flex-shrink-0">
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="flex-shrink-0 h-8 w-8 p-0 hover:bg-green-50 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400"
+                              className="h-7 px-2 text-xs hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-950 dark:hover:text-blue-400"
+                              disabled={isAnyLoading}
+                              onClick={() => {
+                                setLoadingState({ memberId: record.userId, action: 'view' });
+                                window.location.href = `/dashboard/members/view/${record.userId}`;
+                              }}
+                            >
+                              {isViewLoading ? (
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              ) : (
+                                <Users className="h-3 w-3 mr-1" />
+                              )}
+                              <span className="hidden sm:inline">View</span>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 px-2 text-xs hover:bg-green-50 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400"
+                              disabled={isAnyLoading}
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
+                                setLoadingState({ memberId: record.userId, action: 'renew' });
                                 setSelectedMember({
                                   id: record.userId,
                                   name: record.name,
                                   currentEndDate: record.membershipEnd || new Date().toISOString(),
                                 });
                                 setRenewOpen(true);
+                                setTimeout(() => setLoadingState(null), 500);
                               }}
                             >
-                              <RefreshCw className="h-3 w-3" />
+                              {isRenewLoading ? (
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              ) : (
+                                <RefreshCw className="h-3 w-3 mr-1" />
+                              )}
+                              <span className="hidden sm:inline">Renew</span>
                             </Button>
                           </div>
-                        </Link>
+                        </div>
                       </div>
                     );
                   })}
