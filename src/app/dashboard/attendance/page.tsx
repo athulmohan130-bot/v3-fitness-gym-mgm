@@ -11,6 +11,7 @@ import { MemberCardGridSkeleton, SearchBarSkeleton } from "@/components/ui/loadi
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, limit, getDocs, where } from "firebase/firestore";
 import { format, differenceInDays } from "date-fns";
+import { useGymSettings } from "@/hooks/use-gym-settings";
 import { Search, Users, Volume2, VolumeX, Settings, Home, Grid3x3, List, LayoutList, CheckCircle, BarChart, Clock, TrendingUp, CalendarIcon, X, RefreshCw } from "lucide-react";
 import type { AttendanceRecord, MembershipPlan } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
@@ -41,9 +42,10 @@ type ViewMode = "grid" | "list" | "compact";
 
 export default function AttendancePage() {
   console.log('🎬 AttendancePage rendering');
-  
+
   const firestore = useFirestore();
   const queryClient = useQueryClient();
+  const { settings, updateSettings } = useGymSettings();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [filterStatus, setFilterStatus] = useState("all");
@@ -83,22 +85,46 @@ export default function AttendancePage() {
     return 'grid';
   });
 
-  // Notification settings
-  const [notificationConfig, setNotificationConfig] = useState<NotificationConfig>({
-    playSound: true,
-    playVoice: true,
-    volume: 0.7,
+  // Notification settings - using global gym settings
+  const notificationConfig: NotificationConfig = useMemo(() => ({
+    playSound: settings?.notifications?.playSound ?? true,
+    playVoice: settings?.notifications?.playVoice ?? true,
+    volume: settings?.notifications?.volume ?? 0.7,
     voiceRate: 0.95,
     voicePitch: 1.05,
-  });
+  }), [settings]);
+
   const notificationHandlerRef = useRef<AttendanceNotificationHandler | null>(null);
-  const [audioInitialized, setAudioInitialized] = useState(false);
-  const [audioBannerDismissed, setAudioBannerDismissed] = useState(false);
+
+  // Audio initialization state - persist in localStorage
+  const [audioInitialized, setAudioInitialized] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('audio-initialized') === 'true';
+    }
+    return false;
+  });
+
+  const [audioBannerDismissed, setAudioBannerDismissed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('audio-banner-dismissed') === 'true';
+    }
+    return false;
+  });
 
   // Save view mode to localStorage
   useEffect(() => {
     localStorage.setItem('attendance-view-mode', viewMode);
   }, [viewMode]);
+
+  // Save audio initialized state to localStorage
+  useEffect(() => {
+    localStorage.setItem('audio-initialized', audioInitialized.toString());
+  }, [audioInitialized]);
+
+  // Save banner dismissed state to localStorage
+  useEffect(() => {
+    localStorage.setItem('audio-banner-dismissed', audioBannerDismissed.toString());
+  }, [audioBannerDismissed]);
 
   // Real-time query for today's attendance
   const attendanceQuery = useMemoFirebase(() => {
@@ -475,9 +501,14 @@ export default function AttendancePage() {
                 <Switch
                   id="play-sound"
                   checked={notificationConfig.playSound}
-                  onCheckedChange={(checked) =>
-                    setNotificationConfig(prev => ({ ...prev, playSound: checked }))
-                  }
+                  onCheckedChange={async (checked) => {
+                    await updateSettings({
+                      notifications: {
+                        ...settings?.notifications,
+                        playSound: checked,
+                      }
+                    });
+                  }}
                 />
               </div>
 
@@ -491,9 +522,14 @@ export default function AttendancePage() {
                 <Switch
                   id="play-voice"
                   checked={notificationConfig.playVoice}
-                  onCheckedChange={(checked) =>
-                    setNotificationConfig(prev => ({ ...prev, playVoice: checked }))
-                  }
+                  onCheckedChange={async (checked) => {
+                    await updateSettings({
+                      notifications: {
+                        ...settings?.notifications,
+                        playVoice: checked,
+                      }
+                    });
+                  }}
                 />
               </div>
 
@@ -505,71 +541,17 @@ export default function AttendancePage() {
                   max={100}
                   step={10}
                   value={[notificationConfig.volume * 100]}
-                  onValueChange={(value) =>
-                    setNotificationConfig(prev => ({ ...prev, volume: value[0] / 100 }))
-                  }
+                  onValueChange={async (value) => {
+                    await updateSettings({
+                      notifications: {
+                        ...settings?.notifications,
+                        volume: value[0] / 100,
+                      }
+                    });
+                  }}
                 />
               </div>
 
-              {/* Voice Controls */}
-              {notificationConfig.playVoice && (
-                <>
-                  <div className="space-y-2 pt-2 border-t">
-                    <Label htmlFor="voice-speed" className="text-xs font-semibold">
-                      Voice Settings
-                    </Label>
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="voice-speed" className="text-xs">
-                          Speech Speed: {((notificationConfig.voiceRate ?? 0.95) * 100).toFixed(0)}%
-                        </Label>
-                      </div>
-                      <Slider
-                        id="voice-speed"
-                        min={50}
-                        max={200}
-                        step={5}
-                        value={[(notificationConfig.voiceRate ?? 0.95) * 100]}
-                        onValueChange={(value) =>
-                          setNotificationConfig(prev => ({ ...prev, voiceRate: value[0] / 100 }))
-                        }
-                      />
-                      <p className="text-[10px] text-muted-foreground">
-                        {(notificationConfig.voiceRate ?? 0.95) < 0.8 ? "Very Slow" :
-                         (notificationConfig.voiceRate ?? 0.95) < 0.95 ? "Slow" :
-                         (notificationConfig.voiceRate ?? 0.95) < 1.1 ? "Normal" :
-                         (notificationConfig.voiceRate ?? 0.95) < 1.3 ? "Fast" : "Very Fast"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="voice-pitch" className="text-xs">
-                          Voice Pitch: {((notificationConfig.voicePitch ?? 1.05) * 100).toFixed(0)}%
-                        </Label>
-                      </div>
-                      <Slider
-                        id="voice-pitch"
-                        min={75}
-                        max={150}
-                        step={5}
-                        value={[(notificationConfig.voicePitch ?? 1.05) * 100]}
-                        onValueChange={(value) =>
-                          setNotificationConfig(prev => ({ ...prev, voicePitch: value[0] / 100 }))
-                        }
-                      />
-                      <p className="text-[10px] text-muted-foreground">
-                        {(notificationConfig.voicePitch ?? 1.05) < 0.9 ? "Very Low" :
-                         (notificationConfig.voicePitch ?? 1.05) < 1.0 ? "Low" :
-                         (notificationConfig.voicePitch ?? 1.05) < 1.15 ? "Normal" :
-                         (notificationConfig.voicePitch ?? 1.05) < 1.3 ? "High" : "Very High"}
-                      </p>
-                    </div>
-                  </div>
-                </>
-              )}
 
               <div className="pt-2 border-t space-y-2">
                 <Label className="text-xs font-semibold">Test Voice</Label>

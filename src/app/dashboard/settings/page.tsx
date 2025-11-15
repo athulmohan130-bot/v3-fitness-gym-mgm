@@ -35,28 +35,6 @@ export default function SettingsPage() {
   const [gymEmail, setGymEmail] = useState("admin@fitlifegym.com");
   const [operatingHours, setOperatingHours] = useState("6:00 AM - 10:00 PM");
 
-  // Billing & Payments
-  const [lateFeeAmount, setLateFeeAmount] = useState("100");
-  const [gracePeriodDays, setGracePeriodDays] = useState("3");
-  const [autoSuspendAfterDays, setAutoSuspendAfterDays] = useState("7");
-  const [paymentMethods, setPaymentMethods] = useState({
-    cash: true,
-    upi: true,
-    card: false,
-    netBanking: false
-  });
-
-  // Notifications
-  const [notifications, setNotifications] = useState({
-    expiryReminder: true,
-    paymentDue: true,
-    newMember: true,
-    dailyReport: false,
-    weeklyReport: true,
-    monthlyReport: true
-  });
-  const [expiryReminderDays, setExpiryReminderDays] = useState("7");
-
   // Biometric Integration
   const [esslDeviceIp, setEsslDeviceIp] = useState("192.168.1.100");
   const [syncInterval, setSyncInterval] = useState("5");
@@ -76,9 +54,9 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 pb-20 sm:pb-0 max-w-full overflow-hidden">
-      {/* Breadcrumbs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-3 sm:space-y-4 pb-16 sm:pb-6 max-w-full overflow-hidden">
+      {/* Header - Desktop only shows breadcrumb + save button */}
+      <div className="hidden sm:flex items-center justify-between gap-4">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -95,114 +73,130 @@ export default function SettingsPage() {
           </BreadcrumbList>
         </Breadcrumb>
 
-        <Button onClick={handleSave} disabled={isSaving} className="hidden sm:flex w-full sm:w-auto">
+        <Button onClick={handleSave} disabled={isSaving} variant="outline" className="w-auto">
           <Save className="h-4 w-4 mr-2" />
-          {isSaving ? "Saving..." : "Save All Settings"}
+          {isSaving ? "Saving..." : "Save Settings"}
         </Button>
       </div>
 
-      <div className="space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground hidden sm:block">
-          Manage your gym settings, preferences, and configurations
+      {/* Mobile header - Just description, no redundant title */}
+      <div className="sm:hidden">
+        <p className="text-sm text-muted-foreground">
+          Manage your gym settings and preferences
         </p>
       </div>
 
-      <Tabs defaultValue="gym" className="space-y-4 sm:space-y-6">
-        <div className="w-full overflow-x-auto overflow-y-visible sm:overflow-visible scrollbar-hide">
-          <TabsList className="inline-flex sm:grid sm:w-full grid-cols-4 lg:grid-cols-7 gap-1 w-max sm:w-full justify-start sm:justify-center">
-            <TabsTrigger value="gym" className="whitespace-nowrap flex-shrink-0">
-              <Building2 className="h-4 w-4 mr-1.5 hidden sm:inline" />
-              Gym Info
-            </TabsTrigger>
-            <TabsTrigger value="billing" className="whitespace-nowrap flex-shrink-0">
-              <CreditCard className="h-4 w-4 mr-1.5 hidden sm:inline" />
-              Billing
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="whitespace-nowrap flex-shrink-0">
-              <Bell className="h-4 w-4 mr-1.5 hidden sm:inline" />
-              Notifications
-            </TabsTrigger>
-            <TabsTrigger value="biometric" className="whitespace-nowrap flex-shrink-0">
-              <Fingerprint className="h-4 w-4 mr-1.5 hidden sm:inline" />
-              Biometric
-            </TabsTrigger>
-            <TabsTrigger value="attendance" className="whitespace-nowrap flex-shrink-0">
-              <ClipboardList className="h-4 w-4 mr-1.5 hidden sm:inline" />
-              Attendance
-            </TabsTrigger>
-            <TabsTrigger value="reports" className="whitespace-nowrap flex-shrink-0">
-              <BarChart3 className="h-4 w-4 mr-1.5 hidden sm:inline" />
-              Reports
-            </TabsTrigger>
-            <TabsTrigger value="profile" className="whitespace-nowrap flex-shrink-0">
-              <User className="h-4 w-4 mr-1.5 hidden sm:inline" />
-              Profile
-            </TabsTrigger>
-          </TabsList>
+      <Tabs defaultValue="gym" className="space-y-3 sm:space-y-4">
+        {/* Tab Navigation with Scroll Indicators */}
+        <div className="relative w-full sm:mx-0">
+          {/* Left fade gradient indicator - mobile only */}
+          <div className="sm:hidden absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+
+          {/* Scrollable tabs container */}
+          <div className="overflow-x-auto overflow-y-visible sm:overflow-visible snap-x snap-mandatory scrollbar-hide">
+            <TabsList className="inline-flex sm:grid sm:w-full grid-cols-4 lg:grid-cols-7 gap-1 w-max sm:w-full min-w-full sm:min-w-0 px-2 sm:px-0">
+              <TabsTrigger value="gym" className="whitespace-nowrap flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 snap-start">
+                <Building2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 hidden sm:inline" />
+                Gym
+              </TabsTrigger>
+              <TabsTrigger value="billing" className="whitespace-nowrap flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 snap-start">
+                <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 hidden sm:inline" />
+                Billing
+              </TabsTrigger>
+              <TabsTrigger value="notifications" className="whitespace-nowrap flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 snap-start">
+                <Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 hidden sm:inline" />
+                Alerts
+              </TabsTrigger>
+              <TabsTrigger value="biometric" className="whitespace-nowrap flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 snap-start">
+                <Fingerprint className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 hidden sm:inline" />
+                Device
+              </TabsTrigger>
+              <TabsTrigger value="attendance" className="whitespace-nowrap flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 snap-start">
+                <ClipboardList className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 hidden sm:inline" />
+                Check-in
+              </TabsTrigger>
+              <TabsTrigger value="reports" className="whitespace-nowrap flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 snap-start">
+                <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 hidden sm:inline" />
+                Reports
+              </TabsTrigger>
+              <TabsTrigger value="profile" className="whitespace-nowrap flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 snap-start">
+                <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 hidden sm:inline" />
+                Profile
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          {/* Right fade gradient indicator - mobile only */}
+          <div className="sm:hidden absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
         </div>
 
         {/* Gym Information */}
-        <TabsContent value="gym" className="space-y-4">
+        <TabsContent value="gym" className="space-y-3 sm:space-y-4">
           <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg sm:text-xl">Gym Information</CardTitle>
-              <CardDescription className="text-xs sm:text-sm">
-                Basic information about your gym that appears on receipts and member communications
+            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+              <CardTitle className="text-sm sm:text-lg font-semibold">Gym Information</CardTitle>
+              <CardDescription className="text-xs sm:text-sm leading-snug">
+                Basic details for receipts and communications
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="gym-name">Gym Name</Label>
+            <CardContent className="space-y-3 sm:space-y-4 px-3 sm:px-6 pb-3 sm:pb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="gym-name" className="text-xs sm:text-sm font-medium">Gym Name</Label>
                   <Input
                     id="gym-name"
                     value={gymName}
                     onChange={(e) => setGymName(e.target.value)}
                     placeholder="Enter gym name"
+                    className="h-9 text-base"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="gym-phone">Contact Phone</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="gym-phone" className="text-xs sm:text-sm font-medium">Contact Phone</Label>
                   <Input
                     id="gym-phone"
+                    type="tel"
                     value={gymPhone}
                     onChange={(e) => setGymPhone(e.target.value)}
                     placeholder="+91 XXXXXXXXXX"
+                    className="h-9 text-base"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="gym-email">Email Address</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="gym-email" className="text-xs sm:text-sm font-medium">Email Address</Label>
                   <Input
                     id="gym-email"
                     type="email"
                     value={gymEmail}
                     onChange={(e) => setGymEmail(e.target.value)}
                     placeholder="admin@yourgym.com"
+                    className="h-9 text-base"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="operating-hours">Operating Hours</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="operating-hours" className="text-xs sm:text-sm font-medium">Operating Hours</Label>
                   <Input
                     id="operating-hours"
                     value={operatingHours}
                     onChange={(e) => setOperatingHours(e.target.value)}
                     placeholder="6:00 AM - 10:00 PM"
+                    className="h-9 text-base"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="gym-address">Address</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="gym-address" className="text-xs sm:text-sm font-medium">Address</Label>
                 <Textarea
                   id="gym-address"
                   value={gymAddress}
                   onChange={(e) => setGymAddress(e.target.value)}
                   placeholder="Enter complete gym address"
-                  rows={3}
+                  rows={2}
+                  className="text-base resize-none"
                 />
               </div>
             </CardContent>
@@ -210,19 +204,19 @@ export default function SettingsPage() {
         </TabsContent>
 
         {/* Billing & Payments */}
-        <TabsContent value="billing" className="space-y-4">
+        <TabsContent value="billing" className="space-y-3 sm:space-y-4">
           <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg sm:text-xl">Payment Methods</CardTitle>
-              <CardDescription className="text-xs sm:text-sm">
-                Enable payment methods accepted at your gym
+            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+              <CardTitle className="text-sm sm:text-lg font-semibold">Payment Methods</CardTitle>
+              <CardDescription className="text-xs sm:text-sm leading-snug">
+                Payment methods accepted at your gym
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3 sm:space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Cash Payments</Label>
-                  <p className="text-sm text-muted-foreground">Accept cash payments</p>
+            <CardContent className="space-y-2.5 px-3 sm:px-6 pb-3 sm:pb-6">
+              <div className="flex items-center justify-between gap-3 py-1">
+                <div className="space-y-0.5 flex-1 min-w-0">
+                  <Label className="text-sm font-medium">Cash</Label>
+                  <p className="text-xs text-muted-foreground/80">Physical currency</p>
                 </div>
                 <Switch
                   checked={paymentMethods.cash}
@@ -230,12 +224,12 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <Separator />
+              <Separator className="my-1" />
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>UPI Payments</Label>
-                  <p className="text-sm text-muted-foreground">Accept UPI/QR code payments</p>
+              <div className="flex items-center justify-between gap-3 py-1">
+                <div className="space-y-0.5 flex-1 min-w-0">
+                  <Label className="text-sm font-medium">UPI</Label>
+                  <p className="text-xs text-muted-foreground/80">QR code payments</p>
                 </div>
                 <Switch
                   checked={paymentMethods.upi}
@@ -243,12 +237,12 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <Separator />
+              <Separator className="my-1" />
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Card Payments</Label>
-                  <p className="text-sm text-muted-foreground">Accept credit/debit cards</p>
+              <div className="flex items-center justify-between gap-3 py-1">
+                <div className="space-y-0.5 flex-1 min-w-0">
+                  <Label className="text-sm font-medium">Cards</Label>
+                  <p className="text-xs text-muted-foreground/80">Credit/debit cards</p>
                 </div>
                 <Switch
                   checked={paymentMethods.card}
@@ -256,12 +250,12 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <Separator />
+              <Separator className="my-1" />
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Net Banking</Label>
-                  <p className="text-sm text-muted-foreground">Accept online bank transfers</p>
+              <div className="flex items-center justify-between gap-3 py-1">
+                <div className="space-y-0.5 flex-1 min-w-0">
+                  <Label className="text-sm font-medium">Net Banking</Label>
+                  <p className="text-xs text-muted-foreground/80">Online transfers</p>
                 </div>
                 <Switch
                   checked={paymentMethods.netBanking}
@@ -272,53 +266,59 @@ export default function SettingsPage() {
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Late Payment Policies</CardTitle>
-              <CardDescription>
-                Configure late payment fees and grace periods
+            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+              <CardTitle className="text-sm sm:text-lg font-semibold">Late Payment Policies</CardTitle>
+              <CardDescription className="text-xs sm:text-sm leading-snug">
+                Late fees and grace periods
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="late-fee">Late Fee Amount (₹)</Label>
+            <CardContent className="space-y-3 px-3 sm:px-6 pb-3 sm:pb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="late-fee" className="text-xs sm:text-sm font-medium">Late Fee (₹)</Label>
                   <Input
                     id="late-fee"
                     type="number"
+                    inputMode="numeric"
                     value={lateFeeAmount}
                     onChange={(e) => setLateFeeAmount(e.target.value)}
                     placeholder="100"
+                    className="h-9 text-base"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Charged after grace period expires
+                  <p className="text-xs text-muted-foreground/70">
+                    After grace period
                   </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="grace-period">Grace Period (Days)</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="grace-period" className="text-xs sm:text-sm font-medium">Grace (Days)</Label>
                   <Input
                     id="grace-period"
                     type="number"
+                    inputMode="numeric"
                     value={gracePeriodDays}
                     onChange={(e) => setGracePeriodDays(e.target.value)}
                     placeholder="3"
+                    className="h-9 text-base"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Days before late fee applies
+                  <p className="text-xs text-muted-foreground/70">
+                    Before late fee
                   </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="auto-suspend">Auto-Suspend After (Days)</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="auto-suspend" className="text-xs sm:text-sm font-medium">Suspend (Days)</Label>
                   <Input
                     id="auto-suspend"
                     type="number"
+                    inputMode="numeric"
                     value={autoSuspendAfterDays}
                     onChange={(e) => setAutoSuspendAfterDays(e.target.value)}
                     placeholder="7"
+                    className="h-9 text-base"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Suspend membership if unpaid
+                  <p className="text-xs text-muted-foreground/70">
+                    If still unpaid
                   </p>
                 </div>
               </div>
@@ -327,21 +327,19 @@ export default function SettingsPage() {
         </TabsContent>
 
         {/* Notifications */}
-        <TabsContent value="notifications" className="space-y-4">
+        <TabsContent value="notifications" className="space-y-3 sm:space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Email & SMS Notifications</CardTitle>
-              <CardDescription>
-                Configure automatic notifications for members and admin
+            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+              <CardTitle className="text-sm sm:text-lg font-semibold">Notifications</CardTitle>
+              <CardDescription className="text-xs sm:text-sm leading-snug">
+                Automatic alerts for members and admin
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Membership Expiry Reminders</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Send reminders before membership expires
-                  </p>
+            <CardContent className="space-y-2.5 px-3 sm:px-6 pb-3 sm:pb-6">
+              <div className="flex items-center justify-between gap-3 py-1">
+                <div className="space-y-0.5 flex-1 min-w-0">
+                  <Label className="text-sm font-medium">Expiry Reminders</Label>
+                  <p className="text-xs text-muted-foreground/80">Before membership expires</p>
                 </div>
                 <Switch
                   checked={notifications.expiryReminder}
@@ -350,27 +348,26 @@ export default function SettingsPage() {
               </div>
 
               {notifications.expiryReminder && (
-                <div className="ml-4 space-y-2">
-                  <Label htmlFor="expiry-days">Remind Before (Days)</Label>
+                <div className="ml-4 space-y-1.5">
+                  <Label htmlFor="expiry-days" className="text-xs sm:text-sm font-medium">Remind Before (Days)</Label>
                   <Input
                     id="expiry-days"
                     type="number"
+                    inputMode="numeric"
                     value={expiryReminderDays}
                     onChange={(e) => setExpiryReminderDays(e.target.value)}
-                    className="max-w-xs"
+                    className="max-w-xs h-9 text-base"
                     placeholder="7"
                   />
                 </div>
               )}
 
-              <Separator />
+              <Separator className="my-1" />
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Payment Due Notifications</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Notify members about pending payments
-                  </p>
+              <div className="flex items-center justify-between gap-3 py-1">
+                <div className="space-y-0.5 flex-1 min-w-0">
+                  <Label className="text-sm font-medium">Payment Due</Label>
+                  <p className="text-xs text-muted-foreground/80">Pending payments</p>
                 </div>
                 <Switch
                   checked={notifications.paymentDue}
@@ -378,14 +375,12 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <Separator />
+              <Separator className="my-1" />
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>New Member Alerts</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Get notified when new members join
-                  </p>
+              <div className="flex items-center justify-between gap-3 py-1">
+                <div className="space-y-0.5 flex-1 min-w-0">
+                  <Label className="text-sm font-medium">New Members</Label>
+                  <p className="text-xs text-muted-foreground/80">When members join</p>
                 </div>
                 <Switch
                   checked={notifications.newMember}
@@ -393,14 +388,12 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <Separator />
+              <Separator className="my-1" />
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Daily Reports</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Receive daily attendance and revenue reports
-                  </p>
+              <div className="flex items-center justify-between gap-3 py-1">
+                <div className="space-y-0.5 flex-1 min-w-0">
+                  <Label className="text-sm font-medium">Daily Reports</Label>
+                  <p className="text-xs text-muted-foreground/80">Attendance & revenue</p>
                 </div>
                 <Switch
                   checked={notifications.dailyReport}
@@ -408,14 +401,12 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <Separator />
+              <Separator className="my-1" />
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Weekly Summary</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Weekly performance summary every Monday
-                  </p>
+              <div className="flex items-center justify-between gap-3 py-1">
+                <div className="space-y-0.5 flex-1 min-w-0">
+                  <Label className="text-sm font-medium">Weekly Summary</Label>
+                  <p className="text-xs text-muted-foreground/80">Every Monday</p>
                 </div>
                 <Switch
                   checked={notifications.weeklyReport}
@@ -423,14 +414,12 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <Separator />
+              <Separator className="my-1" />
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Monthly Reports</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Comprehensive monthly reports on 1st of month
-                  </p>
+              <div className="flex items-center justify-between gap-3 py-1">
+                <div className="space-y-0.5 flex-1 min-w-0">
+                  <Label className="text-sm font-medium">Monthly Reports</Label>
+                  <p className="text-xs text-muted-foreground/80">1st of each month</p>
                 </div>
                 <Switch
                   checked={notifications.monthlyReport}
@@ -442,70 +431,69 @@ export default function SettingsPage() {
         </TabsContent>
 
         {/* Biometric Integration */}
-        <TabsContent value="biometric" className="space-y-4">
+        <TabsContent value="biometric" className="space-y-3 sm:space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>ESSL Biometric Device</CardTitle>
-              <CardDescription>
-                Configure biometric device integration settings
+            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+              <CardTitle className="text-sm sm:text-lg font-semibold">ESSL Biometric</CardTitle>
+              <CardDescription className="text-xs sm:text-sm leading-snug">
+                Device integration settings
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="device-ip">Device IP Address</Label>
+            <CardContent className="space-y-3 px-3 sm:px-6 pb-3 sm:pb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="device-ip" className="text-xs sm:text-sm font-medium">Device IP</Label>
                   <Input
                     id="device-ip"
                     value={esslDeviceIp}
                     onChange={(e) => setEsslDeviceIp(e.target.value)}
                     placeholder="192.168.1.100"
+                    className="h-9 text-base font-mono"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Local network IP of ESSL device
+                  <p className="text-xs text-muted-foreground/70">
+                    Local network IP
                   </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="sync-interval">Auto-Sync Interval (Minutes)</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="sync-interval" className="text-xs sm:text-sm font-medium">Sync Interval</Label>
                   <Select value={syncInterval} onValueChange={setSyncInterval}>
-                    <SelectTrigger id="sync-interval">
+                    <SelectTrigger id="sync-interval" className="h-9">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">Every 1 minute</SelectItem>
-                      <SelectItem value="5">Every 5 minutes</SelectItem>
-                      <SelectItem value="10">Every 10 minutes</SelectItem>
-                      <SelectItem value="30">Every 30 minutes</SelectItem>
+                      <SelectItem value="1">Every 1 min</SelectItem>
+                      <SelectItem value="5">Every 5 mins</SelectItem>
+                      <SelectItem value="10">Every 10 mins</SelectItem>
+                      <SelectItem value="30">Every 30 mins</SelectItem>
                       <SelectItem value="60">Every hour</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">
-                    How often to sync attendance data
+                  <p className="text-xs text-muted-foreground/70">
+                    Attendance sync rate
                   </p>
                 </div>
               </div>
 
-              <Separator />
+              <Separator className="my-2" />
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Auto-Sync Enabled</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Automatically sync attendance from biometric device
-                  </p>
+              <div className="flex items-center justify-between gap-3 py-1">
+                <div className="space-y-0.5 flex-1 min-w-0">
+                  <Label className="text-sm font-medium">Auto-Sync</Label>
+                  <p className="text-xs text-muted-foreground/80">Automatic attendance sync</p>
                 </div>
                 <Switch checked={autoSync} onCheckedChange={setAutoSync} />
               </div>
 
-              <div className="rounded-lg bg-blue-50 p-4 border border-blue-200">
-                <div className="flex gap-3">
-                  <Fingerprint className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-blue-900">
-                      Device Status: Connected
+              <div className="rounded-lg bg-blue-50 dark:bg-blue-950/20 p-3 border border-blue-200 dark:border-blue-900/50 mt-3">
+                <div className="flex gap-2.5">
+                  <Fingerprint className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                      Device: Connected
                     </p>
-                    <p className="text-xs text-blue-700">
-                      Last synced: 2 minutes ago • Next sync in 3 minutes
+                    <p className="text-xs text-blue-700 dark:text-blue-300">
+                      Last sync: 2m ago • Next: 3m
                     </p>
                   </div>
                 </div>
@@ -515,21 +503,19 @@ export default function SettingsPage() {
         </TabsContent>
 
         {/* Attendance */}
-        <TabsContent value="attendance" className="space-y-4">
+        <TabsContent value="attendance" className="space-y-3 sm:space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Attendance Policies</CardTitle>
-              <CardDescription>
-                Configure check-in rules and attendance tracking
+            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+              <CardTitle className="text-sm sm:text-lg font-semibold">Attendance Rules</CardTitle>
+              <CardDescription className="text-xs sm:text-sm leading-snug">
+                Check-in policies and tracking
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Allow Manual Check-In</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Admins can manually mark attendance for members
-                  </p>
+            <CardContent className="space-y-3 px-3 sm:px-6 pb-3 sm:pb-6">
+              <div className="flex items-center justify-between gap-3 py-1">
+                <div className="space-y-0.5 flex-1 min-w-0">
+                  <Label className="text-sm font-medium">Manual Check-In</Label>
+                  <p className="text-xs text-muted-foreground/80">Admins mark attendance</p>
                 </div>
                 <Switch
                   checked={allowManualCheckIn}
@@ -537,34 +523,35 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <Separator />
+              <Separator className="my-2" />
 
-              <div className="space-y-2">
-                <Label htmlFor="attendance-grace">Late Check-In Grace Period (Minutes)</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="attendance-grace" className="text-xs sm:text-sm font-medium">Grace Period (Minutes)</Label>
                 <Input
                   id="attendance-grace"
                   type="number"
+                  inputMode="numeric"
                   value={attendanceGracePeriod}
                   onChange={(e) => setAttendanceGracePeriod(e.target.value)}
-                  className="max-w-xs"
+                  className="max-w-xs h-9 text-base"
                   placeholder="15"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Members can check in this many minutes after opening time
+                <p className="text-xs text-muted-foreground/70">
+                  Late check-in allowed after opening
                 </p>
               </div>
 
-              <Separator />
+              <Separator className="my-2" />
 
-              <div className="rounded-lg bg-amber-50 p-4 border border-amber-200">
-                <div className="flex gap-3">
-                  <Clock className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-amber-900">
-                      Attendance Tracking Active
+              <div className="rounded-lg bg-amber-50 dark:bg-amber-950/20 p-3 border border-amber-200 dark:border-amber-900/50">
+                <div className="flex gap-2.5">
+                  <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                      Tracking Active
                     </p>
-                    <p className="text-xs text-amber-700">
-                      Real-time attendance is being recorded from biometric device
+                    <p className="text-xs text-amber-700 dark:text-amber-300">
+                      Real-time from biometric device
                     </p>
                   </div>
                 </div>
@@ -574,64 +561,65 @@ export default function SettingsPage() {
         </TabsContent>
 
         {/* Reports */}
-        <TabsContent value="reports" className="space-y-4">
+        <TabsContent value="reports" className="space-y-3 sm:space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Report Settings</CardTitle>
-              <CardDescription>
-                Configure automated reports and analytics
+            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+              <CardTitle className="text-sm sm:text-lg font-semibold">Report Settings</CardTitle>
+              <CardDescription className="text-xs sm:text-sm leading-snug">
+                Automated reports and analytics
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="report-email">Send Reports To</Label>
+            <CardContent className="space-y-3 px-3 sm:px-6 pb-3 sm:pb-6">
+              <div className="space-y-1.5">
+                <Label htmlFor="report-email" className="text-xs sm:text-sm font-medium">Send To</Label>
                 <Input
                   id="report-email"
                   type="email"
                   value={gymEmail}
                   onChange={(e) => setGymEmail(e.target.value)}
                   placeholder="admin@yourgym.com"
+                  className="h-9 text-base"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Email address for receiving automated reports
+                <p className="text-xs text-muted-foreground/70">
+                  Automated report email
                 </p>
               </div>
 
-              <Separator />
+              <Separator className="my-2" />
 
-              <div className="space-y-2">
-                <Label htmlFor="report-format">Report Format</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="report-format" className="text-xs sm:text-sm font-medium">Format</Label>
                 <Select defaultValue="pdf">
-                  <SelectTrigger id="report-format">
+                  <SelectTrigger id="report-format" className="h-9">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pdf">PDF Document</SelectItem>
-                    <SelectItem value="excel">Excel Spreadsheet</SelectItem>
-                    <SelectItem value="csv">CSV File</SelectItem>
+                    <SelectItem value="pdf">PDF</SelectItem>
+                    <SelectItem value="excel">Excel</SelectItem>
+                    <SelectItem value="csv">CSV</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <Separator />
+              <Separator className="my-2" />
 
               <div className="space-y-2">
-                <Label>Report Includes</Label>
+                <Label className="text-xs sm:text-sm font-medium">Include</Label>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
-                    <input type="checkbox" id="include-revenue" defaultChecked className="rounded" />
+                    <input type="checkbox" id="include-revenue" defaultChecked className="rounded h-4 w-4" />
                     <label htmlFor="include-revenue" className="text-sm">Revenue & Payments</label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <input type="checkbox" id="include-attendance" defaultChecked className="rounded" />
-                    <label htmlFor="include-attendance" className="text-sm">Attendance Statistics</label>
+                    <input type="checkbox" id="include-attendance" defaultChecked className="rounded h-4 w-4" />
+                    <label htmlFor="include-attendance" className="text-sm">Attendance Stats</label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <input type="checkbox" id="include-members" defaultChecked className="rounded" />
+                    <input type="checkbox" id="include-members" defaultChecked className="rounded h-4 w-4" />
                     <label htmlFor="include-members" className="text-sm">Member Growth</label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <input type="checkbox" id="include-expiry" defaultChecked className="rounded" />
+                    <input type="checkbox" id="include-expiry" defaultChecked className="rounded h-4 w-4" />
                     <label htmlFor="include-expiry" className="text-sm">Upcoming Expiries</label>
                   </div>
                 </div>
@@ -641,79 +629,86 @@ export default function SettingsPage() {
         </TabsContent>
 
         {/* Profile */}
-        <TabsContent value="profile" className="space-y-4">
+        <TabsContent value="profile" className="space-y-3 sm:space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Admin Profile</CardTitle>
-              <CardDescription>
-                Manage your personal information and account settings
+            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+              <CardTitle className="text-sm sm:text-lg font-semibold">Admin Profile</CardTitle>
+              <CardDescription className="text-xs sm:text-sm leading-snug">
+                Personal information and account
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="admin-name">Full Name</Label>
+            <CardContent className="space-y-3 px-3 sm:px-6 pb-3 sm:pb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="admin-name" className="text-xs sm:text-sm font-medium">Full Name</Label>
                   <Input
                     id="admin-name"
                     placeholder="John Doe"
                     defaultValue="Admin User"
+                    className="h-9 text-base"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="admin-email">Email</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="admin-email" className="text-xs sm:text-sm font-medium">Email</Label>
                   <Input
                     id="admin-email"
                     type="email"
                     placeholder="admin@gym.com"
                     defaultValue={gymEmail}
+                    className="h-9 text-base"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="admin-phone">Phone Number</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="admin-phone" className="text-xs sm:text-sm font-medium">Phone</Label>
                   <Input
                     id="admin-phone"
+                    type="tel"
                     placeholder="+91 XXXXXXXXXX"
                     defaultValue={gymPhone}
+                    className="h-9 text-base"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="admin-role">Role</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="admin-role" className="text-xs sm:text-sm font-medium">Role</Label>
                   <Input
                     id="admin-role"
                     defaultValue="Administrator"
                     disabled
+                    className="h-9 text-base bg-muted"
                   />
                 </div>
               </div>
 
-              <Separator />
+              <Separator className="my-3" />
 
-              <div className="space-y-4">
-                <h3 className="text-sm font-medium">Change Password</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="current-password">Current Password</Label>
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold">Change Password</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="current-password" className="text-xs sm:text-sm font-medium">Current</Label>
                     <Input
                       id="current-password"
                       type="password"
-                      placeholder="Enter current password"
+                      placeholder="Current password"
+                      className="h-9 text-base"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="new-password">New Password</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="new-password" className="text-xs sm:text-sm font-medium">New</Label>
                     <Input
                       id="new-password"
                       type="password"
-                      placeholder="Enter new password"
+                      placeholder="New password"
+                      className="h-9 text-base"
                     />
                   </div>
                 </div>
 
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="h-9">
                   Update Password
                 </Button>
               </div>
@@ -723,10 +718,10 @@ export default function SettingsPage() {
       </Tabs>
 
       {/* Mobile Sticky Save Button */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 p-4 bg-background border-t z-10">
-        <Button onClick={handleSave} disabled={isSaving} className="w-full" size="lg">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 p-2.5 bg-background/98 backdrop-blur-md border-t z-50">
+        <Button onClick={handleSave} disabled={isSaving} variant="outline" className="w-full h-10 border-primary/20 hover:bg-primary/5">
           <Save className="h-4 w-4 mr-2" />
-          {isSaving ? "Saving..." : "Save All Settings"}
+          {isSaving ? "Saving..." : "Save Settings"}
         </Button>
       </div>
     </div>
