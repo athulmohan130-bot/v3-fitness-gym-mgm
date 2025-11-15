@@ -41,8 +41,6 @@ import { RenewPlanDialog } from "@/components/dashboard/members/renew-plan-dialo
 type ViewMode = "grid" | "list" | "compact";
 
 export default function AttendancePage() {
-  console.log('🎬 AttendancePage rendering');
-
   const firestore = useFirestore();
   const queryClient = useQueryClient();
   const { settings, updateSettings } = useGymSettings();
@@ -52,6 +50,8 @@ export default function AttendancePage() {
   const [filterTimeSlot, setFilterTimeSlot] = useState("all");
   const [newRecordIds, setNewRecordIds] = useState<Set<string>>(new Set());
   const prevRecordsRef = useRef<AttendanceRecord[]>([]);
+  const isInitialLoadRef = useRef(true); // Track if this is the first data load
+  const prevSelectedDateRef = useRef<Date>(selectedDate); // Track previous selected date
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
 
@@ -72,11 +72,6 @@ export default function AttendancePage() {
   // Loading state for button actions - track both member ID and action type
   const [loadingState, setLoadingState] = useState<{ memberId: string; action: 'view' | 'renew' } | null>(null);
 
-  // Debug: Log when selectedMember changes
-  console.log('👤 selectedMember state:', selectedMember);
-  console.log('💾 currentPlanDetails state:', currentPlanDetails);
-  console.log('⏳ isFetchingPlanDetails:', isFetchingPlanDetails);
-
   // View mode state with localStorage persistence
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     if (typeof window !== 'undefined') {
@@ -90,13 +85,14 @@ export default function AttendancePage() {
   // Notification settings - using global gym settings
   const notificationConfig: NotificationConfig = useMemo(() => ({
     playSound: settings?.notifications?.playSound ?? true,
-    playVoice: settings?.notifications?.playVoice ?? true,
     volume: settings?.notifications?.volume ?? 0.7,
-    voiceRate: 0.95,
-    voicePitch: 1.05,
-  }), [settings]);
+  }), [
+    settings?.notifications?.playSound,
+    settings?.notifications?.volume
+  ]);
 
   const notificationHandlerRef = useRef<AttendanceNotificationHandler | null>(null);
+  const prevNotificationConfigRef = useRef<NotificationConfig | null>(null);
 
   // Audio initialization state - persist in localStorage
   const [audioInitialized, setAudioInitialized] = useState(() => {
@@ -155,20 +151,7 @@ export default function AttendancePage() {
 
   // Fetch current plan details from user's membership history when member is selected for renewal
   useEffect(() => {
-    console.log('⚡⚡⚡ useEffect DEFINITELY triggered:', {
-      selectedMember: selectedMember,
-      selectedMemberId: selectedMember?.id,
-      hasFirestore: !!firestore,
-      hasPlansData: !!plansData,
-      plansDataLength: plansData?.length
-    });
-
     if (!selectedMember?.id || !firestore || !plansData) {
-      console.log('⛔ Early return - missing dependencies:', {
-        selectedMemberId: selectedMember?.id,
-        hasFirestore: !!firestore,
-        hasPlansData: !!plansData
-      });
       setCurrentPlanDetails(null);
       setIsFetchingPlanDetails(false);
       return;
@@ -176,7 +159,6 @@ export default function AttendancePage() {
 
     const fetchCurrentPlanDetails = async () => {
       setIsFetchingPlanDetails(true);
-      console.log('🔄 Fetching plan details for user:', selectedMember.id);
 
       try {
         // Fetch the user's latest membership from membershipHistory subcollection
@@ -188,22 +170,9 @@ export default function AttendancePage() {
           const latestMembership = snapshot.docs[0].data();
           const planId = latestMembership.membershipPlanId;
 
-          console.log('📋 Latest membership from history:', {
-            planId,
-            planName: latestMembership.membershipPlan,
-            membershipEnd: latestMembership.membershipEnd,
-            price: latestMembership.price
-          });
-
           // Find the plan in available plans to get accurate pricing
           const plan = plansData.find(p => p.id === planId);
           if (plan) {
-            console.log('✅ Found current plan details:', {
-              planId: plan.id,
-              planName: plan.name,
-              price: plan.price,
-              duration: plan.durationInDays
-            });
             setCurrentPlanDetails({
               price: plan.price,
               duration: plan.durationInDays,
@@ -212,7 +181,6 @@ export default function AttendancePage() {
             // Update selectedMember with the planId for reference
             setSelectedMember(prev => prev ? { ...prev, currentPlanId: planId } : null);
           } else {
-            console.log('⚠️ Plan not found in membershipPlans collection. Using history data.');
             // Fallback to using data from membership history
             setCurrentPlanDetails({
               price: latestMembership.price || 0,
@@ -223,11 +191,9 @@ export default function AttendancePage() {
             setSelectedMember(prev => prev ? { ...prev, currentPlanId: planId } : null);
           }
         } else {
-          console.log('❌ No membership history found for user:', selectedMember.id);
           setCurrentPlanDetails(null);
         }
       } catch (error) {
-        console.error('Error fetching membership history:', error);
         setCurrentPlanDetails(null);
       } finally {
         setIsFetchingPlanDetails(false);
@@ -267,17 +233,37 @@ export default function AttendancePage() {
 
   // Initialize notification handler
   useEffect(() => {
+    // Check if config actually changed
+    const configChanged = !prevNotificationConfigRef.current ||
+      prevNotificationConfigRef.current.playSound !== notificationConfig.playSound ||
+      prevNotificationConfigRef.current.volume !== notificationConfig.volume;
+
+    if (!configChanged) return;
+
     if (!notificationHandlerRef.current) {
       notificationHandlerRef.current = new AttendanceNotificationHandler(notificationConfig);
     } else {
       notificationHandlerRef.current.updateConfig(notificationConfig);
     }
+
+    prevNotificationConfigRef.current = notificationConfig;
   }, [notificationConfig]);
 
   // Detect new records and trigger animation + notifications
   useEffect(() => {
+    // Check if the selected date has changed
+    const dateChanged = format(prevSelectedDateRef.current, "yyyy-MM-dd") !== format(selectedDate, "yyyy-MM-dd");
+
+    if (dateChanged) {
+      // Reset initial load flag when date changes
+      isInitialLoadRef.current = true;
+      prevSelectedDateRef.current = selectedDate;
+      prevRecordsRef.current = [];
+    }
+
     if (!attendanceRecords || attendanceRecords.length === 0) {
       prevRecordsRef.current = [];
+      // Don't reset isInitialLoadRef here - only reset it when date changes
       return;
     }
 
@@ -285,23 +271,46 @@ export default function AttendancePage() {
     const currentIds = attendanceRecords.map(r => r.id);
     const newIds = currentIds.filter(id => !prevIds.has(id));
 
-    if (newIds.length > 0 && prevRecordsRef.current.length > 0 && selectedDate === format(new Date(), "yyyy-MM-dd")) {
+    // Check if selected date is today (both are Date objects, so compare formatted strings)
+    const isToday = format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
+
+    // Debug: Log notification trigger conditions
+    if (newIds.length > 0) {
+      console.log('🔔 New check-in detected!', {
+        newCheckIns: newIds.length,
+        isInitialLoad: isInitialLoadRef.current,
+        isToday,
+        audioInitialized,
+        hasNotificationHandler: !!notificationHandlerRef.current,
+        willTriggerNotification: !isInitialLoadRef.current && isToday && audioInitialized
+      });
+    }
+
+    // Trigger notifications if:
+    // 1. There are new IDs
+    // 2. This is NOT the initial load (prevents notifications on page load)
+    // 3. The selected date is today
+    // 4. Audio has been initialized
+    if (newIds.length > 0 && !isInitialLoadRef.current && isToday && audioInitialized) {
+      console.log('✅ Triggering notifications for', newIds.length, 'new records');
       setNewRecordIds(new Set(newIds));
 
       // Trigger notifications for new records
       newIds.forEach(id => {
         const record = attendanceRecords.find(r => r.id === id);
         if (record && notificationHandlerRef.current) {
+          // Support both membershipEnd and membershipEndDate for compatibility
+          const membershipEndDate = record.membershipEnd || (record as any).membershipEndDate;
           const alertInfo = getMembershipAlertType(
             record.membershipStatus || 'active',
-            record.membershipEnd
+            membershipEndDate
           );
 
           notificationHandlerRef.current.notify({
             memberName: record.name,
             alertType: alertInfo.alertType,
             daysRemaining: alertInfo.daysRemaining,
-            membershipEndDate: record.membershipEnd
+            membershipEndDate: membershipEndDate
           });
         }
       });
@@ -312,8 +321,13 @@ export default function AttendancePage() {
       }, 3000);
     }
 
+    // Mark that we've completed the initial load
+    if (isInitialLoadRef.current) {
+      isInitialLoadRef.current = false;
+    }
+
     prevRecordsRef.current = attendanceRecords;
-  }, [attendanceRecords, selectedDate]);
+  }, [attendanceRecords, selectedDate, audioInitialized]);
 
   // Filter and sort records
   const filteredRecords = useMemo(() => {
@@ -416,7 +430,7 @@ export default function AttendancePage() {
   return (
     <div className="space-y-3">
       {/* Enable Audio Banner */}
-      {!audioInitialized && !audioBannerDismissed && (notificationConfig.playSound || notificationConfig.playVoice) && (
+      {!audioInitialized && !audioBannerDismissed && notificationConfig.playSound && (
         <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900">
           <CardContent className="py-3">
             <div className="flex items-center justify-between gap-4">
@@ -424,7 +438,7 @@ export default function AttendancePage() {
                 <Volume2 className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Enable Audio Notifications</p>
-                  <p className="text-xs text-blue-700 dark:text-blue-300">Click to activate voice announcements for check-ins</p>
+                  <p className="text-xs text-blue-700 dark:text-blue-300">Click to activate sound notifications for check-ins</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
@@ -480,7 +494,7 @@ export default function AttendancePage() {
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" size="icon" className="h-8 w-8">
-              {notificationConfig.playSound || notificationConfig.playVoice ? (
+              {notificationConfig.playSound ? (
                 <Volume2 className="h-4 w-4" />
               ) : (
                 <VolumeX className="h-4 w-4" />
@@ -514,27 +528,6 @@ export default function AttendancePage() {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="play-voice" className="flex flex-col gap-1">
-                  <span>Voice Announcements</span>
-                  <span className="text-xs text-muted-foreground font-normal">
-                    Announce membership status
-                  </span>
-                </Label>
-                <Switch
-                  id="play-voice"
-                  checked={notificationConfig.playVoice}
-                  onCheckedChange={async (checked) => {
-                    await updateSettings({
-                      notifications: {
-                        ...settings?.notifications,
-                        playVoice: checked,
-                      }
-                    });
-                  }}
-                />
-              </div>
-
               <div className="space-y-2">
                 <Label htmlFor="volume">Volume: {Math.round(notificationConfig.volume * 100)}%</Label>
                 <Slider
@@ -556,7 +549,7 @@ export default function AttendancePage() {
 
 
               <div className="pt-2 border-t space-y-2">
-                <Label className="text-xs font-semibold">Test Voice</Label>
+                <Label className="text-xs font-semibold">Test Sounds</Label>
                 <div className="grid grid-cols-2 gap-2">
                   <Button
                     variant="outline"
@@ -1046,6 +1039,56 @@ export default function AttendancePage() {
                           {format(new Date(record.checkInTime), "h:mm a")}
                         </p>
 
+                        {/* Days Remaining / Expired */}
+                        {(() => {
+                          // Support both membershipEnd and membershipEndDate for compatibility
+                          const membershipEndDate = record.membershipEnd || (record as any).membershipEndDate;
+                          const alertInfo = getMembershipAlertType(
+                            record.membershipStatus || 'active',
+                            membershipEndDate
+                          );
+                          const { daysRemaining } = alertInfo;
+
+                          if (daysRemaining === undefined) return null;
+
+                          let badgeText = '';
+                          let badgeVariant: 'default' | 'destructive' | 'secondary' | 'outline' = 'secondary';
+                          let badgeClassName = 'h-5 px-2 text-[10px] font-medium';
+
+                          if (daysRemaining < 0) {
+                            const daysExpired = Math.abs(daysRemaining);
+                            badgeText = `Expired ${daysExpired} ${daysExpired === 1 ? 'day' : 'days'} ago`;
+                            badgeVariant = 'destructive';
+                          } else if (daysRemaining === 0) {
+                            badgeText = 'Expires today';
+                            badgeVariant = 'destructive';
+                          } else if (daysRemaining === 1) {
+                            badgeText = '1 day left';
+                            badgeVariant = 'destructive';
+                            badgeClassName = 'h-5 px-2 text-[10px] font-medium bg-orange-500 text-white';
+                          } else if (daysRemaining <= 3) {
+                            badgeText = `${daysRemaining} days left`;
+                            badgeVariant = 'outline';
+                            badgeClassName = 'h-5 px-2 text-[10px] font-medium border-orange-500 text-orange-700';
+                          } else if (daysRemaining <= 7) {
+                            badgeText = `${daysRemaining} days left`;
+                            badgeVariant = 'secondary';
+                            badgeClassName = 'h-5 px-2 text-[10px] font-medium bg-blue-100 text-blue-700';
+                          } else {
+                            badgeText = `${daysRemaining} days left`;
+                            badgeVariant = 'secondary';
+                            badgeClassName = 'h-5 px-2 text-[10px] font-medium';
+                          }
+
+                          return (
+                            <div className="text-center mb-2">
+                              <Badge variant={badgeVariant} className={badgeClassName}>
+                                {badgeText}
+                              </Badge>
+                            </div>
+                          );
+                        })()}
+
                         {/* Device ID */}
                         {record.biometricDeviceId && (
                           <div className="text-center mb-2">
@@ -1180,6 +1223,45 @@ export default function AttendancePage() {
                             )}
                           </div>
 
+                          {/* Days Remaining / Expired */}
+                          <div className="hidden xl:block">
+                            {(() => {
+                              // Support both membershipEnd and membershipEndDate for compatibility
+                              const membershipEndDate = record.membershipEnd || (record as any).membershipEndDate;
+                              const alertInfo = getMembershipAlertType(
+                                record.membershipStatus || 'active',
+                                membershipEndDate
+                              );
+                              const { daysRemaining } = alertInfo;
+
+                              if (daysRemaining === undefined) return null;
+
+                              let badgeText = '';
+                              let badgeVariant: 'default' | 'destructive' | 'secondary' | 'outline' = 'secondary';
+
+                              if (daysRemaining < 0) {
+                                const daysExpired = Math.abs(daysRemaining);
+                                badgeText = `Expired ${daysExpired}d ago`;
+                                badgeVariant = 'destructive';
+                              } else if (daysRemaining === 0) {
+                                badgeText = 'Expires today';
+                                badgeVariant = 'destructive';
+                              } else if (daysRemaining <= 3) {
+                                badgeText = `${daysRemaining}d left`;
+                                badgeVariant = 'outline';
+                              } else {
+                                badgeText = `${daysRemaining}d left`;
+                                badgeVariant = 'secondary';
+                              }
+
+                              return (
+                                <Badge variant={badgeVariant} className="text-xs">
+                                  {badgeText}
+                                </Badge>
+                              );
+                            })()}
+                          </div>
+
                           {/* Mobile Check-in (visible on mobile) */}
                           <div className="sm:hidden text-right">
                             <p className="font-semibold text-xs">
@@ -1306,6 +1388,46 @@ export default function AttendancePage() {
                                     </Badge>
                                   </>
                                 )}
+                                {(() => {
+                                  // Support both membershipEnd and membershipEndDate for compatibility
+                                  const membershipEndDate = record.membershipEnd || (record as any).membershipEndDate;
+                                  const alertInfo = getMembershipAlertType(
+                                    record.membershipStatus || 'active',
+                                    membershipEndDate
+                                  );
+                                  const { daysRemaining } = alertInfo;
+
+                                  if (daysRemaining === undefined) return null;
+
+                                  let badgeText = '';
+                                  let badgeVariant: 'default' | 'destructive' | 'secondary' | 'outline' = 'secondary';
+
+                                  if (daysRemaining < 0) {
+                                    const daysExpired = Math.abs(daysRemaining);
+                                    badgeText = `Exp ${daysExpired}d ago`;
+                                    badgeVariant = 'destructive';
+                                  } else if (daysRemaining === 0) {
+                                    badgeText = 'Exp today';
+                                    badgeVariant = 'destructive';
+                                  } else if (daysRemaining <= 3) {
+                                    badgeText = `${daysRemaining}d left`;
+                                    badgeVariant = 'outline';
+                                  } else if (daysRemaining <= 7) {
+                                    badgeText = `${daysRemaining}d`;
+                                    badgeVariant = 'secondary';
+                                  } else {
+                                    return null; // Don't show for long-term memberships in compact view
+                                  }
+
+                                  return (
+                                    <>
+                                      <span className="text-[11px] text-muted-foreground">•</span>
+                                      <Badge variant={badgeVariant} className="h-4 px-1.5 text-[9px] font-normal">
+                                        {badgeText}
+                                      </Badge>
+                                    </>
+                                  );
+                                })()}
                               </div>
                             </Link>
                           </div>

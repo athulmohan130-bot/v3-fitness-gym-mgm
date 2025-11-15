@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useFirestore } from "@/firebase";
 import { SettingsService } from "@/lib/settings-service";
 import type { GymSettings } from "@/lib/types/settings";
@@ -28,7 +28,7 @@ export function useGymSettings() {
   const { data: settings, isLoading, error } = useDoc<GymSettings>(settingsDoc);
 
   // Save settings
-  const saveSettings = async (newSettings: GymSettings) => {
+  const saveSettings = useCallback(async (newSettings: GymSettings) => {
     if (!settingsService) {
       throw new Error("Settings service not initialized");
     }
@@ -39,10 +39,10 @@ export function useGymSettings() {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [settingsService]);
 
   // Update partial settings
-  const updateSettings = async (partialSettings: Partial<GymSettings>) => {
+  const updateSettings = useCallback(async (partialSettings: Partial<GymSettings>) => {
     if (!settingsService) {
       throw new Error("Settings service not initialized");
     }
@@ -53,10 +53,10 @@ export function useGymSettings() {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [settingsService]);
 
   // Reset settings
-  const resetSettings = async () => {
+  const resetSettings = useCallback(async () => {
     if (!settingsService) {
       throw new Error("Settings service not initialized");
     }
@@ -67,15 +67,18 @@ export function useGymSettings() {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [settingsService]);
 
-  return {
-    settings: settings || defaultGymSettings,
+  // Memoize the settings object to prevent unnecessary re-renders
+  const memoizedSettings = useMemo(() => settings || defaultGymSettings, [settings]);
+
+  return useMemo(() => ({
+    settings: memoizedSettings,
     isLoading,
     isSaving,
     error,
     saveSettings,
     updateSettings,
     resetSettings,
-  };
+  }), [memoizedSettings, isLoading, isSaving, error, saveSettings, updateSettings, resetSettings]);
 }

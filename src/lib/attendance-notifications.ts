@@ -1,11 +1,8 @@
-// Attendance notification utilities with sound and voice feedback
+// Attendance notification utilities with sound feedback
 
 export interface NotificationConfig {
   playSound: boolean;
-  playVoice: boolean;
   volume: number; // 0 to 1
-  voiceRate?: number; // 0.1 to 2.0, default 0.95
-  voicePitch?: number; // 0 to 2.0, default 1.05
 }
 
 export type MembershipAlertType =
@@ -24,10 +21,7 @@ export interface AttendanceNotification {
 // Default notification config
 export const defaultNotificationConfig: NotificationConfig = {
   playSound: true,
-  playVoice: true,
   volume: 0.7,
-  voiceRate: 0.95,
-  voicePitch: 1.05,
 };
 
 // Sound effects using Web Audio API
@@ -128,93 +122,9 @@ class NotificationSounds {
   }
 }
 
-// Voice announcements using Web Speech API
-class VoiceAnnouncer {
-  private synth: SpeechSynthesis | null = null;
-  private voice: SpeechSynthesisVoice | null = null;
-
-  constructor() {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      this.synth = window.speechSynthesis;
-
-      // Wait for voices to load
-      const loadVoices = () => {
-        const voices = this.synth?.getVoices() || [];
-
-        // Prefer natural-sounding voices in order of preference
-        // Priority: Premium/Natural voices > Local voices > Any English voice
-        const preferredVoiceNames = [
-          'Samantha', // macOS natural voice
-          'Google US English', // Google's natural voice
-          'Microsoft Aria Online', // Microsoft natural voice
-          'Alex', // macOS voice
-          'Google UK English Female',
-          'Microsoft Zira', // Windows voice
-          'Karen', // macOS voice
-          'Moira', // macOS voice
-        ];
-
-        // First, try to find a preferred natural voice
-        for (const name of preferredVoiceNames) {
-          const voice = voices.find(v => v.name.includes(name));
-          if (voice) {
-            this.voice = voice;
-            console.log('Selected voice:', voice.name);
-            return;
-          }
-        }
-
-        // Fallback: Find any English voice that's marked as local (usually higher quality)
-        const localEnglishVoice = voices.find(v =>
-          v.lang.startsWith('en') && v.localService
-        );
-        if (localEnglishVoice) {
-          this.voice = localEnglishVoice;
-          console.log('Selected local English voice:', localEnglishVoice.name);
-          return;
-        }
-
-        // Last resort: Any English voice
-        this.voice = voices.find(v => v.lang.startsWith('en')) || voices[0] || null;
-        if (this.voice) {
-          console.log('Selected fallback voice:', this.voice.name);
-        }
-      };
-
-      if (this.synth.getVoices().length > 0) {
-        loadVoices();
-      } else {
-        this.synth.addEventListener('voiceschanged', loadVoices);
-      }
-    }
-  }
-
-  speak(text: string, volume: number = 0.7, rate: number = 0.95, pitch: number = 1.05) {
-    if (!this.synth) {
-      console.warn('Speech synthesis not supported');
-      return;
-    }
-
-    // Cancel any ongoing speech
-    this.synth.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.volume = volume;
-    utterance.rate = rate;
-    utterance.pitch = pitch;
-
-    if (this.voice) {
-      utterance.voice = this.voice;
-    }
-
-    this.synth.speak(utterance);
-  }
-}
-
 // Main notification handler
 export class AttendanceNotificationHandler {
   private sounds = new NotificationSounds();
-  private voice = new VoiceAnnouncer();
   private config: NotificationConfig;
 
   constructor(config: NotificationConfig = defaultNotificationConfig) {
@@ -223,36 +133,6 @@ export class AttendanceNotificationHandler {
 
   updateConfig(config: Partial<NotificationConfig>) {
     this.config = { ...this.config, ...config };
-  }
-
-  private getMessage(notification: AttendanceNotification): string {
-    const { memberName, alertType, daysRemaining } = notification;
-
-    switch (alertType) {
-      case 'active':
-        return `Welcome ${memberName}! Your membership is active.`;
-
-      case 'expiring-soon':
-        if (daysRemaining !== undefined) {
-          if (daysRemaining === 0) {
-            return `Attention ${memberName}! Your membership expires today. Please renew immediately.`;
-          } else if (daysRemaining === 1) {
-            return `Alert ${memberName}! Your membership expires tomorrow. Please renew soon.`;
-          } else {
-            return `Reminder ${memberName}! Your membership expires in ${daysRemaining} days. Please consider renewing.`;
-          }
-        }
-        return `Alert ${memberName}! Your membership is expiring soon. Please renew.`;
-
-      case 'expired':
-        return `Attention ${memberName}! Your membership has expired. Please renew to continue using the gym.`;
-
-      case 'pending':
-        return `Welcome ${memberName}! Your membership is pending approval.`;
-
-      default:
-        return `Welcome ${memberName}!`;
-    }
   }
 
   notify(notification: AttendanceNotification) {
@@ -274,20 +154,6 @@ export class AttendanceNotificationHandler {
           this.sounds.playInfoBeep(this.config.volume);
           break;
       }
-    }
-
-    // Play voice message
-    if (this.config.playVoice) {
-      const message = this.getMessage(notification);
-      // Delay voice slightly so it doesn't overlap with sound
-      setTimeout(() => {
-        this.voice.speak(
-          message,
-          this.config.volume,
-          this.config.voiceRate ?? 0.95,
-          this.config.voicePitch ?? 1.05
-        );
-      }, 300);
     }
   }
 
@@ -331,15 +197,10 @@ export function getMembershipAlertType(
   membershipStatus: string,
   membershipEndDate?: string
 ): { alertType: MembershipAlertType; daysRemaining?: number } {
-  if (membershipStatus === 'expired') {
-    return { alertType: 'expired' };
-  }
+  // Calculate days remaining/expired if we have an end date
+  let daysRemaining: number | undefined;
 
-  if (membershipStatus === 'pending') {
-    return { alertType: 'pending' };
-  }
-
-  if (membershipStatus === 'active' && membershipEndDate) {
+  if (membershipEndDate) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -347,8 +208,18 @@ export function getMembershipAlertType(
     endDate.setHours(0, 0, 0, 0);
 
     const diffTime = endDate.getTime() - today.getTime();
-    const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
 
+  if (membershipStatus === 'expired') {
+    return { alertType: 'expired', daysRemaining };
+  }
+
+  if (membershipStatus === 'pending') {
+    return { alertType: 'pending', daysRemaining };
+  }
+
+  if (membershipStatus === 'active' && daysRemaining !== undefined) {
     if (daysRemaining <= 3 && daysRemaining >= 0) {
       return { alertType: 'expiring-soon', daysRemaining };
     }
@@ -356,5 +227,5 @@ export function getMembershipAlertType(
     return { alertType: 'active', daysRemaining };
   }
 
-  return { alertType: 'active' };
+  return { alertType: 'active', daysRemaining };
 }

@@ -14,7 +14,6 @@ export interface GymSettings {
   // Notification Settings
   notifications: {
     playSound: boolean;
-    playVoice: boolean;
     volume: number; // 0 to 1
   };
   
@@ -69,7 +68,6 @@ export const defaultGymSettings: GymSettings = {
   
   notifications: {
     playSound: true,
-    playVoice: true,
     volume: 0.7,
   },
   

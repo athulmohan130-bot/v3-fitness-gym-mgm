@@ -31,7 +31,6 @@ describe('Gym Settings Validator', () => {
     // Notification Settings
     notifications: {
       playSound: true,
-      playVoice: false,
       volume: 0.8,
     },
 
@@ -94,7 +93,6 @@ describe('Gym Settings Validator', () => {
         timezone: 'UTC',
         notifications: {
           playSound: false,
-          playVoice: false,
           volume: 0.5,
         },
         attendance: {
@@ -218,7 +216,6 @@ describe('Gym Settings Validator', () => {
         ...validSettings,
         notifications: {
           playSound: true,
-          playVoice: true,
           volume: 0.75,
         },
       };
@@ -599,7 +596,6 @@ describe('Gym Settings Validator', () => {
         currency: 'INVALID',  // Invalid currency
         notifications: {
           playSound: true,
-          playVoice: false,
           volume: 2,  // Out of range
         },
         attendance: {

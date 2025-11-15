@@ -79,6 +79,7 @@ export interface AttendanceRecord {
   status: "present" | "absent";
   source: "essl" | "manual" | "app"; // Track how attendance was recorded
   membershipPlanId?: string;
+  membershipPlan?: string; // Plan name for display
   membershipStatus?: "active" | "expired" | "pending";
   membershipEnd?: string; // ISO date when membership expires
   remarks?: string;

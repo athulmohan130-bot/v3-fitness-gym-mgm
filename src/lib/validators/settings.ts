@@ -16,7 +16,6 @@ export const gymSettingsSchema = z.object({
   // Notification Settings
   notifications: z.object({
     playSound: z.boolean(),
-    playVoice: z.boolean(),
     volume: z.number().min(0).max(1),
   }),
   

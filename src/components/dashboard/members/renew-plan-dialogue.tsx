@@ -132,7 +132,17 @@ export function RenewPlanDialog({
         const newHistoryRef = doc(historyCollectionRef);
         transaction.set(newHistoryRef, newHistoryEntry);
 
-        // 2. Create payment record (for payment history)
+        // 2. Update user document with membershipEnd and membershipStatus
+        const userRef = doc(firestore, "users", memberId);
+        transaction.update(userRef, {
+          membershipEnd: end.toISOString(),
+          membershipStatus: "active",
+          membershipPlanId: plan.id,
+          membershipPlan: plan.name,
+          updatedAt: serverTimestamp(),
+        });
+
+        // 3. Create payment record (for payment history)
         const paidAmount = resolvedPaidAmount;
         if (paidAmount > 0) {
           const paymentsRef = collection(firestore, "payments");
@@ -150,7 +160,7 @@ export function RenewPlanDialog({
           });
         }
 
-        // 3. Revenue Summary Write
+        // 4. Revenue Summary Write
         if (paidAmount > 0) {
           const monthKey = format(start, 'yyyy-MM');
           if (!revenueSummaryDoc.exists()) {
