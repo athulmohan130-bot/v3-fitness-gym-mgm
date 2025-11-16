@@ -10,6 +10,7 @@ import {
   query,
   where,
   doc,
+  updateDoc,
   runTransaction,
   increment,
 } from "firebase/firestore";
@@ -131,6 +132,9 @@ export default function MembersPage() {
           // Get membership status by checking ALL history entries
           const membershipStatus = getMembershipStatus(historySnap.docs);
 
+          // Get the latest membership history entry (most recent by createdAt)
+          const latestHistory = historySnap.docs[0]?.data();
+          
           // For display purposes, find the plan with the latest end date
           // This ensures we show the actual expiry date considering future plans
           const now = new Date();
@@ -166,13 +170,19 @@ export default function MembersPage() {
           );
           const endDate = safeParseDate(planData?.membershipEnd);
 
-          // return {
-          //   ...user,
-          //   planName: planData?.membershipPlan || "N/A",
-          //   membershipStatus,
-          //   membershipStart: startDate?.toISOString() ?? "",
-          //   membershipEnd: endDate?.toISOString() ?? "",
-          // };
+          // Update main user document with latest membershipEnd if it's different
+          const latestMembershipEnd = planData?.membershipEnd;
+          if (latestMembershipEnd && user.membershipEnd !== latestMembershipEnd) {
+            // Async update to main user document - don't await to avoid blocking
+            updateDoc(doc(firestore, "users", user.id), {
+              membershipEnd: latestMembershipEnd,
+              membershipStart: planData?.membershipStart || user.membershipStart,
+              membershipPlanId: planData?.membershipPlanId || user.membershipPlanId,
+            }).catch((error: any) => {
+              console.warn('Failed to sync membershipEnd to main user document:', error);
+            });
+          }
+
           return {
             ...user,
             planName: planData?.membershipPlan || "N/A",

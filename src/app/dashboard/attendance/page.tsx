@@ -36,6 +36,7 @@ import {
   type NotificationConfig
 } from "@/lib/attendance-notifications";
 import { RenewPlanDialog } from "@/components/dashboard/members/renew-plan-dialogue";
+import { usePathname } from "next/navigation";
 
 // View mode type
 type ViewMode = "grid" | "list" | "compact";
@@ -124,34 +125,49 @@ export default function AttendancePage() {
     localStorage.setItem('audio-banner-dismissed', audioBannerDismissed.toString());
   }, [audioBannerDismissed]);
 
-  // Real-time query for today's attendance
+  // NAVIGATION SAFETY: Add pathname monitoring
+  const pathname = usePathname();
+  const [queriesEnabled, setQueriesEnabled] = useState(false);
+
+  // Enable queries only when on attendance page
+  useEffect(() => {
+    if (pathname === '/dashboard/attendance') {
+      console.log('✅ Enabling queries for attendance page');
+      setQueriesEnabled(true);
+    } else {
+      console.log('🛑 Disabling queries - navigated away from attendance');
+      setQueriesEnabled(false);
+    }
+  }, [pathname]);
+
+  // Real-time query for today's attendance - NAVIGATION SAFE
   const attendanceQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+    if (!firestore || !queriesEnabled) return null;
     const dateString = format(selectedDate, "yyyy-MM-dd");
     return collection(firestore, `attendance_logs/${dateString}/records`);
-  }, [firestore, selectedDate]);
+  }, [firestore, selectedDate, queriesEnabled]);
 
   const { data: attendanceRecords, isLoading, error } = useCollection<AttendanceRecord>(attendanceQuery);
 
-  // Query for total active members count
+  // Query for total active members count - NAVIGATION SAFE
   const usersQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+    if (!firestore || !queriesEnabled) return null;
     return collection(firestore, "users");
-  }, [firestore]);
+  }, [firestore, queriesEnabled]);
 
   const { data: allUsers } = useCollection(usersQuery);
 
-  // Query for membership plans
+  // Query for membership plans - NAVIGATION SAFE
   const plansQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+    if (!firestore || !queriesEnabled) return null;
     return collection(firestore, "membershipPlans");
-  }, [firestore]);
+  }, [firestore, queriesEnabled]);
 
   const { data: plansData } = useCollection<MembershipPlan>(plansQuery);
 
-  // Fetch current plan details from user's membership history when member is selected for renewal
+  // Fetch current plan details from user's membership history when member is selected for renewal - NAVIGATION SAFE
   useEffect(() => {
-    if (!selectedMember?.id || !firestore || !plansData) {
+    if (!selectedMember?.id || !firestore || !plansData || !queriesEnabled) {
       setCurrentPlanDetails(null);
       setIsFetchingPlanDetails(false);
       return;
@@ -201,7 +217,7 @@ export default function AttendancePage() {
     };
 
     fetchCurrentPlanDetails();
-  }, [selectedMember?.id, firestore, plansData, selectedMember?.currentEndDate]);
+  }, [selectedMember?.id, firestore, plansData, queriesEnabled]);
 
   // Calculate attendance stats
   const attendanceStats = useMemo(() => {
