@@ -5,6 +5,7 @@
   "/dashboard/billing/page": "app/dashboard/billing/page.js",
   "/dashboard/members/new/page": "app/dashboard/members/new/page.js",
   "/dashboard/members/page": "app/dashboard/members/page.js",
+  "/dashboard/members/view/[id]/page": "app/dashboard/members/view/[id]/page.js",
   "/dashboard/overview/page": "app/dashboard/overview/page.js",
   "/dashboard/page": "app/dashboard/page.js",
   "/dashboard/plans/page": "app/dashboard/plans/page.js",
