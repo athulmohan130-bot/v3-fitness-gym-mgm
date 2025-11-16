@@ -315,8 +315,9 @@ export function ViewMemberDetails({
 
   const handleAddPaymentClick = (history: any) => {
     setSelectedHistoryForPayment(history);
+    const totalAmount = (history.price || 0) + (history.registrationFee || 0);
     setPaymentAmount(
-      Math.max(0, history.price - history.paidAmount)
+      Math.max(0, totalAmount - history.paidAmount)
     );
     setPaymentDate(new Date()); // default today
     setPaymentType("cash");
@@ -917,14 +918,15 @@ export function ViewMemberDetails({
                         .slice()
                         .reverse() // latest first
                         .map((history, index) => {
+                          const totalAmount = (history.price || 0) + (history.registrationFee || 0);
                           const paymentStatus =
-                            history.paidAmount >= history.price
+                            history.paidAmount >= totalAmount
                               ? "paid"
                               : history.paidAmount > 0
                               ? "partial"
                               : "pending";
 
-                          const paymentProgress = history.price > 0 ? (history.paidAmount / history.price) * 100 : 100;
+                          const paymentProgress = totalAmount > 0 ? (history.paidAmount / totalAmount) * 100 : 100;
                           const totalFrozenDays = history.freezeHistory?.reduce((acc: number, freeze: any) => acc + freeze.freezeDuration, 0) || 0;
                           const planDuration = differenceInDays(new Date(history.membershipEnd), new Date(history.membershipStart)) - totalFrozenDays;
 
@@ -985,14 +987,30 @@ export function ViewMemberDetails({
                               </CardHeader>
                               <CardContent className="p-4 pt-2">
                                 <div className="space-y-2">
-                                  <div>
+                                  <div className="space-y-2">
                                     <div className="flex justify-between items-center mb-1">
                                       <span className="text-sm font-medium">Payment</span>
                                       <span className="text-sm font-semibold">
-                                        ₹{history.paidAmount.toLocaleString()} / ₹{history.price.toLocaleString()}
+                                        ₹{history.paidAmount.toLocaleString()} / ₹{totalAmount.toLocaleString()}
                                       </span>
                                     </div>
                                     <Progress value={paymentProgress} className="h-2" />
+                                    {(history.registrationFee || 0) > 0 && (
+                                      <div className="text-xs text-muted-foreground space-y-1">
+                                        <div className="flex justify-between">
+                                          <span>Plan Price:</span>
+                                          <span>₹{(history.price || 0).toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span>Registration Fee:</span>
+                                          <span>₹{(history.registrationFee || 0).toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between font-medium border-t pt-1">
+                                          <span>Total:</span>
+                                          <span>₹{totalAmount.toLocaleString()}</span>
+                                        </div>
+                                      </div>
+                                    )}
                                   </div>
                                   <div className="text-xs text-muted-foreground pt-1">
                                     <p>Period: {history.membershipStart ? format(new Date(history.membershipStart), "dd/MM/yy") : "N/A"} - {history.membershipEnd ? format(new Date(history.membershipEnd), "dd/MM/yy") : "N/A"}</p>

@@ -58,15 +58,44 @@ export default function PlansPage() {
     <Card key={plan.id} className="flex flex-col">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>{plan.name}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            {plan.name}
+            {plan.type && (
+              <Badge variant="outline" className="text-xs">
+                {plan.type}
+              </Badge>
+            )}
+          </CardTitle>
           <Badge variant={plan.status === 'active' ? 'default' : 'secondary'}>
             {plan.status.charAt(0).toUpperCase() + plan.status.slice(1)}
           </Badge>
         </div>
-        <CardDescription>
-          <span className="text-3xl font-bold text-primary"><Currency value={plan.price} /></span>
-          <span className="text-muted-foreground"> / {plan.durationInDays} days</span>
-        </CardDescription>
+        <div className="space-y-2">
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold text-primary">
+              <Currency value={plan.price + (plan.registrationFee || 0)} />
+            </span>
+            <span className="text-muted-foreground">/ {plan.durationInDays} days</span>
+          </div>
+          <div className="text-sm space-y-1">
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Plan Price:</span>
+              <span className="font-medium"><Currency value={plan.price} /></span>
+            </div>
+            {plan.registrationFee > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Registration Fee:</span>
+                <span className="font-medium"><Currency value={plan.registrationFee} /></span>
+              </div>
+            )}
+            <div className="flex justify-between items-center pt-1 border-t">
+              <span className="font-medium">Total for New Members:</span>
+              <span className="font-bold text-primary">
+                <Currency value={plan.price + (plan.registrationFee || 0)} />
+              </span>
+            </div>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="flex-1 space-y-4">
         <p className="text-sm text-muted-foreground">Features included:</p>

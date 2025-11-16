@@ -325,7 +325,7 @@ export function RenewPlanDialog({
               <SelectContent>
                 {availablePlans.map((plan) => (
                   <SelectItem key={plan.id} value={plan.id}>
-                    {plan.name} — ₹{plan.price} for {plan.durationInDays} days
+                    {plan.name} ({plan.type}) — ₹{plan.price} for {plan.durationInDays} days
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -334,8 +334,13 @@ export function RenewPlanDialog({
 
           {selectedPlan && (
             <div className="space-y-2">
-              <Label>Plan Price</Label>
+              <Label>Plan Price (Renewal)</Label>
               <Input value={`₹${selectedPlan.price}`} disabled />
+              {selectedPlan.registrationFee > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Registration fee (₹{selectedPlan.registrationFee}) is not charged for renewals
+                </p>
+              )}
             </div>
           )}
 

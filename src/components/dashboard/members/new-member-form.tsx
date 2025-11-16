@@ -445,6 +445,8 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
           membershipEnd: membershipEnd.toISOString(),
           membershipPlanId: values.membershipPlanId,
           price: selectedPlan.price,
+          registrationFee: selectedPlan.registrationFee || 0,
+          totalAmount: selectedPlan.price + (selectedPlan.registrationFee || 0),
           paidAmount: values.paidAmount,
           membershipPlan: selectedPlan.name,
           createdAt: serverTimestamp(),
@@ -624,16 +626,20 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
   );
 
   const paidAmount = form.watch("paidAmount");
+  
+  // Calculate total amount including registration fee for new members
+  const totalAmount = selectedPlan ? selectedPlan.price + (selectedPlan.registrationFee || 0) : 0;
+  
   useEffect(() => {
-    if (selectedPlan && paidAmount > selectedPlan.price) {
+    if (selectedPlan && paidAmount > totalAmount) {
       form.setError("paidAmount", {
         type: "manual",
-        message: "Paid amount cannot exceed plan price.",
+        message: "Paid amount cannot exceed total amount (plan price + registration fee).",
       });
     } else {
       form.clearErrors("paidAmount");
     }
-  }, [paidAmount, selectedPlan, form]);
+  }, [selectedPlan, paidAmount, totalAmount, form]);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -1081,7 +1087,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                               .filter((plan) => plan.status === "active")
                               .map((plan) => (
                                 <SelectItem key={plan.id} value={plan.id}>
-                                  {plan.name} - ₹{plan.price} ({plan.durationInDays} days)
+                                  {plan.name} ({plan.type}) - ₹{plan.price} ({plan.durationInDays} days)
                                 </SelectItem>
                               ))}
                           </SelectContent>
@@ -1150,6 +1156,16 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                       <span className="text-sm text-muted-foreground">Plan Price:</span>
                       <span className="font-semibold">₹{selectedPlan.price}</span>
                     </div>
+                    {selectedPlan.registrationFee > 0 && (
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-muted-foreground">Registration Fee:</span>
+                        <span className="font-semibold">₹{selectedPlan.registrationFee}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center mb-2 pt-2 border-t">
+                      <span className="text-sm font-medium">Total Amount:</span>
+                      <span className="font-bold text-lg">₹{totalAmount}</span>
+                    </div>
                     {paidAmount !== undefined && paidAmount !== null && (
                       <>
                         <div className="flex justify-between items-center">
@@ -1158,21 +1174,21 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                         </div>
                         <div className="flex justify-between items-center mt-1 pt-2 border-t">
                           <span className="text-sm font-medium">
-                            {paidAmount >= selectedPlan.price ? "Status:" : "Balance:"}
+                            {paidAmount >= totalAmount ? "Status:" : "Balance:"}
                           </span>
                           <span
                             className={cn(
                               "font-bold text-lg",
-                              paidAmount > selectedPlan.price
+                              paidAmount > totalAmount
                                 ? "text-destructive"
-                                : paidAmount === selectedPlan.price
+                                : paidAmount === totalAmount
                                 ? "text-green-600"
                                 : "text-orange-600"
                             )}
                           >
-                            {paidAmount >= selectedPlan.price
+                            {paidAmount >= totalAmount
                               ? "Fully Paid ✓"
-                              : `₹${Math.max(selectedPlan.price - paidAmount, 0)} Outstanding`}
+                              : `₹${Math.max(totalAmount - paidAmount, 0)} Outstanding`}
                           </span>
                         </div>
                       </>
@@ -1180,7 +1196,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                   </div>
                 )}
 
-                {selectedPlan && paidAmount < selectedPlan.price && (
+                {selectedPlan && paidAmount < totalAmount && (
                   <FormField
                     control={form.control}
                     name="partialPaymentReason"
@@ -1644,6 +1660,20 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                         ₹{plans?.find(p => p.id === form.watch("membershipPlanId"))?.price || 0}
                       </p>
                     </div>
+                    {(plans?.find(p => p.id === form.watch("membershipPlanId"))?.registrationFee || 0) > 0 && (
+                      <div>
+                        <span className="text-muted-foreground text-xs">Registration Fee</span>
+                        <p className="font-medium">
+                          ₹{plans?.find(p => p.id === form.watch("membershipPlanId"))?.registrationFee || 0}
+                        </p>
+                      </div>
+                    )}
+                    <div>
+                      <span className="text-muted-foreground text-xs">Total Amount</span>
+                      <p className="font-bold text-primary">
+                        ₹{(plans?.find(p => p.id === form.watch("membershipPlanId"))?.price || 0) + (plans?.find(p => p.id === form.watch("membershipPlanId"))?.registrationFee || 0)}
+                      </p>
+                    </div>
                     <div>
                       <span className="text-muted-foreground text-xs">Paid Amount</span>
                       <p className="font-medium">₹{form.watch("paidAmount") || 0}</p>
@@ -1656,13 +1686,13 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                       <span className="text-muted-foreground text-xs">Balance Status</span>
                       <p className={cn(
                         "font-medium",
-                        (form.watch("paidAmount") || 0) >= (plans?.find(p => p.id === form.watch("membershipPlanId"))?.price || 0)
+                        (form.watch("paidAmount") || 0) >= ((plans?.find(p => p.id === form.watch("membershipPlanId"))?.price || 0) + (plans?.find(p => p.id === form.watch("membershipPlanId"))?.registrationFee || 0))
                           ? "text-green-600"
                           : "text-orange-600"
                       )}>
-                        {(form.watch("paidAmount") || 0) >= (plans?.find(p => p.id === form.watch("membershipPlanId"))?.price || 0)
+                        {(form.watch("paidAmount") || 0) >= ((plans?.find(p => p.id === form.watch("membershipPlanId"))?.price || 0) + (plans?.find(p => p.id === form.watch("membershipPlanId"))?.registrationFee || 0))
                           ? "Fully Paid ✓"
-                          : `₹${(plans?.find(p => p.id === form.watch("membershipPlanId"))?.price || 0) - (form.watch("paidAmount") || 0)} Outstanding`
+                          : `₹${((plans?.find(p => p.id === form.watch("membershipPlanId"))?.price || 0) + (plans?.find(p => p.id === form.watch("membershipPlanId"))?.registrationFee || 0)) - (form.watch("paidAmount") || 0)} Outstanding`
                         }
                       </p>
                     </div>

@@ -10,6 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useNotificationToast } from "@/hooks/use-notification-toast";
 import { Loader2, Save, X } from "lucide-react";
 import { MembershipPlan } from "@/lib/types";
@@ -55,7 +62,9 @@ export function EditPlanForm({ plan }: EditPlanFormProps) {
     resolver: zodResolver(planSchema),
     defaultValues: {
       name: plan.name,
+      type: plan.type || "Cardio",
       price: plan.price,
+      registrationFee: plan.registrationFee || 0,
       durationInDays: plan.durationInDays,
       features: plan.features,
       status: plan.status || "active",
@@ -136,13 +145,37 @@ export function EditPlanForm({ plan }: EditPlanFormProps) {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="type">Plan Type</Label>
+            <Select
+              value={watch("type")}
+              onValueChange={(value) => setValue("type", value as "Cardio" | "Bodybuilding", { shouldDirty: true })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select plan type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Cardio">Cardio</SelectItem>
+                <SelectItem value="Bodybuilding">Bodybuilding</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.type && (
+              <p className="text-sm text-destructive mt-1">
+                {errors.type.message}
+              </p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="price">Price (₹)</Label>
+              <Label htmlFor="price">Monthly Price (₹) *</Label>
               <Input
                 id="price"
                 type="number"
                 step="0.01"
+                min="1"
+                max="100000"
+                placeholder="e.g., 1500"
                 {...register("price", { valueAsNumber: true })}
                 className={errors.price ? "border-destructive" : ""}
                 aria-invalid={!!errors.price}
@@ -153,6 +186,33 @@ export function EditPlanForm({ plan }: EditPlanFormProps) {
                   {errors.price.message}
                 </p>
               )}
+              <p className="text-xs text-muted-foreground">
+                Minimum ₹1
+              </p>
+            </div>
+
+            <div>
+              <Label htmlFor="registrationFee">Registration Fee (₹)</Label>
+              <Input
+                id="registrationFee"
+                type="number"
+                step="0.01"
+                min="0"
+                max="50000"
+                placeholder="e.g., 500 (optional)"
+                {...register("registrationFee", { valueAsNumber: true })}
+                className={errors.registrationFee ? "border-destructive" : ""}
+                aria-invalid={!!errors.registrationFee}
+                aria-describedby="registrationFee-error"
+              />
+              {errors.registrationFee && (
+                <p id="registrationFee-error" className="text-sm text-destructive mt-1">
+                  {errors.registrationFee.message}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Optional. Leave 0 for no registration fee.
+              </p>
             </div>
 
             <div>

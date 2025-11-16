@@ -6,6 +6,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useNotificationToast } from "@/hooks/use-notification-toast";
 import { Loader2, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -33,7 +40,9 @@ export function NewPlanForm() {
     resolver: zodResolver(planSchema),
     defaultValues: {
       name: "",
+      type: "Cardio",
       price: 0,
+      registrationFee: 0,
       durationInDays: 30,
       features: [{ value: "" }],
       status: "active",
@@ -110,17 +119,42 @@ export function NewPlanForm() {
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <Label>Plan Type</Label>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select plan type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Cardio">Cardio</SelectItem>
+                        <SelectItem value="Bodybuilding">Bodybuilding</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
                   name="price"
                   render={({ field }) => (
                     <FormItem>
-                      <Label>Price (₹)</Label>
+                      <Label>Monthly Price (₹) *</Label>
                       <FormControl>
                         <Input
                           type="number"
                           step="0.01"
+                          min="1"
+                          max="100000"
+                          placeholder="e.g., 1500"
                           {...field}
                           onChange={(e) =>
                             field.onChange(parseFloat(e.target.value) || 0)
@@ -128,6 +162,36 @@ export function NewPlanForm() {
                         />
                       </FormControl>
                       <FormMessage />
+                      <p className="text-xs text-muted-foreground">
+                        Minimum ₹1
+                      </p>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="registrationFee"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Label>Registration Fee (₹)</Label>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max="50000"
+                          placeholder="e.g., 500 (optional)"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(parseFloat(e.target.value) || 0)
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                      <p className="text-xs text-muted-foreground">
+                        Optional. Leave 0 for no registration fee.
+                      </p>
                     </FormItem>
                   )}
                 />
