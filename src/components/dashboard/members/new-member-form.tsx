@@ -361,11 +361,29 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
       }
 
       const selectedPlan = plans.find((p) => p.id === values.membershipPlanId);
-      if (!selectedPlan) throw new Error("Selected plan not found");
+      if (!selectedPlan) {
+        throw new Error(`Selected plan not found. Plan ID: ${values.membershipPlanId}`);
+      }
 
       const membershipStart = values.joinDate;
       const membershipEnd = add(membershipStart, {
         days: selectedPlan.durationInDays,
+      });
+
+      // Validate that we have all required membership data
+      if (!values.membershipPlanId || !selectedPlan.name || !selectedPlan.durationInDays) {
+        console.error("Missing membership data:", {
+          planId: values.membershipPlanId,
+          planName: selectedPlan.name,
+          duration: selectedPlan.durationInDays
+        });
+        throw new Error("Invalid membership plan data");
+      }
+
+      console.log("Creating user with membership:", {
+        planId: values.membershipPlanId,
+        planName: selectedPlan.name,
+        membershipEnd: membershipEnd.toISOString()
       });
 
       // Use a transaction to:
@@ -420,10 +438,11 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
             relation: values.emergencyContactRelation,
           },
           role: values.role,
+          // REQUIRED: Membership fields must always be set during registration
           membershipStatus: "active",
           membershipEnd: membershipEnd.toISOString(),
           membershipPlanId: values.membershipPlanId,
-          membershipPlan: selectedPlan?.name || "",
+          membershipPlan: selectedPlan.name,
           heightCm: values.heightCm || null,
           weightKg: values.weightKg || null,
           bmi: (values.heightCm && values.weightKg) ? values.weightKg / (values.heightCm / 100) ** 2 : null,
@@ -1113,9 +1132,9 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                               placeholder="500"
                               className="pl-7"
                               {...field}
-                              value={field.value === undefined ? "" : field.value}
+                              value={field.value === undefined || field.value === 0 ? "" : field.value}
                               onChange={(e) => {
-                                const value = Number(e.target.value);
+                                const value = e.target.value === "" ? 0 : Number(e.target.value);
                                 field.onChange(value);
                               }}
                             />
