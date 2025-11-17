@@ -49,6 +49,7 @@ export default function AttendancePage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterTimeSlot, setFilterTimeSlot] = useState("all");
+  const [isDateChanging, setIsDateChanging] = useState(false);
   const [newRecordIds, setNewRecordIds] = useState<Set<string>>(new Set());
   const prevRecordsRef = useRef<AttendanceRecord[]>([]);
   const isInitialLoadRef = useRef(true); // Track if this is the first data load
@@ -144,24 +145,33 @@ export default function AttendancePage() {
   const attendanceQuery = useMemoFirebase(() => {
     if (!firestore || !queriesEnabled) return null;
     const dateString = format(selectedDate, "yyyy-MM-dd");
-    return collection(firestore, `attendance_logs/${dateString}/records`);
+    return query(
+      collection(firestore, `attendance_logs/${dateString}/records`),
+      orderBy("checkInTime", "desc")
+    );
   }, [firestore, selectedDate, queriesEnabled]);
 
   const { data: attendanceRecords, isLoading, error } = useCollection<AttendanceRecord>(attendanceQuery);
 
   // Query for total active members count - NAVIGATION SAFE
+  // Only query active members to reduce data transfer
+  // ONLY enable when stats are expanded to avoid unnecessary queries
   const usersQuery = useMemoFirebase(() => {
-    if (!firestore || !queriesEnabled) return null;
-    return collection(firestore, "users");
-  }, [firestore, queriesEnabled]);
+    if (!firestore || !queriesEnabled || !isStatsOpen) return null;
+    return query(
+      collection(firestore, "users"),
+      where("membershipStatus", "==", "active")
+    );
+  }, [firestore, queriesEnabled, isStatsOpen]);
 
-  const { data: allUsers } = useCollection(usersQuery);
+  const { data: activeUsers } = useCollection(usersQuery);
 
   // Query for membership plans - NAVIGATION SAFE
+  // ONLY fetch when renewal dialog is open to avoid unnecessary queries
   const plansQuery = useMemoFirebase(() => {
-    if (!firestore || !queriesEnabled) return null;
+    if (!firestore || !queriesEnabled || !renewOpen) return null;
     return collection(firestore, "membershipPlans");
-  }, [firestore, queriesEnabled]);
+  }, [firestore, queriesEnabled, renewOpen]);
 
   const { data: plansData } = useCollection<MembershipPlan>(plansQuery);
 
@@ -221,15 +231,13 @@ export default function AttendancePage() {
 
   // Calculate attendance stats
   const attendanceStats = useMemo(() => {
-    if (!attendanceRecords) return { totalCheckedIn: 0, totalMembers: 0, percentage: 0, peakHour: null };
-
-    const totalCheckedIn = attendanceRecords.length;
-    const totalMembers = allUsers?.length || 0;
-    const percentage = totalMembers > 0 ? Math.round((totalCheckedIn / totalMembers) * 100) : 0;
+    const totalCheckedIn = attendanceRecords?.length || 0;
+    const totalActiveMembers = activeUsers?.length || 0;
+    const percentage = totalActiveMembers > 0 ? Math.round((totalCheckedIn / totalActiveMembers) * 100) : 0;
 
     // Calculate peak hour (hour with most check-ins)
     const hourCounts: Record<number, number> = {};
-    attendanceRecords.forEach(record => {
+    attendanceRecords?.forEach(record => {
       const hour = new Date(record.checkInTime).getHours();
       hourCounts[hour] = (hourCounts[hour] || 0) + 1;
     });
@@ -244,8 +252,8 @@ export default function AttendancePage() {
       }
     });
 
-    return { totalCheckedIn, totalMembers, percentage, peakHour };
-  }, [attendanceRecords, allUsers]);
+    return { totalCheckedIn, totalActiveMembers, percentage, peakHour };
+  }, [attendanceRecords, activeUsers]);
 
   // Initialize notification handler
   useEffect(() => {
@@ -265,12 +273,21 @@ export default function AttendancePage() {
     prevNotificationConfigRef.current = notificationConfig;
   }, [notificationConfig]);
 
+  // Reset loading state when data arrives after date change
+  useEffect(() => {
+    if (!isLoading && isDateChanging) {
+      setIsDateChanging(false);
+    }
+  }, [isLoading, isDateChanging]);
+
   // Detect new records and trigger animation + notifications
   useEffect(() => {
     // Check if the selected date has changed
     const dateChanged = format(prevSelectedDateRef.current, "yyyy-MM-dd") !== format(selectedDate, "yyyy-MM-dd");
 
     if (dateChanged) {
+      // Set date changing flag
+      setIsDateChanging(true);
       // Reset initial load flag when date changes
       isInitialLoadRef.current = true;
       prevSelectedDateRef.current = selectedDate;
@@ -702,8 +719,13 @@ export default function AttendancePage() {
                       "h-9 justify-start text-left font-normal",
                       !selectedDate && "text-muted-foreground"
                     )}
+                    disabled={isDateChanging}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {isDateChanging ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                    )}
                     {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
@@ -796,8 +818,13 @@ export default function AttendancePage() {
                     className={cn(
                       "w-full sm:w-auto h-8 text-sm justify-start text-left font-normal rounded-lg border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 shadow-sm px-3"
                     )}
+                    disabled={isDateChanging}
                   >
-                    <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+                    {isDateChanging ? (
+                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+                    )}
                     {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
@@ -867,7 +894,7 @@ export default function AttendancePage() {
                       <Users className="h-4 w-4" />
                       <span className="font-medium">Statistics</span>
                       <Badge variant="outline" className="ml-2">
-                        {attendanceStats.totalCheckedIn}/{attendanceStats.totalMembers}
+                        {attendanceStats.totalCheckedIn} checked in
                       </Badge>
                     </div>
                     {isStatsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -879,7 +906,7 @@ export default function AttendancePage() {
                       <p className="text-xs text-muted-foreground">Today's Attendance</p>
                       <div className="flex items-baseline gap-1">
                         <p className="text-2xl font-bold">{attendanceStats.totalCheckedIn}</p>
-                        <p className="text-sm text-muted-foreground">/{attendanceStats.totalMembers}</p>
+                        <p className="text-sm text-muted-foreground">/{attendanceStats.totalActiveMembers}</p>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {attendanceStats.percentage}% checked in
@@ -912,7 +939,7 @@ export default function AttendancePage() {
                 </div>
                 <div className="flex items-baseline gap-1.5 mb-1">
                   <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{attendanceStats.totalCheckedIn}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">/ {attendanceStats.totalMembers}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">/ {attendanceStats.totalActiveMembers}</p>
                 </div>
                 <p className="text-[10px] text-gray-500 dark:text-gray-500">
                   {attendanceStats.percentage}% checked in
@@ -968,7 +995,7 @@ export default function AttendancePage() {
       )}
 
       {/* Attendance Records - Dynamic View */}
-      {isLoading ? (
+      {(isLoading || isDateChanging) ? (
         <>
           <Card>
             <CardContent className="pt-6">
