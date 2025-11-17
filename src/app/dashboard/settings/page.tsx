@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import {
-  Building2,
   CreditCard,
   Bell,
   Fingerprint,
@@ -28,12 +27,29 @@ import Link from "next/link";
 export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
 
-  // Gym Information
-  const [gymName, setGymName] = useState("FitLife Gym");
-  const [gymAddress, setGymAddress] = useState("123 Fitness Street, Kerala");
-  const [gymPhone, setGymPhone] = useState("+91 9876543210");
-  const [gymEmail, setGymEmail] = useState("admin@fitlifegym.com");
-  const [operatingHours, setOperatingHours] = useState("6:00 AM - 10:00 PM");
+  // Payment Methods
+  const [paymentMethods, setPaymentMethods] = useState({
+    cash: true,
+    upi: true,
+    card: true,
+    netBanking: false
+  });
+
+  // Late Payment Settings
+  const [lateFeeAmount, setLateFeeAmount] = useState("100");
+  const [gracePeriodDays, setGracePeriodDays] = useState("3");
+  const [autoSuspendAfterDays, setAutoSuspendAfterDays] = useState("7");
+
+  // Notification Settings
+  const [notifications, setNotifications] = useState({
+    expiryReminder: true,
+    paymentDue: true,
+    newMember: false,
+    dailyReport: false,
+    weeklyReport: true,
+    monthlyReport: false
+  });
+  const [expiryReminderDays, setExpiryReminderDays] = useState("7");
 
   // Biometric Integration
   const [esslDeviceIp, setEsslDeviceIp] = useState("192.168.1.100");
@@ -86,7 +102,7 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="gym" className="space-y-3 sm:space-y-4">
+      <Tabs defaultValue="billing" className="space-y-3 sm:space-y-4">
         {/* Tab Navigation with Scroll Indicators */}
         <div className="relative w-full sm:mx-0">
           {/* Left fade gradient indicator - mobile only */}
@@ -94,11 +110,7 @@ export default function SettingsPage() {
 
           {/* Scrollable tabs container */}
           <div className="overflow-x-auto overflow-y-visible sm:overflow-visible snap-x snap-mandatory scrollbar-hide">
-            <TabsList className="inline-flex sm:grid sm:w-full grid-cols-4 lg:grid-cols-7 gap-1 w-max sm:w-full min-w-full sm:min-w-0 px-2 sm:px-0">
-              <TabsTrigger value="gym" className="whitespace-nowrap flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 snap-start">
-                <Building2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 hidden sm:inline" />
-                Gym
-              </TabsTrigger>
+            <TabsList className="inline-flex sm:grid sm:w-full grid-cols-4 lg:grid-cols-6 gap-1 w-max sm:w-full min-w-full sm:min-w-0 px-2 sm:px-0">
               <TabsTrigger value="billing" className="whitespace-nowrap flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 snap-start">
                 <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 hidden sm:inline" />
                 Billing
@@ -129,79 +141,6 @@ export default function SettingsPage() {
           {/* Right fade gradient indicator - mobile only */}
           <div className="sm:hidden absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
         </div>
-
-        {/* Gym Information */}
-        <TabsContent value="gym" className="space-y-3 sm:space-y-4">
-          <Card>
-            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
-              <CardTitle className="text-sm sm:text-lg font-semibold">Gym Information</CardTitle>
-              <CardDescription className="text-xs sm:text-sm leading-snug">
-                Basic details for receipts and communications
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 sm:space-y-4 px-3 sm:px-6 pb-3 sm:pb-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="gym-name" className="text-xs sm:text-sm font-medium">Gym Name</Label>
-                  <Input
-                    id="gym-name"
-                    value={gymName}
-                    onChange={(e) => setGymName(e.target.value)}
-                    placeholder="Enter gym name"
-                    className="h-9 text-base"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="gym-phone" className="text-xs sm:text-sm font-medium">Contact Phone</Label>
-                  <Input
-                    id="gym-phone"
-                    type="tel"
-                    value={gymPhone}
-                    onChange={(e) => setGymPhone(e.target.value)}
-                    placeholder="+91 XXXXXXXXXX"
-                    className="h-9 text-base"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="gym-email" className="text-xs sm:text-sm font-medium">Email Address</Label>
-                  <Input
-                    id="gym-email"
-                    type="email"
-                    value={gymEmail}
-                    onChange={(e) => setGymEmail(e.target.value)}
-                    placeholder="admin@yourgym.com"
-                    className="h-9 text-base"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="operating-hours" className="text-xs sm:text-sm font-medium">Operating Hours</Label>
-                  <Input
-                    id="operating-hours"
-                    value={operatingHours}
-                    onChange={(e) => setOperatingHours(e.target.value)}
-                    placeholder="6:00 AM - 10:00 PM"
-                    className="h-9 text-base"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="gym-address" className="text-xs sm:text-sm font-medium">Address</Label>
-                <Textarea
-                  id="gym-address"
-                  value={gymAddress}
-                  onChange={(e) => setGymAddress(e.target.value)}
-                  placeholder="Enter complete gym address"
-                  rows={2}
-                  className="text-base resize-none"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         {/* Billing & Payments */}
         <TabsContent value="billing" className="space-y-3 sm:space-y-4">
@@ -575,8 +514,7 @@ export default function SettingsPage() {
                 <Input
                   id="report-email"
                   type="email"
-                  value={gymEmail}
-                  onChange={(e) => setGymEmail(e.target.value)}
+                  defaultValue=""
                   placeholder="admin@yourgym.com"
                   className="h-9 text-base"
                 />
@@ -655,7 +593,7 @@ export default function SettingsPage() {
                     id="admin-email"
                     type="email"
                     placeholder="admin@gym.com"
-                    defaultValue={gymEmail}
+                    defaultValue=""
                     className="h-9 text-base"
                   />
                 </div>
@@ -666,7 +604,7 @@ export default function SettingsPage() {
                     id="admin-phone"
                     type="tel"
                     placeholder="+91 XXXXXXXXXX"
-                    defaultValue={gymPhone}
+                    defaultValue=""
                     className="h-9 text-base"
                   />
                 </div>
