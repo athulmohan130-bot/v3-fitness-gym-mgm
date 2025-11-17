@@ -55,68 +55,68 @@ export default function PlansPage() {
   }
 
   const renderPlanCard = (plan: MembershipPlan) => (
-    <Card key={plan.id} className="flex flex-col hover:shadow-lg transition-shadow duration-200 border-muted">
-      <CardHeader className="space-y-3 pb-4">
+    <Card key={plan.id} className="flex flex-col hover:shadow-md transition-all duration-200 border hover:border-primary/20">
+      <CardHeader className="space-y-2.5 pb-3">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <CardTitle className="text-xl font-bold mb-1 truncate">
+          <div className="flex-1">
+            <CardTitle className="text-base font-bold mb-1.5 line-clamp-2 leading-tight" title={plan.name}>
               {plan.name}
             </CardTitle>
             {plan.type && (
-              <Badge variant="outline" className="text-xs font-medium">
+              <Badge variant="outline" className="text-[10px] font-medium border-primary/20 bg-primary/5 h-5 px-2">
                 {plan.type}
               </Badge>
             )}
           </div>
           <Badge
             variant={plan.status === 'active' ? 'default' : 'secondary'}
-            className="shrink-0"
+            className={`shrink-0 h-5 text-[10px] px-2 ${plan.status === 'active' ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
           >
             {plan.status.charAt(0).toUpperCase() + plan.status.slice(1)}
           </Badge>
         </div>
-        <div className="space-y-3 pt-2">
+        <div className="space-y-2.5 pt-1">
           <div className="flex items-baseline gap-1.5">
-            <span className="text-4xl font-bold text-primary tracking-tight">
+            <span className="text-2xl font-bold text-primary tracking-tight">
               <Currency value={plan.price + (plan.registrationFee || 0)} />
             </span>
-            <span className="text-sm text-muted-foreground font-medium">/ {plan.durationInDays} days</span>
+            <span className="text-xs text-muted-foreground font-medium">/ {plan.durationInDays} days</span>
           </div>
-          <div className="text-sm space-y-2 bg-muted/30 rounded-lg p-3">
+          <div className="text-xs space-y-1.5 bg-muted/40 rounded-md p-2.5 border border-border/50">
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Plan Price:</span>
-              <span className="font-semibold"><Currency value={plan.price} /></span>
+              <span className="font-semibold text-foreground"><Currency value={plan.price} /></span>
             </div>
             {plan.registrationFee > 0 && (
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Registration Fee:</span>
-                <span className="font-semibold"><Currency value={plan.registrationFee} /></span>
+                <span className="font-semibold text-foreground"><Currency value={plan.registrationFee} /></span>
               </div>
             )}
-            <div className="flex justify-between items-center pt-2 border-t border-border/50">
-              <span className="font-semibold">Total for New Members:</span>
-              <span className="font-bold text-base text-primary">
+            <div className="flex justify-between items-center pt-1.5 mt-1.5 border-t border-border">
+              <span className="font-semibold text-foreground">Total for New Members:</span>
+              <span className="font-bold text-sm text-primary">
                 <Currency value={plan.price + (plan.registrationFee || 0)} />
               </span>
             </div>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex-1 space-y-3 pt-0">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Features included:</p>
-        <ul className="space-y-2.5">
+      <CardContent className="flex-1 space-y-2 pt-0 pb-3">
+        <p className="text-[10px] font-bold text-foreground/70 uppercase tracking-wider">Features Included</p>
+        <ul className="space-y-1.5">
           {plan.features?.map((feature, index) => (
-            <li key={index} className="flex items-start gap-2.5">
-              <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
-              <span className="text-sm leading-tight">{feature.value}</span>
+            <li key={index} className="flex items-start gap-2">
+              <CheckCircle2 className="h-3.5 w-3.5 text-green-600 mt-0.5 shrink-0" />
+              <span className="text-xs leading-relaxed text-foreground/90">{feature.value}</span>
             </li>
           ))}
         </ul>
       </CardContent>
-      <CardFooter className="pt-4">
-        <Button asChild variant="outline" className="w-full hover:bg-primary hover:text-primary-foreground transition-colors">
+      <CardFooter className="pt-3 mt-auto">
+        <Button asChild size="sm" className="w-full font-semibold shadow-sm h-8 text-xs">
           <Link href={`/dashboard/plans/edit/${plan.id}`}>
-            <Pencil className="mr-2 h-4 w-4" />
+            <Pencil className="mr-1.5 h-3 w-3" />
             Edit Plan
           </Link>
         </Button>
