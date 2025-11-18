@@ -86,17 +86,22 @@ const RequiredLabel = ({ children }: { children: React.ReactNode }) => (
 );
 
 const formSchema = z.object({
+  // Mandatory fields
   firstName: z.string().min(2, { message: "First name must be at least 2 characters." }),
   lastName: z.string().min(1, { message: "Last name is required." }),
-  email: z.string().email({ message: "Please enter a valid email address." }).min(1, { message: "Email is required." }),
   countryCode: z.string().default("+91"),
   phone: z.string().min(10, { message: "Phone number must be at least 10 digits." }).max(15, { message: "Phone number is too long." }),
-  gender: z.enum(["Male", "Female", "Other", "Prefer not to say"]),
-  dateOfBirth: z.date({ required_error: "Date of birth is required." }),
   address: z.string().min(10, { message: "Please provide a complete address." }),
   emergencyContactName: z.string().min(2, "Emergency contact name is required."),
   emergencyContactPhone: z.string().min(10, "Emergency contact phone is required."),
   emergencyContactRelation: z.string().min(2, "Please specify the relationship."),
+
+  // Optional personal fields
+  email: z.string().email({ message: "Please enter a valid email address." }).optional().or(z.literal("")),
+  gender: z.enum(["Male", "Female", "Other", "Prefer not to say"]).optional(),
+  dateOfBirth: z.date().optional(),
+
+  // Optional health fields
   heightCm: z.coerce.number().positive().optional(),
   heightUnit: z.enum(["cm", "inches"]).default("cm"),
   weightKg: z.coerce.number().positive().optional(),
@@ -104,9 +109,15 @@ const formSchema = z.object({
   fitnessGoal: z.string().optional(),
   medicalConditions: z.string().optional(),
   medicalConsent: z.boolean().default(false),
+
+  // Optional profile picture
   profilePicture: z.string().optional(),
   profilePictureFile: z.instanceof(File).optional(),
+
+  // System fields
   role: z.enum(["member", "trainer", "admin"]).default("member"),
+
+  // Mandatory membership fields
   membershipPlanId: z.string({ required_error: "Please select a membership plan." }),
   joinDate: z.date({ required_error: "Join date is required." }),
   paidAmount: z.coerce.number().nonnegative("Enter a valid amount."),
@@ -424,12 +435,12 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
           firstName: values.firstName,
           lastName: values.lastName,
           biometricDeviceId,
-          email: values.email,
+          email: values.email || "",
           phone: phoneWithCountryCode,
           countryCode: values.countryCode,
-          gender: values.gender,
-          dateOfBirth: values.dateOfBirth.toISOString(),
-          age: new Date().getFullYear() - values.dateOfBirth.getFullYear(),
+          gender: values.gender || "",
+          dateOfBirth: values.dateOfBirth ? values.dateOfBirth.toISOString() : "",
+          age: values.dateOfBirth ? new Date().getFullYear() - values.dateOfBirth.getFullYear() : 0,
           joinDate: values.joinDate.toISOString(),
           address: values.address,
           emergencyContact: {
@@ -446,7 +457,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
           heightCm: values.heightCm || null,
           weightKg: values.weightKg || null,
           bmi: (values.heightCm && values.weightKg) ? values.weightKg / (values.heightCm / 100) ** 2 : null,
-          fitnessGoal: values.fitnessGoal,
+          fitnessGoal: values.fitnessGoal || "",
           medicalConditions: values.medicalConditions
             ? values.medicalConditions.split("\\n")
             : [],
@@ -758,12 +769,13 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel><RequiredLabel>Email Address</RequiredLabel></FormLabel>
+                      <FormLabel>Email Address (Optional)</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
                           placeholder="john.doe@example.com"
                           {...field}
+                          value={field.value || ""}
                           className={cn(duplicateCheck?.email && "border-destructive")}
                         />
                       </FormControl>
@@ -776,7 +788,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                         </Alert>
                       )}
                       <FormDescription className="text-xs">
-                        Required for receipts, renewals, and important notifications
+                        Optional - for receipts, renewals, and important notifications
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -867,7 +879,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                   name="dateOfBirth"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel><RequiredLabel>Date of Birth</RequiredLabel></FormLabel>
+                      <FormLabel>Date of Birth (Optional)</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -904,7 +916,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                         </PopoverContent>
                       </Popover>
                       <FormDescription className="text-xs">
-                        Click to open calendar or type date (DD/MM/YYYY format)
+                        Optional - Click to open calendar or type date (DD/MM/YYYY format)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -915,11 +927,11 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                   name="gender"
                   render={({ field }) => (
                     <FormItem className="space-y-3 md:col-span-2">
-                      <FormLabel><RequiredLabel>Gender</RequiredLabel></FormLabel>
+                      <FormLabel>Gender (Optional)</FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                           className="flex flex-wrap items-center gap-4"
                         >
                           {["Male", "Female", "Other", "Prefer not to say"].map((g) => (
@@ -936,7 +948,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                         </RadioGroup>
                       </FormControl>
                       <FormDescription className="text-xs">
-                        Required for locker room assignment and facility access
+                        Optional - for locker room assignment and facility access
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
