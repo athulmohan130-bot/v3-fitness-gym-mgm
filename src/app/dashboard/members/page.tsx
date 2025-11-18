@@ -38,10 +38,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Home, Phone, Mail, Calendar, CreditCard } from "lucide-react";
+import { Home, Calendar, CreditCard } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { getInitials, getAvatarStyle, capitalizeName } from "@/lib/avatar-utils";
 
 type MembershipStatus = "active" | "pending" | "expired";
 
@@ -111,7 +111,8 @@ export default function MembersPage() {
     queryFn: async () => {
       if (!firestore) return [];
       const usersCollection = collection(firestore, "users");
-      const q = query(usersCollection, where("role", "!=", "admin"));
+      // Exclude both admins and trainers from members list
+      const q = query(usersCollection, where("role", "==", "member"));
       const snapshot = await getDocs(q);
       const usersData = snapshot.docs.map(
         (doc) => ({ id: doc.id, ...doc.data() } as UserWithPlan)
@@ -346,60 +347,54 @@ export default function MembersPage() {
           {/* Mobile Card View */}
           <div className="md:hidden space-y-4">
             {processedData && processedData.length > 0 ? (
-              processedData.map((member) => (
-                <Card
-                  key={member.id}
-                  className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => handleRowClick(member)}
-                >
-                  <CardContent className="p-4">
-                    {/* Member Header */}
-                    <div className="flex items-start gap-3 mb-4">
-                      <Avatar className="h-14 w-14">
-                        <AvatarImage
-                          src={member.profileImageUrl}
-                          alt={member.name}
-                        />
-                        <AvatarFallback className="bg-primary/10 text-primary font-semibold text-lg">
-                          {member.name?.charAt(0).toUpperCase() || "?"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-base truncate">
-                          {member.name}
-                        </h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge
-                            variant={
-                              member.membershipStatus === "active"
-                                ? "default"
-                                : member.membershipStatus === "expired"
-                                ? "destructive"
-                                : "secondary"
-                            }
-                            className="text-xs"
-                          >
-                            {member.membershipStatus.charAt(0).toUpperCase() +
-                              member.membershipStatus.slice(1)}
-                          </Badge>
+              processedData.map((member) => {
+                const initials = getInitials(member.name);
+                const avatarStyle = getAvatarStyle(member.name);
+                const displayName = capitalizeName(member.name);
+
+                return (
+                  <Card
+                    key={member.id}
+                    className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => handleRowClick(member)}
+                  >
+                    <CardContent className="p-4">
+                      {/* Member Header */}
+                      <div className="flex items-start gap-3 mb-4">
+                        <div
+                          className="h-14 w-14 rounded-full flex items-center justify-center font-semibold text-lg shrink-0"
+                          style={{
+                            ...avatarStyle,
+                            minWidth: '56px',
+                            minHeight: '56px'
+                          }}
+                        >
+                          {initials}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-base truncate">
+                            {displayName}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge
+                              variant={
+                                member.membershipStatus === "active"
+                                  ? "default"
+                                  : member.membershipStatus === "expired"
+                                  ? "destructive"
+                                  : "secondary"
+                              }
+                              className="text-xs"
+                            >
+                              {member.membershipStatus.charAt(0).toUpperCase() +
+                                member.membershipStatus.slice(1)}
+                            </Badge>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
                     {/* Member Details */}
                     <div className="space-y-2 text-sm">
-                      {member.email && (
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Mail className="h-4 w-4 shrink-0" />
-                          <span className="truncate">{member.email}</span>
-                        </div>
-                      )}
-                      {member.phone && (
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Phone className="h-4 w-4 shrink-0" />
-                          <span>{member.phone}</span>
-                        </div>
-                      )}
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <CreditCard className="h-4 w-4 shrink-0" />
                         <span className="font-medium">
@@ -421,7 +416,8 @@ export default function MembersPage() {
                     </div>
                   </CardContent>
                 </Card>
-              ))
+                );
+              })
             ) : (
               <Card>
                 <CardContent className="p-8 text-center">

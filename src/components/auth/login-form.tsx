@@ -21,7 +21,7 @@ import { Loader2, Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const formSchema = z.object({
-  email: z.string().email({ message: "Invalid email address." }),
+  email: z.string().min(1, { message: "Email or username is required." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
 });
 
@@ -114,14 +114,14 @@ export function LoginForm() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">Email Address</FormLabel>
+                    <FormLabel className="text-sm font-medium">Email or Username</FormLabel>
                     <FormControl>
                       <div className="relative group">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                         <Input
-                          placeholder="you@example.com"
+                          placeholder="you@example.com or username"
                           {...field}
-                          autoComplete="email"
+                          autoComplete="username"
                           className="pl-10 h-11 transition-all focus:ring-2 focus:ring-primary/20"
                         />
                       </div>

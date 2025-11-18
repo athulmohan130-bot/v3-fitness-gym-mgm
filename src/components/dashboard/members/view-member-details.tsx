@@ -33,6 +33,7 @@ import React, { useState } from "react";
 import { useFirestore } from "@/firebase";
 import { useAuth } from "@/lib/auth-provider";
 import { logMemberUpdated } from "@/lib/activity-logger";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { Label } from "@/components/ui/label";
 import { CreditCard, Snowflake, Trash2, Calendar as CalendarIcon, User, Heart, Shield, Landmark, Wallet, Loader2, Edit, Save, X as XIcon, Camera, Upload } from 'lucide-react';
 import { Input } from "@/components/ui/input";
@@ -193,6 +194,7 @@ export function ViewMemberDetails({
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [showProfileOptions, setShowProfileOptions] = useState(false);
   const [showWebcam, setShowWebcam] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const [stream, setStream] = React.useState<MediaStream | null>(null);
   
@@ -469,39 +471,122 @@ export function ViewMemberDetails({
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
-    // Here you would upload to Firebase Storage and update member.profileImageUrl
-    // For now, just show the options dialog closed
-    setShowProfileOptions(false);
+
+    setIsUploading(true);
+
+    try {
+      const storage = getStorage();
+
+      // Delete old profile image if exists
+      if (member.profileImageUrl && !member.profileImageUrl.includes("picsum.photos")) {
+        try {
+          const oldImageRef = ref(storage, member.profileImageUrl);
+          await deleteObject(oldImageRef);
+        } catch (error: any) {
+          if (error.code !== 'storage/object-not-found') {
+            console.warn("Could not delete old profile image:", error);
+          }
+        }
+      }
+
+      // Upload new image
+      const timestamp = Date.now();
+      const filename = `profile-pictures/${member.id}/${timestamp}-${file.name}`;
+      const storageRef = ref(storage, filename);
+
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+
+      // Update member with new profile image URL
+      await onUpdateMember({ profileImageUrl: downloadURL });
+
+      setShowProfileOptions(false);
+    } catch (error) {
+      console.error("Error uploading profile picture:", error);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const startWebcam = async () => {
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: 'user'
+        }
+      });
       setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
       setShowWebcam(true);
       setShowProfileOptions(false);
+
+      // Wait for dialog to open and video element to be ready
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+          videoRef.current.play().catch(err => console.error('Error playing video:', err));
+        }
+      }, 100);
     } catch (error) {
       console.error('Error accessing webcam:', error);
+      alert('Unable to access camera. Please check permissions.');
     }
   };
 
-  const capturePhoto = () => {
-    if (videoRef.current) {
+  const capturePhoto = async () => {
+    if (!videoRef.current) return;
+
+    setIsUploading(true);
+
+    try {
       const canvas = document.createElement('canvas');
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
-      canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0);
-      
-      canvas.toBlob((blob) => {
-        if (blob) {
-          // Upload blob to Firebase Storage and update profileImageUrl
-          stopWebcam();
-        }
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Could not get canvas context');
+
+      ctx.drawImage(videoRef.current, 0, 0);
+
+      // Convert canvas to blob
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error('Failed to create blob from canvas'));
+        }, 'image/jpeg', 0.95);
       });
+
+      const storage = getStorage();
+
+      // Delete old profile image if exists
+      if (member.profileImageUrl && !member.profileImageUrl.includes("picsum.photos")) {
+        try {
+          const oldImageRef = ref(storage, member.profileImageUrl);
+          await deleteObject(oldImageRef);
+        } catch (error: any) {
+          if (error.code !== 'storage/object-not-found') {
+            console.warn("Could not delete old profile image:", error);
+          }
+        }
+      }
+
+      // Upload new image
+      const timestamp = Date.now();
+      const filename = `profile-pictures/${member.id}/${timestamp}-webcam.jpg`;
+      const storageRef = ref(storage, filename);
+
+      await uploadBytes(storageRef, blob);
+      const downloadURL = await getDownloadURL(storageRef);
+
+      // Update member with new profile image URL
+      await onUpdateMember({ profileImageUrl: downloadURL });
+
+      stopWebcam();
+    } catch (error) {
+      console.error("Error capturing and uploading photo:", error);
+      alert('Failed to capture photo. Please try again.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -848,9 +933,19 @@ export function ViewMemberDetails({
                             size="sm"
                             variant="outline"
                             onClick={() => document.getElementById('profile-upload')?.click()}
+                            disabled={isUploading}
                           >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload
+                            {isUploading ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Uploading...
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload
+                              </>
+                            )}
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -864,6 +959,7 @@ export function ViewMemberDetails({
                       accept="image/*"
                       className="hidden"
                       onChange={handleFileUpload}
+                      disabled={isUploading}
                     />
                   </div>
                 )}
@@ -1262,17 +1358,26 @@ export function ViewMemberDetails({
                 ref={videoRef}
                 autoPlay
                 playsInline
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover scale-x-[-1]"
               />
             </div>
             <div className="flex justify-center gap-4">
-              <Button onClick={stopWebcam} variant="outline">
+              <Button onClick={stopWebcam} variant="outline" disabled={isUploading}>
                 <XIcon className="h-4 w-4 mr-2" />
                 Cancel
               </Button>
-              <Button onClick={capturePhoto}>
-                <Camera className="h-4 w-4 mr-2" />
-                Capture Photo
+              <Button onClick={capturePhoto} disabled={isUploading}>
+                {isUploading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Camera className="h-4 w-4 mr-2" />
+                    Capture Photo
+                  </>
+                )}
               </Button>
             </div>
           </div>

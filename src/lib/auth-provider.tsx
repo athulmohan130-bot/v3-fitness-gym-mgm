@@ -4,7 +4,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useFirebase } from '@/firebase/provider';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import type { GymUser, UserRole } from './types';
 
@@ -66,7 +66,36 @@ useEffect(() => {
     if (isUserLoading) return;
 
     if (!firebaseUser) {
-      // Firebase has confirmed there's no user
+      // Check if there's a Firestore-only session (staff login)
+      const firestoreUserId = typeof window !== 'undefined' ? sessionStorage.getItem('firestoreUserId') : null;
+
+      if (firestoreUserId && firestore) {
+        try {
+          const userDocRef = doc(firestore, 'users', firestoreUserId);
+          const userDocSnap = await getDoc(userDocRef);
+
+          if (isMounted && userDocSnap.exists()) {
+            const data = userDocSnap.data() as GymUser;
+            setUser({
+              id: firestoreUserId,
+              name: data.name,
+              email: data.email || '',
+              role: data.role,
+              profileImageUrl: data.profileImageUrl,
+            });
+            setLoading(false);
+            setHasInitialized(true);
+            return;
+          }
+        } catch (err) {
+          console.error('Error restoring Firestore session:', err);
+          if (typeof window !== 'undefined') {
+            sessionStorage.removeItem('firestoreUserId');
+          }
+        }
+      }
+
+      // Firebase has confirmed there's no user and no Firestore session
       if (isMounted) {
         setUser(null);
         setLoading(false);
@@ -157,17 +186,68 @@ useEffect(() => {
       }
     }
   }, [user, loading, hasInitialized, initialPath, pathname, hasCheckedInitialRedirect, router]);
-  const login = useCallback(async (email: string, password: string) => {
-    if (!auth) throw new Error('Auth service not initialized');
-    await signInWithEmailAndPassword(auth, email, password);
-    // The state change from firebase will trigger the useEffect hooks above
-  },[auth]);
+  const login = useCallback(async (emailOrUsername: string, password: string) => {
+    if (!auth || !firestore) throw new Error('Auth service not initialized');
+
+    // Check if input is an email (contains @) or username
+    const isEmail = emailOrUsername.includes('@');
+
+    if (isEmail) {
+      // Try Firebase Auth for email/password
+      await signInWithEmailAndPassword(auth, emailOrUsername, password);
+      // The state change from firebase will trigger the useEffect hooks above
+    } else {
+      // Try Firestore username/password lookup for staff members
+      const usersQuery = query(
+        collection(firestore, 'users'),
+        where('username', '==', emailOrUsername)
+      );
+      const querySnapshot = await getDocs(usersQuery);
+
+      if (querySnapshot.empty) {
+        throw new Error('Invalid credentials');
+      }
+
+      const userDoc = querySnapshot.docs[0];
+      const userData = userDoc.data() as GymUser;
+
+      // Verify password (plain text comparison - should be hashed in production)
+      if (userData.password !== password) {
+        throw new Error('Invalid credentials');
+      }
+
+      // Set user manually for Firestore-based auth
+      setUser({
+        id: userDoc.id,
+        name: userData.name,
+        email: userData.email || '',
+        role: userData.role,
+        profileImageUrl: userData.profileImageUrl,
+      });
+
+      // Store user ID in sessionStorage for persistence
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('firestoreUserId', userDoc.id);
+      }
+    }
+  }, [auth, firestore]);
 
   const logout = useCallback(async () => {
-    if (!auth) return;
+    // Clear Firestore session if exists
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('firestoreUserId');
+    }
+
+    if (!auth) {
+      // If no Firebase auth, just clear local state
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
     await signOut(auth);
     setUser(null);
-    setLoading(false); 
+    setLoading(false);
     // The change in `user` state will trigger the redirect useEffect
   }, [auth]);
 

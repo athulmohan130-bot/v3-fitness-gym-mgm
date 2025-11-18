@@ -2,7 +2,6 @@
 import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import type { GymUser } from "@/lib/types";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ArrowUpDown, RefreshCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +27,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { getInitials, getAvatarStyle, capitalizeName } from "@/lib/avatar-utils";
 
 type UserWithPlan = GymUser & { planName: string };
 
@@ -215,15 +215,24 @@ export const getColumns = (
     ),
     cell: ({ row }) => {
       const user = row.original;
+      const initials = getInitials(user.name);
+      const avatarStyle = getAvatarStyle(user.name);
+      const displayName = capitalizeName(user.name);
+
       return (
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
-            {user.profileImageUrl && <AvatarImage src={user.profileImageUrl} alt={user.name} />}
-            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-          </Avatar>
+          <div
+            className="h-10 w-10 rounded-full flex items-center justify-center font-semibold shrink-0"
+            style={{
+              ...avatarStyle,
+              minWidth: '40px',
+              minHeight: '40px'
+            }}
+          >
+            {initials}
+          </div>
           <div className="flex flex-col">
-            <span className="font-medium">{user.name}</span>
-            <span className="text-sm text-muted-foreground">{user.email}</span>
+            <span className="font-medium">{displayName}</span>
           </div>
         </div>
       );

@@ -18,11 +18,15 @@ import {
   BarChart3,
   User,
   Save,
-  Clock
+  Clock,
+  UserPlus,
+  Shield
 } from "lucide-react";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Home } from "lucide-react";
 import Link from "next/link";
+import { AddStaffDialog } from "@/components/dashboard/settings/add-staff-dialog";
+import { StaffList } from "@/components/dashboard/settings/staff-list";
 
 export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
@@ -110,7 +114,7 @@ export default function SettingsPage() {
 
           {/* Scrollable tabs container */}
           <div className="overflow-x-auto overflow-y-visible sm:overflow-visible snap-x snap-mandatory scrollbar-hide">
-            <TabsList className="inline-flex sm:grid sm:w-full grid-cols-4 lg:grid-cols-6 gap-1 w-max sm:w-full min-w-full sm:min-w-0 px-2 sm:px-0">
+            <TabsList className="inline-flex sm:grid sm:w-full grid-cols-4 lg:grid-cols-7 gap-1 w-max sm:w-full min-w-full sm:min-w-0 px-2 sm:px-0">
               <TabsTrigger value="billing" className="whitespace-nowrap flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 snap-start">
                 <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 hidden sm:inline" />
                 Billing
@@ -118,6 +122,10 @@ export default function SettingsPage() {
               <TabsTrigger value="notifications" className="whitespace-nowrap flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 snap-start">
                 <Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 hidden sm:inline" />
                 Alerts
+              </TabsTrigger>
+              <TabsTrigger value="staff" className="whitespace-nowrap flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 snap-start">
+                <Shield className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 hidden sm:inline" />
+                Staff
               </TabsTrigger>
               <TabsTrigger value="biometric" className="whitespace-nowrap flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 snap-start">
                 <Fingerprint className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 hidden sm:inline" />
@@ -364,6 +372,41 @@ export default function SettingsPage() {
                   checked={notifications.monthlyReport}
                   onCheckedChange={(checked) => setNotifications({ ...notifications, monthlyReport: checked })}
                 />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Staff Management */}
+        <TabsContent value="staff" className="space-y-3 sm:space-y-4">
+          <Card>
+            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+              <CardTitle className="text-sm sm:text-lg font-semibold">Admin & Staff Management</CardTitle>
+              <CardDescription className="text-xs sm:text-sm leading-snug">
+                Manage admins and trainers who won't appear in member lists
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 px-3 sm:px-6 pb-3 sm:pb-6">
+              <div className="rounded-lg bg-blue-50 dark:bg-blue-950/20 p-3 border border-blue-200 dark:border-blue-900/50">
+                <div className="flex gap-2.5">
+                  <Shield className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                      Admin & Staff Accounts
+                    </p>
+                    <p className="text-xs text-blue-700 dark:text-blue-300">
+                      Admins and trainers registered here will not appear in members or attendance lists
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <AddStaffDialog />
+
+              {/* List of existing staff */}
+              <div className="space-y-2">
+                <Label className="text-xs sm:text-sm font-medium">Current Staff</Label>
+                <StaffList />
               </div>
             </CardContent>
           </Card>
