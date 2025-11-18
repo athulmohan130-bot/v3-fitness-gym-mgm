@@ -73,6 +73,7 @@ export interface AttendanceRecord {
   id: string; // Firestore document ID
   userId: string;
   name: string;
+  email?: string;
   profileImageUrl?: string;
   biometricDeviceId?: string; // ESSL machine device ID
   checkInTime: string; // ISO timestamp

@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -29,8 +30,9 @@ import { useFirestore } from "@/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { planSchema, PlanFormData } from "@/lib/validators/plan";
 
-export function NewPlanForm() {
+export default function NewPlanForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasRegistrationFee, setHasRegistrationFee] = useState(false);
   const { toast } = useNotificationToast();
   const router = useRouter();
   const { user } = useAuth();
@@ -141,80 +143,100 @@ export function NewPlanForm() {
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Label>Monthly Price (₹) *</Label>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="1"
-                          max="100000"
-                          placeholder="e.g., 1500"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(parseFloat(e.target.value) || 0)
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                      <p className="text-xs text-muted-foreground">
-                        Minimum ₹1
-                      </p>
-                    </FormItem>
-                  )}
-                />
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="hasRegistrationFee"
+                    checked={hasRegistrationFee}
+                    onCheckedChange={(checked) => {
+                      setHasRegistrationFee(checked as boolean);
+                      if (!checked) {
+                        form.setValue("registrationFee", 0);
+                      }
+                    }}
+                  />
+                  <Label htmlFor="hasRegistrationFee" className="text-sm font-medium">
+                    Include registration fee for new members
+                  </Label>
+                </div>
 
-                <FormField
-                  control={form.control}
-                  name="registrationFee"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Label>Registration Fee (₹)</Label>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          max="50000"
-                          placeholder="e.g., 500 (optional)"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(parseFloat(e.target.value) || 0)
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                      <p className="text-xs text-muted-foreground">
-                        Optional. Leave 0 for no registration fee.
-                      </p>
-                    </FormItem>
-                  )}
-                />
+                <div className={`grid grid-cols-1 gap-4 ${hasRegistrationFee ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
+                  <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label>Monthly Price (₹) *</Label>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="1"
+                            max="100000"
+                            placeholder="e.g., 1500"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(parseFloat(e.target.value) || 0)
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                        <p className="text-xs text-muted-foreground">
+                          Minimum ₹1
+                        </p>
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="durationInDays"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Label>Duration (days)</Label>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(parseInt(e.target.value, 10) || 0)
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                  {hasRegistrationFee && (
+                    <FormField
+                      control={form.control}
+                      name="registrationFee"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Label>Registration Fee (₹)</Label>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="50000"
+                              placeholder="e.g., 500"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(parseFloat(e.target.value) || 0)
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                          <p className="text-xs text-muted-foreground">
+                            One-time fee for new member registration
+                          </p>
+                        </FormItem>
+                      )}
+                    />
                   )}
-                />
+
+                  <FormField
+                    control={form.control}
+                    name="durationInDays"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label>Duration (days)</Label>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(parseInt(e.target.value, 10) || 0)
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
               <div>

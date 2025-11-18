@@ -1,5 +1,5 @@
 'use client';
-import { NewPlanForm } from "@/components/dashboard/plans/new-plan-form";
+import NewPlanForm from "@/components/dashboard/plans/new-plan-form";
 
 export default function NewPlanPage() {
   return (

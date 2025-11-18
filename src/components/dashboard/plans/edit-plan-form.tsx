@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -46,6 +47,8 @@ interface EditPlanFormProps {
 export function EditPlanForm({ plan }: EditPlanFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [hasRegistrationFee, setHasRegistrationFee] = useState((plan.registrationFee || 0) > 0);
+  const [originalRegistrationFee] = useState(plan.registrationFee || 0); // Store original value
   const { toast } = useNotificationToast();
   const router = useRouter();
   const firestore = useFirestore();
@@ -166,70 +169,93 @@ export function EditPlanForm({ plan }: EditPlanFormProps) {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="price">Monthly Price (₹) *</Label>
-              <Input
-                id="price"
-                type="number"
-                step="0.01"
-                min="1"
-                max="100000"
-                placeholder="e.g., 1500"
-                {...register("price", { valueAsNumber: true })}
-                className={errors.price ? "border-destructive" : ""}
-                aria-invalid={!!errors.price}
-                aria-describedby="price-error"
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="hasRegistrationFee"
+                checked={hasRegistrationFee}
+                onCheckedChange={(checked) => {
+                  setHasRegistrationFee(checked as boolean);
+                  if (!checked) {
+                    setValue("registrationFee", 0, { shouldDirty: true });
+                  } else {
+                    // Restore original registration fee when rechecked
+                    setValue("registrationFee", originalRegistrationFee, { shouldDirty: true });
+                  }
+                }}
               />
-              {errors.price && (
-                <p id="price-error" className="text-sm text-destructive mt-1">
-                  {errors.price.message}
-                </p>
-              )}
-              <p className="text-xs text-muted-foreground">
-                Minimum ₹1
-              </p>
+              <Label htmlFor="hasRegistrationFee" className="text-sm font-medium">
+                Include registration fee for new members
+              </Label>
             </div>
 
-            <div>
-              <Label htmlFor="registrationFee">Registration Fee (₹)</Label>
-              <Input
-                id="registrationFee"
-                type="number"
-                step="0.01"
-                min="0"
-                max="50000"
-                placeholder="e.g., 500 (optional)"
-                {...register("registrationFee", { valueAsNumber: true })}
-                className={errors.registrationFee ? "border-destructive" : ""}
-                aria-invalid={!!errors.registrationFee}
-                aria-describedby="registrationFee-error"
-              />
-              {errors.registrationFee && (
-                <p id="registrationFee-error" className="text-sm text-destructive mt-1">
-                  {errors.registrationFee.message}
+            <div className={`grid grid-cols-1 gap-4 ${hasRegistrationFee ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
+              <div>
+                <Label htmlFor="price">Monthly Price (₹) *</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  step="0.01"
+                  min="1"
+                  max="100000"
+                  placeholder="e.g., 1500"
+                  {...register("price", { valueAsNumber: true })}
+                  className={errors.price ? "border-destructive" : ""}
+                  aria-invalid={!!errors.price}
+                  aria-describedby="price-error"
+                />
+                {errors.price && (
+                  <p id="price-error" className="text-sm text-destructive mt-1">
+                    {errors.price.message}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Minimum ₹1
                 </p>
-              )}
-              <p className="text-xs text-muted-foreground">
-                Optional. Leave 0 for no registration fee.
-              </p>
-            </div>
+              </div>
 
-            <div>
-              <Label htmlFor="durationInDays">Duration (days)</Label>
-              <Input
-                id="durationInDays"
-                type="number"
-                {...register("durationInDays", { valueAsNumber: true })}
-                className={errors.durationInDays ? "border-destructive" : ""}
-                aria-invalid={!!errors.durationInDays}
-                aria-describedby="duration-error"
-              />
-              {errors.durationInDays && (
-                <p id="duration-error" className="text-sm text-destructive mt-1">
-                  {errors.durationInDays.message}
-                </p>
+              {hasRegistrationFee && (
+                <div>
+                  <Label htmlFor="registrationFee">Registration Fee (₹)</Label>
+                  <Input
+                    id="registrationFee"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="50000"
+                    placeholder="e.g., 500"
+                    {...register("registrationFee", { valueAsNumber: true })}
+                    className={errors.registrationFee ? "border-destructive" : ""}
+                    aria-invalid={!!errors.registrationFee}
+                    aria-describedby="registrationFee-error"
+                  />
+                  {errors.registrationFee && (
+                    <p id="registrationFee-error" className="text-sm text-destructive mt-1">
+                      {errors.registrationFee.message}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    One-time fee for new member registration
+                  </p>
+                </div>
               )}
+
+              <div>
+                <Label htmlFor="durationInDays">Duration (days)</Label>
+                <Input
+                  id="durationInDays"
+                  type="number"
+                  {...register("durationInDays", { valueAsNumber: true })}
+                  className={errors.durationInDays ? "border-destructive" : ""}
+                  aria-invalid={!!errors.durationInDays}
+                  aria-describedby="duration-error"
+                />
+                {errors.durationInDays && (
+                  <p id="duration-error" className="text-sm text-destructive mt-1">
+                    {errors.durationInDays.message}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
