@@ -611,7 +611,7 @@ export function ViewMemberDetails({
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-8 order-2 lg:order-1">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
@@ -850,7 +850,7 @@ export function ViewMemberDetails({
             </CardContent>
           </Card>
         </div>
-        <div className="space-y-8">
+        <div className="space-y-8 order-1 lg:order-2">
           <Card>
             <CardHeader className="items-center text-center relative">
               <div className="flex flex-col items-center gap-3 mb-4">
