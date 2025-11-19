@@ -1116,9 +1116,16 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                           <SelectContent>
                             {plans
                               .filter((plan) => plan.status === "active")
+                              .sort((a, b) => {
+                                // Plans without type go to the end
+                                if (!a.type && !b.type) return 0;
+                                if (!a.type) return 1;
+                                if (!b.type) return -1;
+                                return a.type.localeCompare(b.type);
+                              })
                               .map((plan) => (
                                 <SelectItem key={plan.id} value={plan.id}>
-                                  {plan.name} ({plan.type}) - ₹{plan.price} ({plan.durationInDays} days)
+                                  {plan.name} ({plan.type}) — ₹{plan.price} for {plan.durationInDays} days
                                 </SelectItem>
                               ))}
                           </SelectContent>

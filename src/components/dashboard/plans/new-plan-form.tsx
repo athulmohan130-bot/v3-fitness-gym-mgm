@@ -136,6 +136,7 @@ export default function NewPlanForm() {
                       <SelectContent>
                         <SelectItem value="Cardio">Cardio</SelectItem>
                         <SelectItem value="Bodybuilding">Bodybuilding</SelectItem>
+                        <SelectItem value="Personal Training">Personal Training</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

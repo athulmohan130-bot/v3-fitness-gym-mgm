@@ -8,37 +8,83 @@ import { Button } from "@/components/ui/button";
 import Currency from '@/components/ui/currency';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, PlusCircle, Pencil, Home } from "lucide-react";
+import { CheckCircle2, PlusCircle, Pencil, Home, ArrowUpDown, Search } from "lucide-react";
 import Link from "next/link";
 import { PlansSkeleton } from "@/components/dashboard/plans/plans-skeleton";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+
+type SortOption = "name-asc" | "name-desc" | "price-asc" | "price-desc" | "type-asc" | "type-desc" | "duration-asc" | "duration-desc";
 
 export default function PlansPage() {
   const firestore = useFirestore();
+  const [sortBy, setSortBy] = useState<SortOption>("name-asc");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const plansQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(
       collection(firestore, 'membershipPlans'),
-      where("status", "in", ["active", "inactive"]), // Include both active and inactive plans
-      orderBy("status"), // Group active plans first
-      orderBy("price") // Sort by price within each status group
+      where("status", "in", ["active", "inactive"]) // Include both active and inactive plans
     );
   }, [firestore]);
 
   const { data: plans, isLoading, error } = useCollection<MembershipPlan>(plansQuery);
 
-  // Memoize the plans to prevent unnecessary re-renders
-  const activePlans = useMemo(() => 
-    plans?.filter(plan => plan.status === 'active') || [], 
-    [plans]
-  );
+  // Sort function
+  const sortPlans = (plansToSort: MembershipPlan[]) => {
+    return [...plansToSort].sort((a, b) => {
+      switch (sortBy) {
+        case "name-asc":
+          return (a.name || "").localeCompare(b.name || "");
+        case "name-desc":
+          return (b.name || "").localeCompare(a.name || "");
+        case "price-asc":
+          return (a.price || 0) - (b.price || 0);
+        case "price-desc":
+          return (b.price || 0) - (a.price || 0);
+        case "type-asc":
+          return (a.type || "").localeCompare(b.type || "");
+        case "type-desc":
+          return (b.type || "").localeCompare(a.type || "");
+        case "duration-asc":
+          return (a.durationInDays || 0) - (b.durationInDays || 0);
+        case "duration-desc":
+          return (b.durationInDays || 0) - (a.durationInDays || 0);
+        default:
+          return 0;
+      }
+    });
+  };
 
-  const inactivePlans = useMemo(() => 
-    plans?.filter(plan => plan.status === 'inactive') || [], 
-    [plans]
-  );
+  // Filter plans based on search query
+  const filterPlans = (plansToFilter: MembershipPlan[]) => {
+    if (!searchQuery.trim()) return plansToFilter;
+    
+    const query = searchQuery.toLowerCase();
+    return plansToFilter.filter(plan => 
+      (plan.name || "").toLowerCase().includes(query) ||
+      (plan.type || "").toLowerCase().includes(query) ||
+      plan.features?.some(feature => 
+        (feature.value || "").toLowerCase().includes(query)
+      )
+    );
+  };
+
+  // Memoize the filtered and sorted plans to prevent unnecessary re-renders
+  const activePlans = useMemo(() => {
+    const filtered = plans?.filter(plan => plan.status === 'active') || [];
+    const searched = filterPlans(filtered);
+    return sortPlans(searched);
+  }, [plans, sortBy, searchQuery]);
+
+  const inactivePlans = useMemo(() => {
+    const filtered = plans?.filter(plan => plan.status === 'inactive') || [];
+    const searched = filterPlans(filtered);
+    return sortPlans(searched);
+  }, [plans, sortBy, searchQuery]);
 
   if (isLoading) {
     return <PlansSkeleton />;
@@ -148,12 +194,49 @@ export default function PlansPage() {
           <h1 className="text-2xl sm:text-3xl font-bold font-headline tracking-tight">Membership Plans</h1>
           <p className="text-sm text-muted-foreground hidden sm:block">View and manage membership plans.</p>
         </div>
-        <Button asChild className="w-full sm:w-auto">
-          <Link href="/dashboard/plans/new">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add New Plan
-          </Link>
-        </Button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          {/* Search Field */}
+          {plans && plans.length > 0 && (
+            <div className="flex items-center gap-2 py-2 px-3 bg-muted/20 rounded-md border border-muted">
+              <Search className="h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Search plans..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-[180px] h-8 text-xs border-0 bg-transparent shadow-none focus:ring-1 focus:ring-primary px-1"
+              />
+            </div>
+          )}
+          
+          {/* Sort Controls */}
+          {plans && plans.length > 0 && (
+            <div className="flex items-center gap-2 py-2 px-3 bg-muted/20 rounded-md border border-muted">
+              <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-xs font-medium text-muted-foreground">Sort:</span>
+              <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+                <SelectTrigger className="w-[140px] h-8 text-xs border-0 bg-transparent shadow-none focus:ring-1 focus:ring-primary">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name-asc">Name (A to Z)</SelectItem>
+                  <SelectItem value="name-desc">Name (Z to A)</SelectItem>
+                  <SelectItem value="price-asc">Price (Low to High)</SelectItem>
+                  <SelectItem value="price-desc">Price (High to Low)</SelectItem>
+                  <SelectItem value="type-asc">Type (A to Z)</SelectItem>
+                  <SelectItem value="type-desc">Type (Z to A)</SelectItem>
+                  <SelectItem value="duration-asc">Duration (Short to Long)</SelectItem>
+                  <SelectItem value="duration-desc">Duration (Long to Short)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <Button asChild className="w-full sm:w-auto">
+            <Link href="/dashboard/plans/new">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add New Plan
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {activePlans.length > 0 && (
@@ -174,7 +257,7 @@ export default function PlansPage() {
         </div>
       )}
 
-      {plans?.length === 0 && (
+      {plans?.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed rounded-lg">
           <p className="text-muted-foreground">No membership plans found.</p>
           <Button asChild className="mt-4">
@@ -184,7 +267,20 @@ export default function PlansPage() {
             </Link>
           </Button>
         </div>
-      )}
+      ) : (activePlans.length === 0 && inactivePlans.length === 0 && searchQuery.trim()) ? (
+        <div className="text-center py-12 border-2 border-dashed rounded-lg">
+          <Search className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+          <p className="text-muted-foreground mb-2">No plans match your search</p>
+          <p className="text-sm text-muted-foreground">Try searching for a different term or clear your search</p>
+          <Button 
+            variant="outline" 
+            className="mt-4"
+            onClick={() => setSearchQuery("")}
+          >
+            Clear Search
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }

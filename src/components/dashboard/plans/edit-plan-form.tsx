@@ -152,7 +152,7 @@ export function EditPlanForm({ plan }: EditPlanFormProps) {
             <Label htmlFor="type">Plan Type</Label>
             <Select
               value={watch("type")}
-              onValueChange={(value) => setValue("type", value as "Cardio" | "Bodybuilding", { shouldDirty: true })}
+              onValueChange={(value) => setValue("type", value as "Cardio" | "Bodybuilding" | "Personal Training", { shouldDirty: true })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select plan type" />
@@ -160,6 +160,7 @@ export function EditPlanForm({ plan }: EditPlanFormProps) {
               <SelectContent>
                 <SelectItem value="Cardio">Cardio</SelectItem>
                 <SelectItem value="Bodybuilding">Bodybuilding</SelectItem>
+                <SelectItem value="Personal Training">Personal Training</SelectItem>
               </SelectContent>
             </Select>
             {errors.type && (

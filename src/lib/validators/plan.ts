@@ -2,7 +2,7 @@ import * as z from "zod";
 
 export const planSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
-  type: z.enum(["Cardio", "Bodybuilding"], {
+  type: z.enum(["Cardio", "Bodybuilding", "Personal Training"], {
     required_error: "Please select a plan type",
   }),
   price: z.number()

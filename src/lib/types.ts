@@ -59,7 +59,7 @@ export interface Payment {
 export interface MembershipPlan {
   id: string;
   name: string;
-  type: "Cardio" | "Bodybuilding";
+  type: "Cardio" | "Bodybuilding" | "Personal Training";
   durationInDays: number;
   price: number;
   registrationFee: number; // One-time fee for new members only
