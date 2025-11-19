@@ -1019,7 +1019,7 @@ export default function AttendancePage() {
         <>
           {/* Grid View - Cards */}
           {viewMode === "grid" && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 animate-in fade-in-50 duration-300">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 animate-in fade-in-50 duration-300">
               {filteredRecords.map((record) => {
                 const isNew = newRecordIds.has(record.id);
                 const isActive = record.membershipStatus === "active";
@@ -1032,25 +1032,25 @@ export default function AttendancePage() {
                     key={record.id}
                     className={`group relative overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
                       isActive
-                        ? "bg-white border-t-2 border-t-green-500 dark:bg-gray-800 dark:border-t-green-500"
+                        ? "bg-white border-t-4 border-t-green-500 dark:bg-gray-800 dark:border-t-green-500"
                         : "bg-gray-50 border border-gray-200 opacity-70 dark:bg-gray-900 dark:border-gray-700"
                     } ${isNew ? "ring-2 ring-green-500 ring-offset-2" : ""}`}
                   >
-                    <CardContent className="p-4">
+                    <CardContent className="p-6">
                       <Link href={`/dashboard/members/view/${record.userId}`} className="block">
                         {/* Avatar */}
-                        <div className="relative mx-auto w-fit mb-3">
-                          <Avatar className={`h-16 w-16 border-2 transition-all ${
+                        <div className="relative mx-auto w-fit mb-5">
+                          <Avatar className={`h-40 w-40 transition-all ${
                             isActive
-                              ? "border-green-500/30"
-                              : "border-gray-300 grayscale"
+                              ? "border-[6px] border-green-500 shadow-xl shadow-green-500/30"
+                              : "border-[3px] border-gray-300 grayscale"
                           }`}>
                             <AvatarImage
                               src={record.profileImageUrl}
                               alt={record.name}
                               className={!isActive ? "grayscale" : ""}
                             />
-                            <AvatarFallback className={`text-sm font-bold ${
+                            <AvatarFallback className={`text-3xl font-bold ${
                               isActive
                                 ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
                                 : "bg-gray-100 text-gray-500"
@@ -1059,26 +1059,26 @@ export default function AttendancePage() {
                             </AvatarFallback>
                           </Avatar>
                           {isNew && (
-                            <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full animate-pulse ring-2 ring-white dark:ring-gray-900" />
+                            <div className="absolute -top-1 -right-1 h-7 w-7 bg-green-500 rounded-full animate-pulse ring-2 ring-white dark:ring-gray-900" />
                           )}
                           {isActive && (
-                            <div className="absolute -bottom-0.5 -right-0.5">
-                              <CheckCircle className="h-5 w-5 text-green-500 bg-white dark:bg-gray-800 rounded-full" />
+                            <div className="absolute -bottom-2 -right-2">
+                              <CheckCircle className="h-10 w-10 text-green-500 bg-white dark:bg-gray-800 rounded-full shadow-lg" />
                             </div>
                           )}
                         </div>
 
                         {/* Name - HERO */}
-                        <h3 className={`font-semibold text-center truncate mb-1 ${
+                        <h3 className={`font-semibold text-center truncate mb-2 ${
                           isActive
-                            ? "text-base text-gray-900 dark:text-gray-100"
-                            : "text-sm text-gray-500 dark:text-gray-500"
+                            ? "text-lg text-gray-900 dark:text-gray-100"
+                            : "text-base text-gray-500 dark:text-gray-500"
                         }`}>
                           {record.name}
                         </h3>
 
                         {/* Time - Secondary */}
-                        <p className="text-xs text-center text-muted-foreground mb-2">
+                        <p className="text-sm text-center text-muted-foreground mb-3">
                           {format(new Date(record.checkInTime), "h:mm a")}
                         </p>
 
@@ -1096,7 +1096,7 @@ export default function AttendancePage() {
 
                           let badgeText = '';
                           let badgeVariant: 'default' | 'destructive' | 'secondary' | 'outline' = 'secondary';
-                          let badgeClassName = 'h-5 px-2 text-[10px] font-medium';
+                          let badgeClassName = 'h-6 px-3 text-xs font-medium';
 
                           if (daysRemaining < 0) {
                             const daysExpired = Math.abs(daysRemaining);
@@ -1108,23 +1108,23 @@ export default function AttendancePage() {
                           } else if (daysRemaining === 1) {
                             badgeText = '1 day left';
                             badgeVariant = 'destructive';
-                            badgeClassName = 'h-5 px-2 text-[10px] font-medium bg-orange-500 text-white';
+                            badgeClassName = 'h-6 px-3 text-xs font-medium bg-orange-500 text-white';
                           } else if (daysRemaining <= 3) {
                             badgeText = `${daysRemaining} days left`;
                             badgeVariant = 'outline';
-                            badgeClassName = 'h-5 px-2 text-[10px] font-medium border-orange-500 text-orange-700';
+                            badgeClassName = 'h-6 px-3 text-xs font-medium border-orange-500 text-orange-700';
                           } else if (daysRemaining <= 7) {
                             badgeText = `${daysRemaining} days left`;
                             badgeVariant = 'secondary';
-                            badgeClassName = 'h-5 px-2 text-[10px] font-medium bg-blue-100 text-blue-700';
+                            badgeClassName = 'h-6 px-3 text-xs font-medium bg-blue-100 text-blue-700';
                           } else {
                             badgeText = `${daysRemaining} days left`;
                             badgeVariant = 'secondary';
-                            badgeClassName = 'h-5 px-2 text-[10px] font-medium';
+                            badgeClassName = 'h-6 px-3 text-xs font-medium';
                           }
 
                           return (
-                            <div className="text-center mb-2">
+                            <div className="text-center mb-3">
                               <Badge variant={badgeVariant} className={badgeClassName}>
                                 {badgeText}
                               </Badge>
@@ -1134,8 +1134,8 @@ export default function AttendancePage() {
 
                         {/* Device ID */}
                         {record.biometricDeviceId && (
-                          <div className="text-center mb-2">
-                            <Badge variant="outline" className="h-4 px-2 text-[10px] font-normal">
+                          <div className="text-center mb-3">
+                            <Badge variant="outline" className="h-5 px-2 text-xs font-normal">
                               #{record.biometricDeviceId}
                             </Badge>
                           </div>
@@ -1143,11 +1143,11 @@ export default function AttendancePage() {
                       </Link>
 
                       {/* Quick Actions */}
-                      <div className="flex gap-1.5 mt-3">
+                      <div className="flex gap-2 mt-4">
                         <Button
                           size="sm"
                           variant="outline"
-                          className="flex-1 h-8 text-xs px-2 gap-1"
+                          className="flex-1 h-9 text-sm px-3 gap-1.5 flex items-center justify-center"
                           disabled={isAnyLoading}
                           onClick={() => {
                             setLoadingState({ memberId: record.userId, action: 'view' });
@@ -1155,16 +1155,16 @@ export default function AttendancePage() {
                           }}
                         >
                           {isViewLoading ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            <Loader2 className="h-4 w-4 animate-spin" />
                           ) : (
-                            <Users className="h-3.5 w-3.5" />
+                            <Users className="h-4 w-4" />
                           )}
-                          <span className="hidden sm:inline">View</span>
+                          <span></span>
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
-                          className="flex-1 h-8 text-xs px-2 gap-1 hover:bg-green-50 hover:border-green-500 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400"
+                          className="flex-1 h-9 text-sm px-3 gap-1.5 flex items-center justify-center hover:bg-green-50 hover:border-green-500 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400"
                           disabled={isAnyLoading}
                           onClick={(e) => {
                             e.preventDefault();
@@ -1181,11 +1181,11 @@ export default function AttendancePage() {
                           }}
                         >
                           {isRenewLoading ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            <Loader2 className="h-4 w-4 animate-spin" />
                           ) : (
-                            <RefreshCw className="h-3.5 w-3.5" />
+                            <RefreshCw className="h-4 w-4" />
                           )}
-                          <span className="hidden sm:inline">Renew</span>
+                          <span></span>
                         </Button>
                       </div>
                     </CardContent>
@@ -1203,6 +1203,7 @@ export default function AttendancePage() {
                   {filteredRecords.map((record) => {
                     const membershipInfo = getMembershipInfo(record);
                     const isNew = newRecordIds.has(record.id);
+                    const isActive = record.membershipStatus === "active";
 
                     return (
                       <div key={record.id} className="relative">
@@ -1214,14 +1215,31 @@ export default function AttendancePage() {
                           >
                             {/* Avatar */}
                             <div className="relative flex-shrink-0">
-                              <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
-                                <AvatarImage src={record.profileImageUrl} alt={record.name} />
-                                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                              <Avatar className={`h-16 w-16 transition-all ${
+                                isActive
+                                  ? "border-[4px] border-green-500 shadow-md shadow-green-500/20"
+                                  : "border-2 border-gray-300 opacity-60"
+                              }`}>
+                                <AvatarImage
+                                  src={record.profileImageUrl}
+                                  alt={record.name}
+                                  className={!isActive ? "grayscale" : ""}
+                                />
+                                <AvatarFallback className={`text-base font-semibold ${
+                                  isActive
+                                    ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
+                                    : "bg-gray-100 text-gray-500"
+                                }`}>
                                   {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
                                 </AvatarFallback>
                               </Avatar>
                               {isNew && (
-                                <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full animate-ping" />
+                                <div className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full animate-pulse ring-2 ring-white dark:ring-gray-900" />
+                              )}
+                              {isActive && (
+                                <div className="absolute -bottom-1 -right-1">
+                                  <CheckCircle className="h-6 w-6 text-green-500 bg-white dark:bg-gray-800 rounded-full shadow-sm" />
+                                </div>
                               )}
                             </div>
 
@@ -1366,17 +1384,17 @@ export default function AttendancePage() {
                         <div className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/30 transition-colors">
                           {/* Avatar - Small and compact */}
                           <div className="relative flex-shrink-0">
-                            <Avatar className={`h-9 w-9 border-2 transition-all ${
+                            <Avatar className={`h-12 w-12 transition-all ${
                               isActive
-                                ? "border-green-500/30 dark:border-green-500/50"
-                                : "border-gray-200 dark:border-gray-700 opacity-60"
+                                ? "border-[3px] border-green-500 shadow-md shadow-green-500/20"
+                                : "border-2 border-gray-200 dark:border-gray-700 opacity-60"
                             }`}>
                               <AvatarImage
                                 src={record.profileImageUrl}
                                 alt={record.name}
                                 className={!isActive ? "grayscale" : ""}
                               />
-                              <AvatarFallback className={`text-[10px] font-bold ${
+                              <AvatarFallback className={`text-sm font-bold ${
                                 isActive
                                   ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
                                   : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500"
@@ -1385,7 +1403,7 @@ export default function AttendancePage() {
                               </AvatarFallback>
                             </Avatar>
                             {isNew && (
-                              <div className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-green-500 rounded-full animate-pulse ring-2 ring-white dark:ring-gray-900" />
+                              <div className="absolute -top-0.5 -right-0.5 h-3 w-3 bg-green-500 rounded-full animate-pulse ring-2 ring-white dark:ring-gray-900" />
                             )}
                           </div>
 
