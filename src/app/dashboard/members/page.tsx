@@ -38,7 +38,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Home, Calendar, CreditCard } from "lucide-react";
+import { Home, Calendar, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getInitials, getAvatarStyle, capitalizeName } from "@/lib/avatar-utils";
@@ -67,6 +67,8 @@ export default function MembersPage() {
   const [selectedMember, setSelectedMember] =
     useState<UserWithMembership | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [mobilePageIndex, setMobilePageIndex] = useState(0);
+  const MOBILE_PAGE_SIZE = 10;
 
   const getMembershipStatus = useCallback(
     (historyDocs: any[]): MembershipStatus => {
@@ -302,6 +304,18 @@ export default function MembersPage() {
     router.push(`/dashboard/members/view/${member.id}`);
   };
 
+  // Calculate pagination for mobile view
+  const mobileData = useMemo(() => {
+    if (!processedData) return { paginatedMembers: [], totalPages: 0 };
+    
+    const startIndex = mobilePageIndex * MOBILE_PAGE_SIZE;
+    const endIndex = startIndex + MOBILE_PAGE_SIZE;
+    const paginatedMembers = processedData.slice(startIndex, endIndex);
+    const totalPages = Math.ceil(processedData.length / MOBILE_PAGE_SIZE);
+    
+    return { paginatedMembers, totalPages };
+  }, [processedData, mobilePageIndex]);
+
   return (
     <div className="space-y-6">
       {/* Breadcrumbs */}
@@ -346,8 +360,8 @@ export default function MembersPage() {
         <>
           {/* Mobile Card View */}
           <div className="md:hidden space-y-4">
-            {processedData && processedData.length > 0 ? (
-              processedData.map((member) => {
+            {mobileData.paginatedMembers && mobileData.paginatedMembers.length > 0 ? (
+              mobileData.paginatedMembers.map((member) => {
                 const initials = getInitials(member.name);
                 const avatarStyle = getAvatarStyle(member.name);
                 const displayName = capitalizeName(member.name);
@@ -424,6 +438,62 @@ export default function MembersPage() {
                   <p className="text-muted-foreground">No members found</p>
                 </CardContent>
               </Card>
+            )}
+            
+            {/* Mobile Pagination Controls */}
+            {mobileData.totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-card rounded-lg border">
+                <div className="text-sm text-muted-foreground">
+                  Showing {mobilePageIndex * MOBILE_PAGE_SIZE + 1} to{" "}
+                  {Math.min(
+                    (mobilePageIndex + 1) * MOBILE_PAGE_SIZE,
+                    processedData?.length || 0
+                  )}{" "}
+                  of {processedData?.length || 0} members
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setMobilePageIndex(0)}
+                    disabled={mobilePageIndex === 0}
+                  >
+                    <ChevronsLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setMobilePageIndex(mobilePageIndex - 1)}
+                    disabled={mobilePageIndex === 0}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm font-medium">
+                      Page {mobilePageIndex + 1} of {mobileData.totalPages}
+                    </span>
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setMobilePageIndex(mobilePageIndex + 1)}
+                    disabled={mobilePageIndex >= mobileData.totalPages - 1}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setMobilePageIndex(mobileData.totalPages - 1)}
+                    disabled={mobilePageIndex >= mobileData.totalPages - 1}
+                  >
+                    <ChevronsRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             )}
           </div>
 

@@ -1,3 +1,10 @@
 {
-  "/dashboard/attendance/page": "app/dashboard/attendance/page.js"
+  "/(auth)/login/page": "app/(auth)/login/page.js",
+  "/dashboard/attendance/page": "app/dashboard/attendance/page.js",
+  "/dashboard/billing/page": "app/dashboard/billing/page.js",
+  "/dashboard/members/page": "app/dashboard/members/page.js",
+  "/dashboard/members/view/[id]/page": "app/dashboard/members/view/[id]/page.js",
+  "/dashboard/overview/page": "app/dashboard/overview/page.js",
+  "/dashboard/plans/edit/[id]/page": "app/dashboard/plans/edit/[id]/page.js",
+  "/dashboard/plans/page": "app/dashboard/plans/page.js"
 }
