@@ -304,15 +304,22 @@ export default function MembersPage() {
     router.push(`/dashboard/members/view/${member.id}`);
   };
 
-  // Calculate pagination for mobile view
+  // Calculate pagination for mobile view (sorted by biometricDeviceId descending - latest first)
   const mobileData = useMemo(() => {
     if (!processedData) return { paginatedMembers: [], totalPages: 0 };
-    
+
+    // Sort by biometricDeviceId descending (latest/highest ID first)
+    const sortedData = [...processedData].sort((a, b) => {
+      const idA = parseInt(a.biometricDeviceId || "0", 10);
+      const idB = parseInt(b.biometricDeviceId || "0", 10);
+      return idB - idA; // Descending order
+    });
+
     const startIndex = mobilePageIndex * MOBILE_PAGE_SIZE;
     const endIndex = startIndex + MOBILE_PAGE_SIZE;
-    const paginatedMembers = processedData.slice(startIndex, endIndex);
-    const totalPages = Math.ceil(processedData.length / MOBILE_PAGE_SIZE);
-    
+    const paginatedMembers = sortedData.slice(startIndex, endIndex);
+    const totalPages = Math.ceil(sortedData.length / MOBILE_PAGE_SIZE);
+
     return { paginatedMembers, totalPages };
   }, [processedData, mobilePageIndex]);
 

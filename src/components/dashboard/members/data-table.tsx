@@ -52,7 +52,9 @@ export function DataTable<TData, TValue>({
   onRowClick,
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([
+    { id: 'biometricDeviceId', desc: true }
+  ]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = React.useState<string>("");
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({

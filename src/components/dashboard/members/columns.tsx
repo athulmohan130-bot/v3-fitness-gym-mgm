@@ -199,8 +199,21 @@ export const getColumns = (
 ): ColumnDef<UserWithPlan>[] => [
   {
     accessorKey: "biometricDeviceId",
-    header: "Member ID",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Member ID
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => <span>{row.getValue("biometricDeviceId") || "—"}</span>,
+    sortingFn: (rowA, rowB) => {
+      const a = parseInt(rowA.getValue("biometricDeviceId") || "0", 10);
+      const b = parseInt(rowB.getValue("biometricDeviceId") || "0", 10);
+      return a - b;
+    },
   },
   {
     accessorKey: "name",
