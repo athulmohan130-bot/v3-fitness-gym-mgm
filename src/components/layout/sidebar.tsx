@@ -94,17 +94,6 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const { isNavigating, targetPath, startNavigation } = useNavigationLoading();
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (pathname !== href) {
-      e.preventDefault();
-      startNavigation(href);
-      router.push(href);
-
-      // Don't auto-close mobile sidebar immediately
-      // It will close when navigation completes (handled by useEffect below)
-    }
-  };
-
   // Close mobile sidebar when navigation is complete
   useEffect(() => {
     if (!isNavigating && isMobile) {
@@ -184,34 +173,43 @@ export function AppSidebar() {
                 const isLoading = isNavigating && targetPath === item.href;
                 return (
                   <SidebarMenuItem key={item.href}>
-                    <Link href={item.href} onClick={(e) => handleNavClick(e, item.href)}>
-                      <SidebarMenuButton
-                        aria-current={active ? "page" : undefined}
-                        aria-label={collapsed ? item.label : undefined}
-                        title={collapsed ? item.label : undefined}
-                        disabled={isLoading}
-                        className={`w-full flex items-center rounded-xl px-3 py-2.5 transition-all duration-200 group
-                        ${
-                          active
-                            ? "bg-primary text-primary-foreground font-medium shadow-sm"
-                            : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                    <SidebarMenuButton
+                      aria-current={active ? "page" : undefined}
+                      aria-label={collapsed ? item.label : undefined}
+                      title={collapsed ? item.label : undefined}
+                      disabled={isLoading}
+                      onClick={() => {
+                        if (pathname !== item.href) {
+                          startNavigation(item.href);
+                          // If on attendance page, use hard navigation to force Firebase cleanup
+                          if (pathname === '/dashboard/attendance') {
+                            window.location.href = item.href;
+                            return;
+                          }
+                          router.push(item.href);
                         }
-                        ${isLoading ? "opacity-70 cursor-wait" : ""}`}
-                      >
-                        {isLoading ? (
-                          <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                        ) : (
-                          <item.icon
-                            className={`h-5 w-5 shrink-0 ${
-                              active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
-                            }`}
-                          />
-                        )}
-                        {!collapsed && (
-                          <span className="ml-2">{item.label}</span>
-                        )}
-                      </SidebarMenuButton>
-                    </Link>
+                      }}
+                      className={`w-full flex items-center rounded-xl px-3 py-2.5 transition-all duration-200 group cursor-pointer
+                      ${
+                        active
+                          ? "bg-primary text-primary-foreground font-medium shadow-sm"
+                          : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                      }
+                      ${isLoading ? "opacity-70 cursor-wait" : ""}`}
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                      ) : (
+                        <item.icon
+                          className={`h-5 w-5 shrink-0 ${
+                            active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
+                          }`}
+                        />
+                      )}
+                      {!collapsed && (
+                        <span className="ml-2">{item.label}</span>
+                      )}
+                    </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
               })}

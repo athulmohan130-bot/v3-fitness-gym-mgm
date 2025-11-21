@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { flushSync } from "react-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,7 @@ import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, limit, getDocs, where } from "firebase/firestore";
 import { format, differenceInDays } from "date-fns";
 import { useGymSettings } from "@/hooks/use-gym-settings";
-import { Search, Users, Volume2, VolumeX, Settings, Home, Grid3x3, List, LayoutList, CheckCircle, BarChart, Clock, TrendingUp, CalendarIcon, X, RefreshCw, Loader2 } from "lucide-react";
+import { Search, Users, Volume2, VolumeX, Settings, Home, Grid3x3, List, LayoutList, CheckCircle, BarChart, Clock, TrendingUp, CalendarIcon, RefreshCw, Loader2 } from "lucide-react";
 import type { AttendanceRecord, MembershipPlan } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -36,7 +37,7 @@ import {
   type NotificationConfig
 } from "@/lib/attendance-notifications";
 import { RenewPlanDialog } from "@/components/dashboard/members/renew-plan-dialogue";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 // View mode type
 type ViewMode = "grid" | "list" | "compact";
@@ -44,6 +45,7 @@ type ViewMode = "grid" | "list" | "compact";
 export default function AttendancePage() {
   const firestore = useFirestore();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { settings, updateSettings } = useGymSettings();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -97,16 +99,9 @@ export default function AttendancePage() {
   const prevNotificationConfigRef = useRef<NotificationConfig | null>(null);
 
   // Audio initialization state - persist in localStorage
-  const [audioInitialized, setAudioInitialized] = useState(() => {
+  const [audioInitialized] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('audio-initialized') === 'true';
-    }
-    return false;
-  });
-
-  const [audioBannerDismissed, setAudioBannerDismissed] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('audio-banner-dismissed') === 'true';
     }
     return false;
   });
@@ -116,16 +111,6 @@ export default function AttendancePage() {
     localStorage.setItem('attendance-view-mode', viewMode);
   }, [viewMode]);
 
-  // Save audio initialized state to localStorage
-  useEffect(() => {
-    localStorage.setItem('audio-initialized', audioInitialized.toString());
-  }, [audioInitialized]);
-
-  // Save banner dismissed state to localStorage
-  useEffect(() => {
-    localStorage.setItem('audio-banner-dismissed', audioBannerDismissed.toString());
-  }, [audioBannerDismissed]);
-
   // NAVIGATION SAFETY: Add pathname monitoring
   const pathname = usePathname();
   const [queriesEnabled, setQueriesEnabled] = useState(false);
@@ -133,10 +118,8 @@ export default function AttendancePage() {
   // Enable queries only when on attendance page
   useEffect(() => {
     if (pathname === '/dashboard/attendance') {
-      console.log('✅ Enabling queries for attendance page');
       setQueriesEnabled(true);
     } else {
-      console.log('🛑 Disabling queries - navigated away from attendance');
       setQueriesEnabled(false);
     }
   }, [pathname]);
@@ -462,49 +445,6 @@ export default function AttendancePage() {
 
   return (
     <div className="space-y-3">
-      {/* Enable Audio Banner */}
-      {!audioInitialized && !audioBannerDismissed && notificationConfig.playSound && (
-        <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900">
-          <CardContent className="py-3">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3 flex-1">
-                <Volume2 className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Enable Audio Notifications</p>
-                  <p className="text-xs text-blue-700 dark:text-blue-300">Click to activate sound notifications for check-ins</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    // Initialize audio by playing a test sound
-                    if (notificationHandlerRef.current) {
-                      notificationHandlerRef.current.notify({
-                        memberName: 'Audio',
-                        alertType: 'active'
-                      });
-                    }
-                    setAudioInitialized(true);
-                  }}
-                >
-                  Enable
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setAudioBannerDismissed(true)}
-                  className="h-8 w-8 p-0 text-blue-600 hover:text-blue-900 hover:bg-blue-100 dark:text-blue-400 dark:hover:text-blue-100 dark:hover:bg-blue-900/50"
-                  aria-label="Dismiss notification"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Compact Header with Breadcrumbs and Settings */}
       <div className="flex items-center justify-between">
         <Breadcrumb>
@@ -1037,7 +977,16 @@ export default function AttendancePage() {
                     } ${isNew ? "ring-2 ring-green-500 ring-offset-2" : ""}`}
                   >
                     <CardContent className="p-6">
-                      <Link href={`/dashboard/members/view/${record.userId}`} className="block">
+                      <div
+                        className="block cursor-pointer"
+                        onClick={async () => {
+                          console.log('🔵 [ATTENDANCE] Card clicked - attempting navigation to:', `/dashboard/members/view/${record.userId}`);
+                          // Disable queries before navigation to release Firebase connections
+                          setQueriesEnabled(false);
+                          await new Promise(resolve => setTimeout(resolve, 100));
+                          router.push(`/dashboard/members/view/${record.userId}`);
+                        }}
+                      >
                         {/* Avatar */}
                         <div className="relative mx-auto w-fit mb-5">
                           <Avatar className={`h-40 w-40 transition-all ${
@@ -1140,7 +1089,7 @@ export default function AttendancePage() {
                             </Badge>
                           </div>
                         )}
-                      </Link>
+                      </div>
 
                       {/* Quick Actions */}
                       <div className="flex gap-2 mt-4">
@@ -1149,9 +1098,18 @@ export default function AttendancePage() {
                           variant="outline"
                           className="flex-1 h-9 text-sm px-3 gap-1.5 flex items-center justify-center"
                           disabled={isAnyLoading}
-                          onClick={() => {
+                          onClick={async (e) => {
+                            console.log('🟢 [ATTENDANCE] View button clicked for user:', record.userId);
+                            e.stopPropagation();
                             setLoadingState({ memberId: record.userId, action: 'view' });
-                            window.location.href = `/dashboard/members/view/${record.userId}`;
+
+                            // Disable queries before navigation to release Firebase connections
+                            console.log('🟢 [ATTENDANCE] Disabling queries before navigation');
+                            setQueriesEnabled(false);
+                            await new Promise(resolve => setTimeout(resolve, 100));
+
+                            console.log('🟢 [ATTENDANCE] Calling router.push to:', `/dashboard/members/view/${record.userId}`);
+                            router.push(`/dashboard/members/view/${record.userId}`);
                           }}
                         >
                           {isViewLoading ? (
@@ -1159,7 +1117,7 @@ export default function AttendancePage() {
                           ) : (
                             <Users className="h-4 w-4" />
                           )}
-                          <span></span>
+                          <span>View</span>
                         </Button>
                         <Button
                           size="sm"
@@ -1185,7 +1143,7 @@ export default function AttendancePage() {
                           ) : (
                             <RefreshCw className="h-4 w-4" />
                           )}
-                          <span></span>
+                          <span>Renew</span>
                         </Button>
                       </div>
                     </CardContent>
@@ -1500,9 +1458,13 @@ export default function AttendancePage() {
                               variant="ghost"
                               className="h-7 px-2 text-xs hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-950 dark:hover:text-blue-400"
                               disabled={isAnyLoading}
-                              onClick={() => {
+                              onClick={async (e) => {
+                                e.stopPropagation();
                                 setLoadingState({ memberId: record.userId, action: 'view' });
-                                window.location.href = `/dashboard/members/view/${record.userId}`;
+                                // Disable queries before navigation to release Firebase connections
+                                setQueriesEnabled(false);
+                                await new Promise(resolve => setTimeout(resolve, 100));
+                                router.push(`/dashboard/members/view/${record.userId}`);
                               }}
                             >
                               {isViewLoading ? (

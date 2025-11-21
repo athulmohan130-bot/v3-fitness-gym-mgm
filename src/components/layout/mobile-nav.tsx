@@ -41,23 +41,24 @@ export function MobileNav() {
   const userRole = user?.role || 'member';
   const { isNavigating, targetPath, startNavigation } = useNavigationLoading();
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (pathname !== href) {
-      e.preventDefault();
-      startNavigation(href);
-      router.push(href);
-    }
-  };
-
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur-sm">
       <nav className="grid grid-cols-3 items-center justify-around h-16">
         {mobileMenuItems.map((item) =>
           item.roles.includes(userRole) ? (
-            <Link
+            <button
               key={item.href}
-              href={item.href}
-              onClick={(e) => handleNavClick(e, item.href)}
+              onClick={() => {
+                if (pathname !== item.href) {
+                  startNavigation(item.href);
+                  // If on attendance page, use hard navigation to force Firebase cleanup
+                  if (pathname === '/dashboard/attendance') {
+                    window.location.href = item.href;
+                    return;
+                  }
+                  router.push(item.href);
+                }
+              }}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-opacity",
                 pathname.startsWith(item.href) && "text-primary",
@@ -70,7 +71,7 @@ export function MobileNav() {
                 <item.icon className="h-5 w-5" />
               )}
               <span className="text-xs font-medium">{item.label}</span>
-            </Link>
+            </button>
           ) : null
         )}
       </nav>
