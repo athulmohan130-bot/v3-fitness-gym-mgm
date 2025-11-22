@@ -18,7 +18,7 @@ import { getColumns } from "@/components/dashboard/members/columns";
 import { DataTable } from "@/components/dashboard/members/data-table";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Search, Filter, X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RenewPlanDialog } from "@/components/dashboard/members/renew-plan-dialogue";
 import {
@@ -42,6 +42,14 @@ import { Home, Calendar, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, Ch
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getInitials, getAvatarStyle, capitalizeName } from "@/lib/avatar-utils";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type MembershipStatus = "active" | "pending" | "expired";
 
@@ -68,6 +76,8 @@ export default function MembersPage() {
     useState<UserWithMembership | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
   const [mobilePageIndex, setMobilePageIndex] = useState(0);
+  const [mobileSearchQuery, setMobileSearchQuery] = useState("");
+  const [mobileStatusFilter, setMobileStatusFilter] = useState<string>("all");
   const MOBILE_PAGE_SIZE = 10;
 
   const getMembershipStatus = useCallback(
@@ -306,10 +316,37 @@ export default function MembersPage() {
 
   // Calculate pagination for mobile view (sorted by biometricDeviceId descending - latest first)
   const mobileData = useMemo(() => {
-    if (!processedData) return { paginatedMembers: [], totalPages: 0 };
+    if (!processedData) return { paginatedMembers: [], totalPages: 0, totalCount: 0 };
+
+    // Apply filters
+    let filteredData = [...processedData];
+
+    // Search filter
+    if (mobileSearchQuery.trim()) {
+      const searchLower = mobileSearchQuery.toLowerCase();
+      filteredData = filteredData.filter((member) => {
+        const name = (member.name || "").toLowerCase();
+        const bioId = (member.biometricDeviceId || "").toLowerCase();
+        const email = (member.email || "").toLowerCase();
+        const phone = (member.phone || "").toLowerCase();
+        return (
+          name.includes(searchLower) ||
+          bioId.includes(searchLower) ||
+          email.includes(searchLower) ||
+          phone.includes(searchLower)
+        );
+      });
+    }
+
+    // Status filter
+    if (mobileStatusFilter !== "all") {
+      filteredData = filteredData.filter(
+        (member) => member.membershipStatus === mobileStatusFilter
+      );
+    }
 
     // Sort by biometricDeviceId descending (latest/highest ID first)
-    const sortedData = [...processedData].sort((a, b) => {
+    const sortedData = filteredData.sort((a, b) => {
       const idA = parseInt(a.biometricDeviceId || "0", 10);
       const idB = parseInt(b.biometricDeviceId || "0", 10);
       return idB - idA; // Descending order
@@ -320,8 +357,8 @@ export default function MembersPage() {
     const paginatedMembers = sortedData.slice(startIndex, endIndex);
     const totalPages = Math.ceil(sortedData.length / MOBILE_PAGE_SIZE);
 
-    return { paginatedMembers, totalPages };
-  }, [processedData, mobilePageIndex]);
+    return { paginatedMembers, totalPages, totalCount: sortedData.length };
+  }, [processedData, mobilePageIndex, mobileSearchQuery, mobileStatusFilter]);
 
   return (
     <div className="space-y-6">
@@ -367,6 +404,86 @@ export default function MembersPage() {
         <>
           {/* Mobile Card View */}
           <div className="md:hidden space-y-4">
+            {/* Mobile Search and Filter */}
+            <Card>
+              <CardContent className="p-4 space-y-3">
+                {/* Search Input */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search members..."
+                    value={mobileSearchQuery}
+                    onChange={(e) => {
+                      setMobileSearchQuery(e.target.value);
+                      setMobilePageIndex(0); // Reset to first page on search
+                    }}
+                    className="pl-9 pr-9"
+                  />
+                  {mobileSearchQuery && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                      onClick={() => {
+                        setMobileSearchQuery("");
+                        setMobilePageIndex(0);
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+
+                {/* Status Filter */}
+                <Select
+                  value={mobileStatusFilter}
+                  onValueChange={(value) => {
+                    setMobileStatusFilter(value);
+                    setMobilePageIndex(0); // Reset to first page on filter change
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Members</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="expired">Expired</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {/* Active Filters Display */}
+                {(mobileSearchQuery || mobileStatusFilter !== "all") && (
+                  <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
+                    <span className="text-xs text-muted-foreground">Active filters:</span>
+                    {mobileSearchQuery && (
+                      <Badge variant="secondary" className="text-xs">
+                        Search: {mobileSearchQuery}
+                      </Badge>
+                    )}
+                    {mobileStatusFilter !== "all" && (
+                      <Badge variant="secondary" className="text-xs">
+                        Status: {mobileStatusFilter}
+                      </Badge>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 text-xs ml-auto"
+                      onClick={() => {
+                        setMobileSearchQuery("");
+                        setMobileStatusFilter("all");
+                        setMobilePageIndex(0);
+                      }}
+                    >
+                      Clear all
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {mobileData.paginatedMembers && mobileData.paginatedMembers.length > 0 ? (
               mobileData.paginatedMembers.map((member) => {
                 const initials = getInitials(member.name);
@@ -454,9 +571,9 @@ export default function MembersPage() {
                   Showing {mobilePageIndex * MOBILE_PAGE_SIZE + 1} to{" "}
                   {Math.min(
                     (mobilePageIndex + 1) * MOBILE_PAGE_SIZE,
-                    processedData?.length || 0
+                    mobileData.totalCount
                   )}{" "}
-                  of {processedData?.length || 0} members
+                  of {mobileData.totalCount} members
                 </div>
                 
                 <div className="flex items-center space-x-2">
