@@ -5,12 +5,33 @@ import type { UserRole } from "@/lib/types";
 // Initialize Firebase Admin SDK
 if (!admin.apps.length) {
   try {
-    const serviceAccount = require("@/serviceAccountKey.json");
+    let credential;
+
+    if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+      // Use environment variables (production/Vercel)
+      credential = admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      });
+    } else {
+      // Use JSON file (development only)
+      try {
+        const serviceAccount = require("@/serviceAccountKey.json");
+        credential = admin.credential.cert(serviceAccount);
+      } catch (fileError) {
+        throw new Error(
+          "Firebase Admin credentials not found. Please set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY environment variables."
+        );
+      }
+    }
+
     admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
+      credential,
     });
   } catch (error) {
     console.error("Error initializing Firebase Admin:", error);
+    throw error;
   }
 }
 
