@@ -49,11 +49,12 @@ export interface Payment {
   planId: string;
   amount: number;
   paymentDate: string;
-  mode: "UPI" | "Card" | "Cash";
+  mode: "UPI" | "Card" | "Cash" | "Bank Transfer";
   status: "success" | "failed" | "pending";
   month: string; // "YYYY-MM"
   transactionId: string;
   handledBy: string; // adminUserId
+  type?: "registration" | "renewal"; // Payment type - registration or renewal
 }
 
 export interface MembershipPlan {

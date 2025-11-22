@@ -23,10 +23,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
-import { format } from "date-fns";
-import { Search, Download, IndianRupee, CreditCard, Clock, XCircle, ExternalLink, ChevronLeft, ChevronRight, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from "date-fns";
+import { Search, Download, IndianRupee, CreditCard, Clock, XCircle, ExternalLink, ChevronLeft, ChevronRight, X, ArrowUpDown, ArrowUp, ArrowDown, CalendarIcon } from "lucide-react";
 import Link from "next/link";
 import Currency from "@/components/ui/currency";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 
 interface Payment {
   id: string;
@@ -68,8 +71,9 @@ export default function PaymentHistoryPage() {
   // State for filters
   const [searchQuery, setSearchQuery] = useState("");
   const [filterMode, setFilterMode] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [dateRangeFilter, setDateRangeFilter] = useState<{ from: Date; to: Date } | null>(null);
 
   // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -79,16 +83,18 @@ export default function PaymentHistoryPage() {
   const [sortBy, setSortBy] = useState<"date" | "amount" | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
+
   // Clear all filters
   const clearAllFilters = () => {
     setSearchQuery("");
     setFilterMode("all");
-    setFilterStatus("all");
     setSelectedMonth("all");
+    setSelectedDate(undefined);
+    setDateRangeFilter(null);
   };
 
   // Check if any filters are active
-  const hasActiveFilters = searchQuery !== "" || filterMode !== "all" || filterStatus !== "all" || selectedMonth !== "all";
+  const hasActiveFilters = searchQuery !== "" || filterMode !== "all" || selectedMonth !== "all" || selectedDate !== undefined || dateRangeFilter !== null;
 
   // Query all payments
   const paymentsQuery = useMemoFirebase(() => {
@@ -147,14 +153,35 @@ export default function PaymentHistoryPage() {
       filtered = filtered.filter(payment => payment.mode.toLowerCase() === filterMode);
     }
 
-    // Filter by status
-    if (filterStatus !== "all") {
-      filtered = filtered.filter(payment => payment.status === filterStatus);
-    }
-
     // Filter by month
     if (selectedMonth !== "all") {
       filtered = filtered.filter(payment => payment.month === selectedMonth);
+    }
+
+    // Filter by date
+    if (selectedDate) {
+      filtered = filtered.filter(payment => {
+        const paymentDate = parsePaymentDate(payment.paymentDate);
+        const filterDate = new Date(selectedDate);
+
+        // Compare only the date part (ignore time)
+        return (
+          paymentDate.getFullYear() === filterDate.getFullYear() &&
+          paymentDate.getMonth() === filterDate.getMonth() &&
+          paymentDate.getDate() === filterDate.getDate()
+        );
+      });
+    }
+
+    // Filter by date range
+    if (dateRangeFilter) {
+      filtered = filtered.filter(payment => {
+        const paymentDate = parsePaymentDate(payment.paymentDate);
+        const from = new Date(dateRangeFilter.from.setHours(0, 0, 0, 0));
+        const to = new Date(dateRangeFilter.to.setHours(23, 59, 59, 999));
+
+        return paymentDate >= from && paymentDate <= to;
+      });
     }
 
     // Apply sorting
@@ -171,7 +198,7 @@ export default function PaymentHistoryPage() {
     }
 
     return filtered;
-  }, [payments, searchQuery, filterMode, filterStatus, selectedMonth, userMap, sortBy, sortOrder]);
+  }, [payments, searchQuery, filterMode, selectedMonth, selectedDate, dateRangeFilter, userMap, sortBy, sortOrder]);
 
   // Paginate payments
   const totalPages = Math.ceil(filteredPayments.length / pageSize);
@@ -184,19 +211,42 @@ export default function PaymentHistoryPage() {
   // Reset to page 1 when filters change
   useMemo(() => {
     setCurrentPage(1);
-  }, [searchQuery, filterMode, filterStatus, selectedMonth]);
+  }, [searchQuery, filterMode, selectedMonth]);
 
   // Calculate summary statistics
   const stats = useMemo(() => {
-    if (!payments) return { totalRevenue: 0, totalTransactions: 0, pendingCount: 0, failedCount: 0 };
+    if (!payments) return {
+      revenueToday: 0,
+      revenueThisMonth: 0,
+      revenueAllTime: 0,
+      totalTransactions: 0
+    };
+
+    const today = new Date();
+    const todayStr = format(today, 'yyyy-MM-dd');
+    const thisMonth = format(today, 'yyyy-MM');
 
     const successPayments = payments.filter(p => p.status === "success");
-    const totalRevenue = successPayments.reduce((sum, p) => sum + p.amount, 0);
-    const totalTransactions = payments.length;
-    const pendingCount = payments.filter(p => p.status === "pending").length;
-    const failedCount = payments.filter(p => p.status === "failed").length;
 
-    return { totalRevenue, totalTransactions, pendingCount, failedCount };
+    // Revenue today (comparing date only)
+    const revenueToday = successPayments
+      .filter(p => {
+        const paymentDate = parsePaymentDate(p.paymentDate);
+        return format(paymentDate, 'yyyy-MM-dd') === todayStr;
+      })
+      .reduce((sum, p) => sum + p.amount, 0);
+
+    // Revenue this month
+    const revenueThisMonth = successPayments
+      .filter(p => p.month === thisMonth)
+      .reduce((sum, p) => sum + p.amount, 0);
+
+    // Revenue all time
+    const revenueAllTime = successPayments.reduce((sum, p) => sum + p.amount, 0);
+
+    const totalTransactions = payments.length;
+
+    return { revenueToday, revenueThisMonth, revenueAllTime, totalTransactions };
   }, [payments]);
 
   // Export to CSV
@@ -260,21 +310,61 @@ export default function PaymentHistoryPage() {
 
       {/* Summary Stats */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        {/* Total Revenue */}
+        {/* Revenue Today */}
         <Card className="lg:col-span-1">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Total Revenue</p>
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Revenue Today</p>
                 <div className="text-xl sm:text-3xl font-bold tracking-tight mt-1 sm:mt-2">
-                  <Currency value={stats.totalRevenue} />
+                  <Currency value={stats.revenueToday} />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
-                  From successful payments
+                  {format(new Date(), "dd MMM, yyyy")}
                 </p>
               </div>
               <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
                 <IndianRupee className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Revenue This Month */}
+        <Card>
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">This Month</p>
+                <div className="text-xl sm:text-3xl font-bold tracking-tight mt-1 sm:mt-2">
+                  <Currency value={stats.revenueThisMonth} />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
+                  {format(new Date(), "MMMM yyyy")}
+                </p>
+              </div>
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
+                <IndianRupee className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Revenue All Time */}
+        <Card>
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">All Time</p>
+                <div className="text-xl sm:text-3xl font-bold tracking-tight mt-1 sm:mt-2">
+                  <Currency value={stats.revenueAllTime} />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
+                  Total revenue
+                </p>
+              </div>
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0">
+                <IndianRupee className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
               </div>
             </div>
           </CardContent>
@@ -293,48 +383,8 @@ export default function PaymentHistoryPage() {
                   All payment records
                 </p>
               </div>
-              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
-                <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Pending Payments */}
-        <Card>
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Pending</p>
-                <div className="text-xl sm:text-3xl font-bold tracking-tight mt-1 sm:mt-2">
-                  {stats.pendingCount}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
-                  Awaiting confirmation
-                </p>
-              </div>
-              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0">
-                <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Failed Payments */}
-        <Card>
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Failed</p>
-                <div className="text-xl sm:text-3xl font-bold tracking-tight mt-1 sm:mt-2">
-                  {stats.failedCount}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
-                  Unsuccessful payments
-                </p>
-              </div>
-              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
-                <XCircle className="h-5 w-5 sm:h-6 sm:w-6 text-red-600" />
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-orange-500/10 flex items-center justify-center shrink-0">
+                <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
               </div>
             </div>
           </CardContent>
@@ -345,6 +395,7 @@ export default function PaymentHistoryPage() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col gap-4 mb-6">
+
             {/* Search and Filters Row */}
             <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
               {/* Search */}
@@ -358,6 +409,133 @@ export default function PaymentHistoryPage() {
                 />
               </div>
 
+              {/* Date Filter */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "justify-start text-left font-normal",
+                      !selectedDate && !dateRangeFilter && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {selectedDate ? (
+                      format(selectedDate, "dd/MM/yyyy")
+                    ) : dateRangeFilter ? (
+                      `${format(dateRangeFilter.from, "dd/MM/yy")} - ${format(dateRangeFilter.to, "dd/MM/yy")}`
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <div className="flex">
+                    {/* Quick Filters Sidebar */}
+                    <div className="border-r bg-muted/50">
+                      <div className="p-2">
+                        <p className="text-xs font-semibold text-muted-foreground px-2 py-1">Quick Filters</p>
+                        <div className="flex flex-col gap-1 mt-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="justify-start h-8 px-2 text-sm font-normal"
+                            onClick={() => {
+                              setSelectedDate(new Date());
+                              setDateRangeFilter(null);
+                            }}
+                          >
+                            Today
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="justify-start h-8 px-2 text-sm font-normal"
+                            onClick={() => {
+                              setSelectedDate(subDays(new Date(), 1));
+                              setDateRangeFilter(null);
+                            }}
+                          >
+                            Yesterday
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="justify-start h-8 px-2 text-sm font-normal"
+                            onClick={() => {
+                              const today = new Date();
+                              setSelectedDate(undefined);
+                              setDateRangeFilter({
+                                from: subDays(today, 6),
+                                to: today,
+                              });
+                            }}
+                          >
+                            Last 7 Days
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="justify-start h-8 px-2 text-sm font-normal"
+                            onClick={() => {
+                              const today = new Date();
+                              setSelectedDate(undefined);
+                              setDateRangeFilter({
+                                from: startOfWeek(today, { weekStartsOn: 0 }),
+                                to: endOfWeek(today, { weekStartsOn: 0 }),
+                              });
+                            }}
+                          >
+                            This Week
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="justify-start h-8 px-2 text-sm font-normal"
+                            onClick={() => {
+                              const today = new Date();
+                              setSelectedDate(undefined);
+                              setDateRangeFilter({
+                                from: startOfMonth(today),
+                                to: endOfMonth(today),
+                              });
+                            }}
+                          >
+                            This Month
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="justify-start h-8 px-2 text-sm font-normal"
+                            onClick={() => {
+                              const lastMonth = subMonths(new Date(), 1);
+                              setSelectedDate(undefined);
+                              setDateRangeFilter({
+                                from: startOfMonth(lastMonth),
+                                to: endOfMonth(lastMonth),
+                              });
+                            }}
+                          >
+                            Last Month
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Calendar */}
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date) => {
+                        setSelectedDate(date);
+                        setDateRangeFilter(null);
+                      }}
+                      initialFocus
+                    />
+                  </div>
+                </PopoverContent>
+              </Popover>
+
               {/* Payment Mode Filter */}
               <Select value={filterMode} onValueChange={setFilterMode}>
                 <SelectTrigger>
@@ -368,19 +546,6 @@ export default function PaymentHistoryPage() {
                   <SelectItem value="upi">UPI</SelectItem>
                   <SelectItem value="card">Card</SelectItem>
                   <SelectItem value="cash">Cash</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Status Filter */}
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="success">Success</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="failed">Failed</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -417,6 +582,32 @@ export default function PaymentHistoryPage() {
                     </Button>
                   </Badge>
                 )}
+                {selectedDate && (
+                  <Badge variant="secondary" className="gap-1 pr-1">
+                    Date: {format(selectedDate, "dd/MM/yyyy")}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-4 w-4 p-0 hover:bg-transparent"
+                      onClick={() => setSelectedDate(undefined)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                )}
+                {dateRangeFilter && (
+                  <Badge variant="secondary" className="gap-1 pr-1">
+                    Range: {format(dateRangeFilter.from, "dd/MM/yy")} - {format(dateRangeFilter.to, "dd/MM/yy")}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-4 w-4 p-0 hover:bg-transparent"
+                      onClick={() => setDateRangeFilter(null)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                )}
                 {filterMode !== "all" && (
                   <Badge variant="secondary" className="gap-1 pr-1">
                     Mode: {filterMode.toUpperCase()}
@@ -425,19 +616,6 @@ export default function PaymentHistoryPage() {
                       size="sm"
                       className="h-4 w-4 p-0 hover:bg-transparent"
                       onClick={() => setFilterMode("all")}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </Badge>
-                )}
-                {filterStatus !== "all" && (
-                  <Badge variant="secondary" className="gap-1 pr-1">
-                    Status: {filterStatus.charAt(0).toUpperCase() + filterStatus.slice(1)}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-4 w-4 p-0 hover:bg-transparent"
-                      onClick={() => setFilterStatus("all")}
                     >
                       <X className="h-3 w-3" />
                     </Button>

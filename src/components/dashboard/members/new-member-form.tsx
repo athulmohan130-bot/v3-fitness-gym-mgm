@@ -524,6 +524,22 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
               lastUpdated: serverTimestamp(),
             });
           }
+
+          // 6. Create payment record for billing page
+          const paymentsRef = collection(firestore, "payments");
+          const newPaymentRef = doc(paymentsRef);
+          transaction.set(newPaymentRef, {
+            userId: newUserRef.id,
+            planId: values.membershipPlanId,
+            amount: paidAmount,
+            paymentDate: serverTimestamp(),
+            mode: values.paymentMethod.toUpperCase() as "UPI" | "CARD" | "CASH" | "BANK TRANSFER",
+            status: "success",
+            month: monthKey,
+            transactionId: `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+            handledBy: adminUser?.name || adminUser?.email || "Admin",
+            type: "registration", // Mark as registration payment
+          });
         }
       });
 
