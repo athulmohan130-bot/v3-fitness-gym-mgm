@@ -16,14 +16,17 @@ if (!admin.apps.length) {
       });
     } else {
       // Use JSON file (development only)
+      // Using dynamic import to avoid module resolution errors in production
+      let serviceAccountPath;
       try {
-        const serviceAccount = require("@/serviceAccountKey.json");
-        credential = admin.credential.cert(serviceAccount);
-      } catch (fileError) {
+        serviceAccountPath = require.resolve("@/serviceAccountKey.json");
+      } catch {
         throw new Error(
           "Firebase Admin credentials not found. Please set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY environment variables."
         );
       }
+      const serviceAccount = require(serviceAccountPath);
+      credential = admin.credential.cert(serviceAccount);
     }
 
     admin.initializeApp({
