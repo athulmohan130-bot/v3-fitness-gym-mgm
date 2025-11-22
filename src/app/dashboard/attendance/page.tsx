@@ -970,182 +970,135 @@ export default function AttendancePage() {
                 return (
                   <Card
                     key={record.id}
-                    className={`group relative overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
+                    className={`group relative overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer ${
                       isActive
                         ? "bg-white border-t-4 border-t-green-500 dark:bg-gray-800 dark:border-t-green-500"
                         : "bg-gray-50 border border-gray-200 opacity-70 dark:bg-gray-900 dark:border-gray-700"
                     } ${isNew ? "ring-2 ring-green-500 ring-offset-2" : ""}`}
+                    onClick={() => {
+                      window.location.href = `/dashboard/members/view/${record.userId}`;
+                    }}
                   >
-                    <CardContent className="p-6">
-                      <div
-                        className="block cursor-pointer"
-                        onClick={async () => {
-                          console.log('🔵 [ATTENDANCE] Card clicked - attempting navigation to:', `/dashboard/members/view/${record.userId}`);
-                          // Disable queries before navigation to release Firebase connections
-                          setQueriesEnabled(false);
-                          await new Promise(resolve => setTimeout(resolve, 100));
-                          router.push(`/dashboard/members/view/${record.userId}`);
-                        }}
-                      >
-                        {/* Avatar */}
-                        <div className="relative mx-auto w-fit mb-5">
-                          <Avatar className={`h-40 w-40 transition-all ${
-                            isActive
-                              ? "border-[6px] border-green-500 shadow-xl shadow-green-500/30"
-                              : "border-[3px] border-gray-300 grayscale"
-                          }`}>
-                            <AvatarImage
-                              src={record.profileImageUrl}
-                              alt={record.name}
-                              className={!isActive ? "grayscale" : ""}
-                            />
-                            <AvatarFallback className={`text-3xl font-bold ${
-                              isActive
-                                ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
-                                : "bg-gray-100 text-gray-500"
-                            }`}>
-                              {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-                            </AvatarFallback>
-                          </Avatar>
-                          {isNew && (
-                            <div className="absolute -top-1 -right-1 h-7 w-7 bg-green-500 rounded-full animate-pulse ring-2 ring-white dark:ring-gray-900" />
-                          )}
-                          {isActive && (
-                            <div className="absolute -bottom-2 -right-2">
-                              <CheckCircle className="h-10 w-10 text-green-500 bg-white dark:bg-gray-800 rounded-full shadow-lg" />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Name - HERO */}
-                        <h3 className={`font-semibold text-center truncate mb-2 ${
+                      <CardContent className="p-6">
+                      {/* Avatar */}
+                      <div className="relative mx-auto w-fit mb-5">
+                        <Avatar className={`h-40 w-40 transition-all ${
                           isActive
-                            ? "text-lg text-gray-900 dark:text-gray-100"
-                            : "text-base text-gray-500 dark:text-gray-500"
+                            ? "border-[6px] border-green-500 shadow-xl shadow-green-500/30"
+                            : "border-[3px] border-gray-300 grayscale"
                         }`}>
-                          {record.name}
-                        </h3>
-
-                        {/* Time - Secondary */}
-                        <p className="text-sm text-center text-muted-foreground mb-3">
-                          {format(new Date(record.checkInTime), "h:mm a")}
-                        </p>
-
-                        {/* Days Remaining / Expired */}
-                        {(() => {
-                          // Support both membershipEnd and membershipEndDate for compatibility
-                          const membershipEndDate = record.membershipEnd || (record as any).membershipEndDate;
-                          const alertInfo = getMembershipAlertType(
-                            record.membershipStatus || 'active',
-                            membershipEndDate
-                          );
-                          const { daysRemaining } = alertInfo;
-
-                          if (daysRemaining === undefined) return null;
-
-                          let badgeText = '';
-                          let badgeVariant: 'default' | 'destructive' | 'secondary' | 'outline' = 'secondary';
-                          let badgeClassName = 'h-6 px-3 text-xs font-medium';
-
-                          if (daysRemaining < 0) {
-                            const daysExpired = Math.abs(daysRemaining);
-                            badgeText = `Expired ${daysExpired} ${daysExpired === 1 ? 'day' : 'days'} ago`;
-                            badgeVariant = 'destructive';
-                          } else if (daysRemaining === 0) {
-                            badgeText = 'Expires today';
-                            badgeVariant = 'destructive';
-                          } else if (daysRemaining === 1) {
-                            badgeText = '1 day left';
-                            badgeVariant = 'destructive';
-                            badgeClassName = 'h-6 px-3 text-xs font-medium bg-orange-500 text-white';
-                          } else if (daysRemaining <= 3) {
-                            badgeText = `${daysRemaining} days left`;
-                            badgeVariant = 'outline';
-                            badgeClassName = 'h-6 px-3 text-xs font-medium border-orange-500 text-orange-700';
-                          } else if (daysRemaining <= 7) {
-                            badgeText = `${daysRemaining} days left`;
-                            badgeVariant = 'secondary';
-                            badgeClassName = 'h-6 px-3 text-xs font-medium bg-blue-100 text-blue-700';
-                          } else {
-                            badgeText = `${daysRemaining} days left`;
-                            badgeVariant = 'secondary';
-                            badgeClassName = 'h-6 px-3 text-xs font-medium';
-                          }
-
-                          return (
-                            <div className="text-center mb-3">
-                              <Badge variant={badgeVariant} className={badgeClassName}>
-                                {badgeText}
-                              </Badge>
-                            </div>
-                          );
-                        })()}
-
-                        {/* Device ID */}
-                        {record.biometricDeviceId && (
-                          <div className="text-center mb-3">
-                            <Badge variant="outline" className="h-5 px-2 text-xs font-normal">
-                              #{record.biometricDeviceId}
-                            </Badge>
+                          <AvatarImage
+                            src={record.profileImageUrl}
+                            alt={record.name}
+                            className={!isActive ? "grayscale" : ""}
+                          />
+                          <AvatarFallback className={`text-3xl font-bold ${
+                            isActive
+                              ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
+                              : "bg-gray-100 text-gray-500"
+                          }`}>
+                            {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                        {isNew && (
+                          <div className="absolute -top-1 -right-1 h-7 w-7 bg-green-500 rounded-full animate-pulse ring-2 ring-white dark:ring-gray-900" />
+                        )}
+                        {isActive && (
+                          <div className="absolute -bottom-2 -right-2">
+                            <CheckCircle className="h-10 w-10 text-green-500 bg-white dark:bg-gray-800 rounded-full shadow-lg" />
                           </div>
                         )}
                       </div>
 
-                      {/* Quick Actions */}
-                      <div className="flex gap-2 mt-4">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 h-9 text-sm px-3 gap-1.5 flex items-center justify-center"
-                          disabled={isAnyLoading}
-                          onClick={async (e) => {
-                            console.log('🟢 [ATTENDANCE] View button clicked for user:', record.userId);
-                            e.stopPropagation();
-                            setLoadingState({ memberId: record.userId, action: 'view' });
+                      {/* Name - HERO */}
+                      <h3 className={`font-semibold text-center truncate mb-2 ${
+                        isActive
+                          ? "text-lg text-gray-900 dark:text-gray-100"
+                          : "text-base text-gray-500 dark:text-gray-500"
+                      }`}>
+                        {record.name}
+                      </h3>
 
-                            // Disable queries before navigation to release Firebase connections
-                            console.log('🟢 [ATTENDANCE] Disabling queries before navigation');
-                            setQueriesEnabled(false);
-                            await new Promise(resolve => setTimeout(resolve, 100));
+                      {/* Time - Secondary */}
+                      <p className="text-sm text-center text-muted-foreground mb-3">
+                        {format(new Date(record.checkInTime), "h:mm a")}
+                      </p>
 
-                            console.log('🟢 [ATTENDANCE] Calling router.push to:', `/dashboard/members/view/${record.userId}`);
-                            router.push(`/dashboard/members/view/${record.userId}`);
-                          }}
-                        >
-                          {isViewLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Users className="h-4 w-4" />
-                          )}
-                          <span>View</span>
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 h-9 text-sm px-3 gap-1.5 flex items-center justify-center hover:bg-green-50 hover:border-green-500 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400"
-                          disabled={isAnyLoading}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setLoadingState({ memberId: record.userId, action: 'renew' });
-                            setSelectedMember({
-                              id: record.userId,
-                              name: record.name,
-                              currentEndDate: record.membershipEnd || new Date().toISOString(),
-                            });
-                            setRenewOpen(true);
-                            // Reset loading after dialog opens
-                            setTimeout(() => setLoadingState(null), 500);
-                          }}
-                        >
-                          {isRenewLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <RefreshCw className="h-4 w-4" />
-                          )}
-                          <span>Renew</span>
-                        </Button>
-                      </div>
+                      {/* Days Remaining / Expired with Renew Button */}
+                      {(() => {
+                        // Support both membershipEnd and membershipEndDate for compatibility
+                        const membershipEndDate = record.membershipEnd || (record as any).membershipEndDate;
+                        const alertInfo = getMembershipAlertType(
+                          record.membershipStatus || 'active',
+                          membershipEndDate
+                        );
+                        const { daysRemaining } = alertInfo;
+
+                        if (daysRemaining === undefined) return null;
+
+                        let badgeText = '';
+                        let badgeVariant: 'default' | 'destructive' | 'secondary' | 'outline' = 'secondary';
+                        let badgeClassName = 'h-6 px-3 text-xs font-medium';
+
+                        if (daysRemaining < 0) {
+                          const daysExpired = Math.abs(daysRemaining);
+                          badgeText = `Expired ${daysExpired} ${daysExpired === 1 ? 'day' : 'days'} ago`;
+                          badgeVariant = 'destructive';
+                        } else if (daysRemaining === 0) {
+                          badgeText = 'Expires today';
+                          badgeVariant = 'destructive';
+                        } else if (daysRemaining === 1) {
+                          badgeText = '1 day left';
+                          badgeVariant = 'destructive';
+                          badgeClassName = 'h-6 px-3 text-xs font-medium bg-orange-500 text-white';
+                        } else if (daysRemaining <= 3) {
+                          badgeText = `${daysRemaining} days left`;
+                          badgeVariant = 'outline';
+                          badgeClassName = 'h-6 px-3 text-xs font-medium border-orange-500 text-orange-700';
+                        } else if (daysRemaining <= 7) {
+                          badgeText = `${daysRemaining} days left`;
+                          badgeVariant = 'secondary';
+                          badgeClassName = 'h-6 px-3 text-xs font-medium bg-blue-100 text-blue-700';
+                        } else {
+                          badgeText = `${daysRemaining} days left`;
+                          badgeVariant = 'secondary';
+                          badgeClassName = 'h-6 px-3 text-xs font-medium';
+                        }
+
+                        return (
+                          <div className="flex flex-col items-center gap-2 mb-3">
+                            <Badge variant={badgeVariant} className={badgeClassName}>
+                              {badgeText}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 px-3 text-xs gap-1.5 hover:bg-green-50 hover:border-green-500 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400"
+                              disabled={isRenewLoading}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setLoadingState({ memberId: record.userId, action: 'renew' });
+                                setSelectedMember({
+                                  id: record.userId,
+                                  name: record.name,
+                                  currentEndDate: record.membershipEnd || new Date().toISOString(),
+                                });
+                                setRenewOpen(true);
+                                // Reset loading after dialog opens
+                                setTimeout(() => setLoadingState(null), 500);
+                              }}
+                            >
+                              {isRenewLoading ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <RefreshCw className="h-3.5 w-3.5" />
+                              )}
+                              <span>Renew</span>
+                            </Button>
+                          </div>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
                 );
