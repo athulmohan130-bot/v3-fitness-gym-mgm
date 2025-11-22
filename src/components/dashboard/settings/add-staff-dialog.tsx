@@ -7,17 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UserPlus, Loader2 } from "lucide-react";
-import { useFirestore, useAuth } from "@/firebase";
-import { collection, addDoc, serverTimestamp, query, where, getDocs, setDoc, doc } from "firebase/firestore";
-import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import type { UserRole } from "@/lib/types";
 
 export function AddStaffDialog() {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const firestore = useFirestore();
-  const auth = useAuth();
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -32,92 +27,27 @@ export function AddStaffDialog() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!firestore || !auth) {
-      toast({
-        title: "Error",
-        description: "Services not available",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      // Check if username already exists
-      const usernameQuery = query(
-        collection(firestore, "users"),
-        where("username", "==", formData.username)
-      );
-      const usernameSnapshot = await getDocs(usernameQuery);
-
-      if (!usernameSnapshot.empty) {
-        toast({
-          title: "Error",
-          description: "Username already exists. Please choose a different username.",
-          variant: "destructive",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Create Firebase Auth account
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        formData.email,
-        formData.password
-      );
-      const userId = userCredential.user.uid;
-
-      // Create Firestore document with the same UID
-      const staffData = {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        role: formData.role,
-        // Authentication credentials (for username login fallback)
-        username: formData.username,
-        password: formData.password, // Stored for username-based auth
-        // Staff members don't have membership fields
-        membershipStatus: "active" as const,
-        membershipPlanId: "",
-        membershipPlan: "",
-        membershipStart: "",
-        membershipEnd: "",
-        renewalDate: "",
-        // Basic fields
-        gender: "Other" as const,
-        dateOfBirth: "",
-        age: 0,
-        joinDate: new Date().toISOString(),
-        address: "",
-        emergencyContact: {
-          name: "",
-          phone: "",
-          relation: "",
+      // Call the API route to create staff member using Firebase Admin SDK
+      const response = await fetch("/api/staff/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        // Physical details
-        heightCm: 0,
-        weightKg: 0,
-        bmi: 0,
-        fitnessGoal: "",
-        medicalConditions: [],
-        injuries: [],
-        // System fields
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        profileImageUrl: "",
-        biometricDeviceId: "",
-        paymentStatus: "paid" as const,
-        membershipHistory: [],
-      };
+        body: JSON.stringify(formData),
+      });
 
-      // Use setDoc with the Firebase Auth UID
-      await setDoc(doc(firestore, "users", userId), staffData);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to add staff member");
+      }
 
       toast({
         title: "Success",
-        description: `${formData.role === "admin" ? "Admin" : "Trainer"} added successfully`,
+        description: data.message || `${formData.role === "admin" ? "Admin" : "Trainer"} added successfully`,
       });
 
       // Reset form
@@ -133,19 +63,9 @@ export function AddStaffDialog() {
     } catch (error: any) {
       console.error("Error adding staff:", error);
 
-      let errorMessage = "Failed to add staff member. Please try again.";
-
-      if (error.code === "auth/email-already-in-use") {
-        errorMessage = "This email is already registered.";
-      } else if (error.code === "auth/invalid-email") {
-        errorMessage = "Invalid email address.";
-      } else if (error.code === "auth/weak-password") {
-        errorMessage = "Password is too weak. Please use a stronger password.";
-      }
-
       toast({
         title: "Error",
-        description: errorMessage,
+        description: error.message || "Failed to add staff member. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -198,13 +118,14 @@ export function AddStaffDialog() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email *</Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="john@example.com"
+                required
               />
             </div>
 

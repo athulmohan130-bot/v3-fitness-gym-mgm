@@ -726,7 +726,7 @@ export default function AttendancePage() {
                   placeholder="Search members..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 h-8 text-sm rounded-lg border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500/20"
+                  className="pl-8 h-8 text-sm rounded-lg border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 shadow-sm"
                 />
               </div>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -871,11 +871,11 @@ export default function AttendancePage() {
           {/* Desktop: Always Visible Stats - Compact */}
           <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-3">
             {/* Today's Attendance Card */}
-            <Card className="gradient-green-subtle border-0 overflow-hidden dark:bg-gray-800/95 dark:border-t dark:border-t-green-500">
+            <Card className="overflow-hidden">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Today's Attendance</p>
-                  <CheckCircle className="h-5 w-5 text-green-500/40 dark:text-green-500/30" />
+                  <CheckCircle className="h-5 w-5 text-muted-foreground/40" />
                 </div>
                 <div className="flex items-baseline gap-1.5 mb-1">
                   <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{attendanceStats.totalCheckedIn}</p>
@@ -888,11 +888,11 @@ export default function AttendancePage() {
             </Card>
 
             {/* Total Check-ins Card */}
-            <Card className="gradient-blue-subtle border-0 overflow-hidden dark:bg-gray-800/95 dark:border-t dark:border-t-blue-500">
+            <Card className="overflow-hidden">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Total Check-ins</p>
-                  <BarChart className="h-5 w-5 text-blue-500/40 dark:text-blue-500/30" />
+                  <BarChart className="h-5 w-5 text-muted-foreground/40" />
                 </div>
                 <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">{attendanceStats.totalCheckedIn}</p>
                 <p className="text-[10px] text-gray-500 dark:text-gray-500">
@@ -902,11 +902,11 @@ export default function AttendancePage() {
             </Card>
 
             {/* Peak Hour Card */}
-            <Card className="gradient-purple-subtle border-0 overflow-hidden dark:bg-gray-800/95 dark:border-t dark:border-t-purple-500">
+            <Card className="overflow-hidden">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Peak Hour</p>
-                  <Clock className="h-5 w-5 text-purple-500/40 dark:text-purple-500/30" />
+                  <Clock className="h-5 w-5 text-muted-foreground/40" />
                 </div>
                 <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
                   {attendanceStats.peakHour || "-"}
@@ -918,11 +918,11 @@ export default function AttendancePage() {
             </Card>
 
             {/* Avg Daily Attendance Card */}
-            <Card className="gradient-orange-subtle border-0 overflow-hidden dark:bg-gray-800/95 dark:border-t dark:border-t-orange-500">
+            <Card className="overflow-hidden">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Avg Daily</p>
-                  <TrendingUp className="h-5 w-5 text-orange-500/40 dark:text-orange-500/30" />
+                  <TrendingUp className="h-5 w-5 text-muted-foreground/40" />
                 </div>
                 <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">{attendanceStats.totalCheckedIn}</p>
                 <p className="text-[10px] text-gray-500 dark:text-gray-500">
