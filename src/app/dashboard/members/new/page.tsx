@@ -12,7 +12,7 @@ import Link from "next/link";
 
 export default function NewMemberPage() {
   const firestore = useFirestore();
-  
+
   const plansQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'membershipPlans'));
@@ -22,13 +22,13 @@ export default function NewMemberPage() {
 
   if (isLoading) {
     return (
-        <div className="space-y-6">
-            <div>
-                <Skeleton className="h-8 w-1/4" />
-                <Skeleton className="h-4 w-1/2 mt-2" />
-            </div>
-            <Skeleton className="h-[600px] w-full" />
+      <div className="space-y-6">
+        <div>
+          <Skeleton className="h-8 w-1/4" />
+          <Skeleton className="h-4 w-1/2 mt-2" />
         </div>
+        <Skeleton className="h-[600px] w-full" />
+      </div>
     );
   }
 
@@ -58,7 +58,7 @@ export default function NewMemberPage() {
       </Breadcrumb>
 
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold font-headline tracking-tight">Add New Member</h1>
+        <h1 className="text-xl md:text-2xl font-bold font-headline tracking-tight">Add New Member</h1>
         <p className="text-sm md:text-base text-muted-foreground mt-1">Fill out the form below to create a new member profile.</p>
       </div>
       <NewMemberForm plans={plans || []} />

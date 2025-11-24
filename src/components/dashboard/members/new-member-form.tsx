@@ -135,7 +135,7 @@ const STEPS = [
   },
   {
     id: "membership",
-    title: "Membership & Payment",
+    title: "Membership",
     description: "Choose a plan and process payment",
     fields: ["membershipPlanId", "joinDate", "paidAmount", "paymentMethod", "sendReceipt", "partialPaymentReason"],
   },
@@ -548,10 +548,6 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
     },
     onSuccess: async (data, variables) => {
       const fullName = `${variables.firstName} ${variables.lastName}`;
-      toast({
-        title: "Member Profile Created!",
-        description: `${fullName}'s profile has been created successfully.`,
-      });
 
       // Sync to Firebase Realtime Database for local server
       if (data && realtimeDb) {
@@ -599,7 +595,37 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
       queryClient.invalidateQueries({ queryKey: ["revenueSummary"] });
       queryClient.invalidateQueries({ queryKey: ["recentUsersDashboard"] });
       queryClient.invalidateQueries({ queryKey: ["activityLogs"] });
-      router.push("/dashboard/members");
+
+      // Show success toast with action buttons
+      toast({
+        title: "Member Profile Created!",
+        description: `${fullName}'s profile has been created successfully.`,
+        action: (
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                // Reset form and stay on page to add another member
+                form.reset();
+                setCurrentStep(0);
+                if (stream) {
+                  stream.getTracks().forEach((track) => track.stop());
+                  setStream(null);
+                }
+              }}
+            >
+              Add Another
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => router.push("/dashboard/members")}
+            >
+              View All
+            </Button>
+          </div>
+        ),
+      });
     },
     onError: (error) => {
       console.error("Error creating member:", error);
@@ -624,7 +650,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
   function onFormError(errors: any) {
     // Find the first field with an error
     const firstErrorField = Object.keys(errors)[0] as keyof z.infer<typeof formSchema>;
-    
+
     // Find the step corresponding to that field
     const stepIndex = STEPS.findIndex(step => step.fields.includes(firstErrorField));
 
@@ -672,10 +698,13 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
   );
 
   const paidAmount = form.watch("paidAmount");
-  
+
+  // State to track if registration fee should be included
+  const [includeRegistrationFee, setIncludeRegistrationFee] = useState(true);
+
   // Calculate total amount including registration fee for new members
-  const totalAmount = selectedPlan ? selectedPlan.price + (selectedPlan.registrationFee || 0) : 0;
-  
+  const totalAmount = selectedPlan ? selectedPlan.price + (includeRegistrationFee ? (selectedPlan.registrationFee || 0) : 0) : 0;
+
   useEffect(() => {
     if (selectedPlan && paidAmount > totalAmount) {
       form.setError("paidAmount", {
@@ -708,40 +737,23 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
       </div>
 
       {/* Step Preview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-5 gap-3 mb-6">
         {STEPS.map((step, index) => (
           <div
             key={step.id}
             className={cn(
-              "p-3 rounded-lg border text-center transition-all",
+              "p-2 rounded-lg border text-center transition-all",
               index === currentStep
                 ? "bg-primary text-primary-foreground border-primary shadow-sm"
                 : index < currentStep
-                ? "bg-green-50 border-green-200 text-green-700"
-                : "bg-muted/50 border-border text-muted-foreground"
+                  ? "bg-green-50 border-green-200 text-green-700"
+                  : "bg-muted/50 border-border text-muted-foreground"
             )}
           >
-            <div className="text-xs font-medium mb-1">Step {index + 1}</div>
-            <div className="text-sm font-semibold leading-tight">{step.title}</div>
+            <div className="text-[10px] font-medium mb-0.5">Step {index + 1}</div>
+            <div className="text-xs font-semibold leading-tight truncate px-1">{step.title}</div>
           </div>
         ))}
-      </div>
-
-      {/* Privacy Notice */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-        <div className="flex gap-3">
-          <div className="flex-shrink-0 mt-0.5">
-            <svg className="h-5 w-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div className="flex-1 text-sm">
-            <p className="font-medium text-blue-900 mb-1">Your data is secure</p>
-            <p className="text-blue-700 text-xs">
-              All information is encrypted and used solely for membership management. We never share your data with third parties.
-            </p>
-          </div>
-        </div>
       </div>
 
       <Form {...form}>
@@ -893,50 +905,105 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                 <FormField
                   control={form.control}
                   name="dateOfBirth"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Date of Birth (Optional)</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "dd/MM/yyyy")
-                              ) : (
-                                <span>e.g., 25/10/1995</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            captionLayout="dropdown-buttons"
-                            fromYear={1960}
-                            toYear={new Date().getFullYear()}
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            defaultMonth={field.value || new Date(2000, 0)}
-                            disabled={(date) =>
-                              date > new Date() || date < new Date("1900-01-01")
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormDescription className="text-xs">
-                        Optional - Click to open calendar or type date (DD/MM/YYYY format)
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const dayRef = useRef<HTMLInputElement>(null);
+                    const monthRef = useRef<HTMLInputElement>(null);
+                    const yearRef = useRef<HTMLInputElement>(null);
+
+                    const [day, setDay] = useState(
+                      field.value ? format(field.value, "dd") : ""
+                    );
+                    const [month, setMonth] = useState(
+                      field.value ? format(field.value, "MM") : ""
+                    );
+                    const [year, setYear] = useState(
+                      field.value ? format(field.value, "yyyy") : ""
+                    );
+
+                    const updateDate = (newDay: string, newMonth: string, newYear: string) => {
+                      // Clear if all fields are empty
+                      if (!newDay && !newMonth && !newYear) {
+                        field.onChange(undefined);
+                        return;
+                      }
+
+                      // Only try to create date if all fields have values
+                      if (newDay && newMonth && newYear && newYear.length === 4) {
+                        const dayNum = parseInt(newDay, 10);
+                        const monthNum = parseInt(newMonth, 10) - 1; // months are 0-indexed
+                        const yearNum = parseInt(newYear, 10);
+
+                        if (!isNaN(dayNum) && !isNaN(monthNum) && !isNaN(yearNum)) {
+                          const date = new Date(yearNum, monthNum, dayNum);
+                          // Validate the date is valid and not in the future
+                          if (date.getDate() === dayNum &&
+                            date.getMonth() === monthNum &&
+                            date.getFullYear() === yearNum &&
+                            date <= new Date()) {
+                            field.onChange(date);
+                          }
+                        }
+                      }
+                    };
+
+                    return (
+                      <FormItem>
+                        <FormLabel>Date of Birth (Optional)</FormLabel>
+                        <FormControl>
+                          <div className="flex gap-2">
+                            <Input
+                              ref={dayRef}
+                              placeholder="DD"
+                              value={day}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 2);
+                                setDay(value);
+                                updateDate(value, month, year);
+                                // Auto-focus to month when day is complete
+                                if (value.length === 2) {
+                                  monthRef.current?.focus();
+                                }
+                              }}
+                              className="w-16 text-center px-2 h-9"
+                              maxLength={2}
+                            />
+                            <Input
+                              ref={monthRef}
+                              placeholder="MM"
+                              value={month}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 2);
+                                setMonth(value);
+                                updateDate(day, value, year);
+                                // Auto-focus to year when month is complete
+                                if (value.length === 2) {
+                                  yearRef.current?.focus();
+                                }
+                              }}
+                              className="w-16 text-center px-2 h-9"
+                              maxLength={2}
+                            />
+                            <Input
+                              ref={yearRef}
+                              placeholder="YYYY"
+                              value={year}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                                setYear(value);
+                                updateDate(day, month, value);
+                              }}
+                              className="w-24 text-center px-2 h-9"
+                              maxLength={4}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormDescription className="text-xs">
+                          Optional - Enter day (1-31), month (1-12), and year (e.g., 1995)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
                 <FormField
                   control={form.control}
@@ -1114,43 +1181,44 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="membershipPlanId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel><RequiredLabel>Membership Plan</RequiredLabel></FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a plan" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {plans
-                              .filter((plan) => plan.status === "active")
-                              .sort((a, b) => {
-                                // Plans without type go to the end
-                                if (!a.type && !b.type) return 0;
-                                if (!a.type) return 1;
-                                if (!b.type) return -1;
-                                return a.type.localeCompare(b.type);
-                              })
-                              .map((plan) => (
-                                <SelectItem key={plan.id} value={plan.id}>
-                                  {plan.name} ({plan.type}) — ₹{plan.price} for {plan.durationInDays} days
-                                </SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="membershipPlanId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel><RequiredLabel>Membership Plan</RequiredLabel></FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select a plan" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {plans
+                            .filter((plan) => plan.status === "active")
+                            .sort((a, b) => {
+                              // Plans without type go to the end
+                              if (!a.type && !b.type) return 0;
+                              if (!a.type) return 1;
+                              if (!b.type) return -1;
+                              return a.type.localeCompare(b.type);
+                            })
+                            .map((plan) => (
+                              <SelectItem key={plan.id} value={plan.id}>
+                                {plan.name} ({plan.type}) — ₹{plan.price} for {plan.durationInDays} days
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
@@ -1212,8 +1280,21 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                     </div>
                     {selectedPlan.registrationFee > 0 && (
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-muted-foreground">Registration Fee:</span>
-                        <span className="font-semibold">₹{selectedPlan.registrationFee}</span>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id="includeRegistrationFee"
+                            checked={includeRegistrationFee}
+                            onChange={(e) => setIncludeRegistrationFee(e.target.checked)}
+                            className="h-4 w-4 rounded border-gray-300 cursor-pointer"
+                          />
+                          <label htmlFor="includeRegistrationFee" className="text-sm text-muted-foreground cursor-pointer">
+                            Registration Fee:
+                          </label>
+                        </div>
+                        <span className={cn("font-semibold", !includeRegistrationFee && "line-through text-muted-foreground")}>
+                          ₹{selectedPlan.registrationFee}
+                        </span>
                       </div>
                     )}
                     <div className="flex justify-between items-center mb-2 pt-2 border-t">
@@ -1236,8 +1317,8 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                               paidAmount > totalAmount
                                 ? "text-destructive"
                                 : paidAmount === totalAmount
-                                ? "text-green-600"
-                                : "text-orange-600"
+                                  ? "text-green-600"
+                                  : "text-orange-600"
                             )}
                           >
                             {paidAmount >= totalAmount
@@ -1714,7 +1795,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                         ₹{plans?.find(p => p.id === form.watch("membershipPlanId"))?.price || 0}
                       </p>
                     </div>
-                    {(plans?.find(p => p.id === form.watch("membershipPlanId"))?.registrationFee || 0) > 0 && (
+                    {includeRegistrationFee && (plans?.find(p => p.id === form.watch("membershipPlanId"))?.registrationFee || 0) > 0 && (
                       <div>
                         <span className="text-muted-foreground text-xs">Registration Fee</span>
                         <p className="font-medium">
@@ -1725,7 +1806,7 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                     <div>
                       <span className="text-muted-foreground text-xs">Total Amount</span>
                       <p className="font-bold text-primary">
-                        ₹{(plans?.find(p => p.id === form.watch("membershipPlanId"))?.price || 0) + (plans?.find(p => p.id === form.watch("membershipPlanId"))?.registrationFee || 0)}
+                        ₹{(plans?.find(p => p.id === form.watch("membershipPlanId"))?.price || 0) + (includeRegistrationFee ? (plans?.find(p => p.id === form.watch("membershipPlanId"))?.registrationFee || 0) : 0)}
                       </p>
                     </div>
                     <div>
@@ -1740,13 +1821,13 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
                       <span className="text-muted-foreground text-xs">Balance Status</span>
                       <p className={cn(
                         "font-medium",
-                        (form.watch("paidAmount") || 0) >= ((plans?.find(p => p.id === form.watch("membershipPlanId"))?.price || 0) + (plans?.find(p => p.id === form.watch("membershipPlanId"))?.registrationFee || 0))
+                        (form.watch("paidAmount") || 0) >= ((plans?.find(p => p.id === form.watch("membershipPlanId"))?.price || 0) + (includeRegistrationFee ? (plans?.find(p => p.id === form.watch("membershipPlanId"))?.registrationFee || 0) : 0))
                           ? "text-green-600"
                           : "text-orange-600"
                       )}>
-                        {(form.watch("paidAmount") || 0) >= ((plans?.find(p => p.id === form.watch("membershipPlanId"))?.price || 0) + (plans?.find(p => p.id === form.watch("membershipPlanId"))?.registrationFee || 0))
+                        {(form.watch("paidAmount") || 0) >= ((plans?.find(p => p.id === form.watch("membershipPlanId"))?.price || 0) + (includeRegistrationFee ? (plans?.find(p => p.id === form.watch("membershipPlanId"))?.registrationFee || 0) : 0))
                           ? "Fully Paid ✓"
-                          : `₹${((plans?.find(p => p.id === form.watch("membershipPlanId"))?.price || 0) + (plans?.find(p => p.id === form.watch("membershipPlanId"))?.registrationFee || 0)) - (form.watch("paidAmount") || 0)} Outstanding`
+                          : `₹${((plans?.find(p => p.id === form.watch("membershipPlanId"))?.price || 0) + (includeRegistrationFee ? (plans?.find(p => p.id === form.watch("membershipPlanId"))?.registrationFee || 0) : 0)) - (form.watch("paidAmount") || 0)} Outstanding`
                         }
                       </p>
                     </div>

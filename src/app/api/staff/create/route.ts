@@ -2,41 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import admin from "firebase-admin";
 import type { UserRole } from "@/lib/types";
 
+import { initAdmin } from "@/lib/firebase-admin";
+
 // Initialize Firebase Admin SDK
-if (!admin.apps.length) {
-  try {
-    let credential;
+initAdmin();
 
-    if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
-      // Use environment variables (production/Vercel)
-      credential = admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-      });
-    } else {
-      // Use JSON file (development only)
-      // Using dynamic import to avoid module resolution errors in production
-      let serviceAccountPath;
-      try {
-        serviceAccountPath = require.resolve("@/serviceAccountKey.json");
-      } catch {
-        throw new Error(
-          "Firebase Admin credentials not found. Please set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY environment variables."
-        );
-      }
-      const serviceAccount = require(serviceAccountPath);
-      credential = admin.credential.cert(serviceAccount);
-    }
-
-    admin.initializeApp({
-      credential,
-    });
-  } catch (error) {
-    console.error("Error initializing Firebase Admin:", error);
-    throw error;
-  }
-}
 
 export async function POST(request: NextRequest) {
   try {

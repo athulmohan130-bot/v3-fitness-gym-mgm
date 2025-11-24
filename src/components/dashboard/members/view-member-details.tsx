@@ -99,7 +99,7 @@ const DetailItem = ({
         </div>
       );
     }
-    
+
     if (type === "textarea") {
       return (
         <div className="space-y-1">
@@ -113,7 +113,7 @@ const DetailItem = ({
         </div>
       );
     }
-    
+
     return (
       <div className="space-y-1">
         <Label className="text-sm font-medium text-muted-foreground">{label}</Label>
@@ -126,7 +126,7 @@ const DetailItem = ({
       </div>
     );
   }
-  
+
   return (
     <div>
       <p className="text-sm font-medium text-muted-foreground">{label}</p>
@@ -159,13 +159,13 @@ export function ViewMemberDetails({
   const [freezeEndDate, setFreezeEndDate] = useState<Date | undefined>();
   const [isFreezing, setIsFreezing] = useState(false);
   const [isProfilePicOpen, setIsProfilePicOpen] = useState(false);
-  
+
   // Section edit states
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
   const [isEditingHealth, setIsEditingHealth] = useState(false);
   const [isEditingEmergency, setIsEditingEmergency] = useState(false);
   const [isSavingSection, setIsSavingSection] = useState(false);
-  
+
   // Edited data for each section
   const [editedPersonal, setEditedPersonal] = useState({
     name: member.name,
@@ -177,7 +177,7 @@ export function ViewMemberDetails({
     address: member.address,
     biometricDeviceId: member.biometricDeviceId,
   });
-  
+
   const [editedHealth, setEditedHealth] = useState({
     heightCm: member.heightCm,
     weightKg: member.weightKg,
@@ -185,11 +185,11 @@ export function ViewMemberDetails({
     fitnessGoal: member.fitnessGoal,
     medicalConditions: member.medicalConditions,
   });
-  
+
   const [editedEmergency, setEditedEmergency] = useState({
     emergencyContact: member.emergencyContact,
   });
-  
+
   // Profile picture edit
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [showProfileOptions, setShowProfileOptions] = useState(false);
@@ -197,7 +197,7 @@ export function ViewMemberDetails({
   const [isUploading, setIsUploading] = useState(false);
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const [stream, setStream] = React.useState<MediaStream | null>(null);
-  
+
   // Reset edited data when member changes
   React.useEffect(() => {
     setEditedPersonal({
@@ -235,25 +235,25 @@ export function ViewMemberDetails({
     }
 
     const today = new Date();
-    
+
     // Find all plans to check for continuous coverage
     const allPlans = (availablePlans || []).map(p => ({
       start: new Date(p.membershipStart),
       end: new Date(p.membershipEnd),
     })).sort((a, b) => a.start.getTime() - b.start.getTime());
-    
+
     // Find the earliest start date of a plan that covers today or starts in the future
     let effectiveStartDate = new Date(plan.membershipStart);
     let effectiveEndDate = new Date(plan.membershipEnd);
-    
+
     // Check if there's an active plan (covers today)
     const activePlan = allPlans.find(p => today >= p.start && today <= p.end);
-    
+
     if (activePlan) {
       // Member has active coverage - find the continuous range
       effectiveStartDate = activePlan.start;
       effectiveEndDate = activePlan.end;
-      
+
       // Check for consecutive/overlapping future plans
       let currentEnd = activePlan.end;
       for (const p of allPlans) {
@@ -367,7 +367,7 @@ export function ViewMemberDetails({
     setIsSavingSection(true);
     try {
       await onUpdateMember(editedPersonal);
-      
+
       // Log activity
       if (firestore && adminUser) {
         await logMemberUpdated(firestore, {
@@ -378,7 +378,7 @@ export function ViewMemberDetails({
           performedByName: adminUser.name || adminUser.email || "Admin",
         });
       }
-      
+
       setIsEditingPersonal(false);
     } catch (error) {
       // Error is handled in parent
@@ -405,7 +405,7 @@ export function ViewMemberDetails({
     setIsSavingSection(true);
     try {
       await onUpdateMember(editedHealth);
-      
+
       // Log activity
       if (firestore && adminUser) {
         await logMemberUpdated(firestore, {
@@ -416,7 +416,7 @@ export function ViewMemberDetails({
           performedByName: adminUser.name || adminUser.email || "Admin",
         });
       }
-      
+
       setIsEditingHealth(false);
     } catch (error) {
       // Error is handled in parent
@@ -440,7 +440,7 @@ export function ViewMemberDetails({
     setIsSavingSection(true);
     try {
       await onUpdateMember(editedEmergency);
-      
+
       // Log activity
       if (firestore && adminUser) {
         await logMemberUpdated(firestore, {
@@ -451,7 +451,7 @@ export function ViewMemberDetails({
           performedByName: adminUser.name || adminUser.email || "Admin",
         });
       }
-      
+
       setIsEditingEmergency(false);
     } catch (error) {
       // Error is handled in parent
@@ -619,8 +619,8 @@ export function ViewMemberDetails({
                 Personal Information
               </CardTitle>
               {!isEditingPersonal ? (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => setIsEditingPersonal(true)}
                 >
@@ -629,8 +629,8 @@ export function ViewMemberDetails({
                 </Button>
               ) : (
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={handleCancelPersonal}
                     disabled={isSavingSection}
@@ -638,7 +638,7 @@ export function ViewMemberDetails({
                     <XIcon className="h-4 w-4 mr-2" />
                     Cancel
                   </Button>
-                  <Button 
+                  <Button
                     size="sm"
                     onClick={handleSavePersonal}
                     disabled={isSavingSection}
@@ -650,21 +650,21 @@ export function ViewMemberDetails({
               )}
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <DetailItem 
-                label="Full Name" 
+              <DetailItem
+                label="Full Name"
                 value={isEditingPersonal ? editedPersonal.name : member.name}
                 isEditable={isEditingPersonal}
                 onValueChange={(val) => setEditedPersonal({ ...editedPersonal, name: val })}
               />
-              <DetailItem 
-                label="Email Address" 
+              <DetailItem
+                label="Email Address"
                 value={isEditingPersonal ? editedPersonal.email : member.email}
                 isEditable={isEditingPersonal}
                 type="email"
                 onValueChange={(val) => setEditedPersonal({ ...editedPersonal, email: val })}
               />
-              <DetailItem 
-                label="Phone Number" 
+              <DetailItem
+                label="Phone Number"
                 value={isEditingPersonal ? editedPersonal.phone : member.phone}
                 isEditable={isEditingPersonal}
                 type="tel"
@@ -672,13 +672,13 @@ export function ViewMemberDetails({
               />
               <DetailItem
                 label="Date of Birth"
-                value={isEditingPersonal ? editedPersonal.dateOfBirth : format(parseISO(member.dateOfBirth), "PPP")}
+                value={isEditingPersonal ? editedPersonal.dateOfBirth : (member.dateOfBirth ? format(parseISO(member.dateOfBirth), "PPP") : "N/A")}
                 isEditable={isEditingPersonal}
                 type="date"
                 onValueChange={(val) => setEditedPersonal({ ...editedPersonal, dateOfBirth: val })}
               />
-              <DetailItem 
-                label="Gender" 
+              <DetailItem
+                label="Gender"
                 value={isEditingPersonal ? editedPersonal.gender : member.gender}
                 isEditable={isEditingPersonal}
                 type="select"
@@ -689,16 +689,16 @@ export function ViewMemberDetails({
                 ]}
                 onValueChange={(val) => setEditedPersonal({ ...editedPersonal, gender: val })}
               />
-              <DetailItem 
-                label="Age" 
-                value={isEditingPersonal ? `${editedPersonal.age}` : `${member.age}`}
+              <DetailItem
+                label="Age"
+                value={isEditingPersonal ? `${editedPersonal.age || 'Not defined'}` : (member.age ? `${member.age}` : 'Not defined')}
                 isEditable={isEditingPersonal}
                 type="number"
                 onValueChange={(val) => setEditedPersonal({ ...editedPersonal, age: parseInt(val) || 0 })}
               />
               <div className="md:col-span-2">
-                <DetailItem 
-                  label="Address" 
+                <DetailItem
+                  label="Address"
                   value={isEditingPersonal ? editedPersonal.address : member.address}
                   isEditable={isEditingPersonal}
                   type="textarea"
@@ -715,8 +715,8 @@ export function ViewMemberDetails({
                 Health & Fitness
               </CardTitle>
               {!isEditingHealth ? (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => setIsEditingHealth(true)}
                 >
@@ -725,8 +725,8 @@ export function ViewMemberDetails({
                 </Button>
               ) : (
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={handleCancelHealth}
                     disabled={isSavingSection}
@@ -734,7 +734,7 @@ export function ViewMemberDetails({
                     <XIcon className="h-4 w-4 mr-2" />
                     Cancel
                   </Button>
-                  <Button 
+                  <Button
                     size="sm"
                     onClick={handleSaveHealth}
                     disabled={isSavingSection}
@@ -746,15 +746,15 @@ export function ViewMemberDetails({
               )}
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <DetailItem 
-                label="Height" 
+              <DetailItem
+                label="Height"
                 value={isEditingHealth ? `${editedHealth.heightCm}` : `${member.heightCm}`}
                 isEditable={isEditingHealth}
                 type="number"
                 onValueChange={(val) => setEditedHealth({ ...editedHealth, heightCm: parseFloat(val) || 0 })}
               />
-              <DetailItem 
-                label="Weight" 
+              <DetailItem
+                label="Weight"
                 value={isEditingHealth ? `${editedHealth.weightKg}` : `${member.weightKg}`}
                 isEditable={isEditingHealth}
                 type="number"
@@ -797,8 +797,8 @@ export function ViewMemberDetails({
                 Emergency Contact
               </CardTitle>
               {!isEditingEmergency ? (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => setIsEditingEmergency(true)}
                 >
@@ -807,8 +807,8 @@ export function ViewMemberDetails({
                 </Button>
               ) : (
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={handleCancelEmergency}
                     disabled={isSavingSection}
@@ -816,7 +816,7 @@ export function ViewMemberDetails({
                     <XIcon className="h-4 w-4 mr-2" />
                     Cancel
                   </Button>
-                  <Button 
+                  <Button
                     size="sm"
                     onClick={handleSaveEmergency}
                     disabled={isSavingSection}
@@ -854,7 +854,7 @@ export function ViewMemberDetails({
           <Card>
             <CardHeader className="items-center text-center relative">
               <div className="flex flex-col items-center gap-3 mb-4">
-                <div 
+                <div
                   className="relative inline-block group"
                   onMouseEnter={() => setShowProfileOptions(true)}
                   onMouseLeave={() => setShowProfileOptions(false)}
@@ -1019,8 +1019,8 @@ export function ViewMemberDetails({
                             history.paidAmount >= totalAmount
                               ? "paid"
                               : history.paidAmount > 0
-                              ? "partial"
-                              : "pending";
+                                ? "partial"
+                                : "pending";
 
                           const paymentProgress = totalAmount > 0 ? (history.paidAmount / totalAmount) * 100 : 100;
                           const totalFrozenDays = history.freezeHistory?.reduce((acc: number, freeze: any) => acc + freeze.freezeDuration, 0) || 0;
