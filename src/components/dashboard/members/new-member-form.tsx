@@ -596,36 +596,14 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
       queryClient.invalidateQueries({ queryKey: ["recentUsersDashboard"] });
       queryClient.invalidateQueries({ queryKey: ["activityLogs"] });
 
-      // Show success toast with action buttons
+      // Show success toast
       toast({
         title: "Member Profile Created!",
         description: `${fullName}'s profile has been created successfully.`,
-        action: (
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                // Reset form and stay on page to add another member
-                form.reset();
-                setCurrentStep(0);
-                if (stream) {
-                  stream.getTracks().forEach((track) => track.stop());
-                  setStream(null);
-                }
-              }}
-            >
-              Add Another
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => router.push("/dashboard/members")}
-            >
-              View All
-            </Button>
-          </div>
-        ),
       });
+
+      // Automatically navigate to members list
+      router.push("/dashboard/members");
     },
     onError: (error) => {
       console.error("Error creating member:", error);
