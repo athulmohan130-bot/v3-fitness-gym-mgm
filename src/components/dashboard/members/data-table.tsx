@@ -31,6 +31,13 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ChevronDown, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -113,6 +120,24 @@ export function DataTable<TData, TValue>({
             }}
             className="w-full sm:max-w-sm"
           />
+          {table.getColumn("membershipStatus") && (
+            <Select
+              value={(table.getColumn("membershipStatus")?.getFilterValue() as string) ?? "all"}
+              onValueChange={(value) => {
+                table.getColumn("membershipStatus")?.setFilterValue(value === "all" ? undefined : value);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="expired">Expired</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="w-full sm:w-auto sm:ml-auto">
@@ -151,9 +176,9 @@ export function DataTable<TData, TValue>({
                         {header.isPlaceholder
                           ? null
                           : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                       </TableHead>
                     );
                   })}
@@ -200,7 +225,7 @@ export function DataTable<TData, TValue>({
             </TableBody>
           </Table>
         </div>
-        
+
         {/* Pagination Controls */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t">
           <div className="text-sm text-muted-foreground">
@@ -211,7 +236,7 @@ export function DataTable<TData, TValue>({
             )}{" "}
             of {table.getFilteredRowModel().rows.length} entries
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
@@ -229,13 +254,13 @@ export function DataTable<TData, TValue>({
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            
+
             <div className="flex items-center gap-1">
               <span className="text-sm font-medium">
                 Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
               </span>
             </div>
-            
+
             <Button
               variant="outline"
               size="sm"

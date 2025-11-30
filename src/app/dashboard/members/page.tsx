@@ -147,7 +147,7 @@ export default function MembersPage() {
 
           // Get the latest membership history entry (most recent by createdAt)
           const latestHistory = historySnap.docs[0]?.data();
-          
+
           // For display purposes, find the plan with the latest end date
           // This ensures we show the actual expiry date considering future plans
           const now = new Date();
@@ -184,15 +184,20 @@ export default function MembersPage() {
           const endDate = safeParseDate(planData?.membershipEnd);
 
           // Update main user document with latest membershipEnd if it's different
+          // Update main user document with latest membershipEnd and status if different
           const latestMembershipEnd = planData?.membershipEnd;
-          if (latestMembershipEnd && user.membershipEnd !== latestMembershipEnd) {
+          if (
+            (latestMembershipEnd && user.membershipEnd !== latestMembershipEnd) ||
+            user.membershipStatus !== membershipStatus
+          ) {
             // Async update to main user document - don't await to avoid blocking
             updateDoc(doc(firestore, "users", user.id), {
-              membershipEnd: latestMembershipEnd,
+              membershipEnd: latestMembershipEnd || user.membershipEnd,
               membershipStart: planData?.membershipStart || user.membershipStart,
               membershipPlanId: planData?.membershipPlanId || user.membershipPlanId,
+              membershipStatus: membershipStatus,
             }).catch((error: any) => {
-              console.warn('Failed to sync membershipEnd to main user document:', error);
+              console.warn('Failed to sync membership data to main user document:', error);
             });
           }
 
@@ -519,8 +524,8 @@ export default function MembersPage() {
                                 member.membershipStatus === "active"
                                   ? "default"
                                   : member.membershipStatus === "expired"
-                                  ? "destructive"
-                                  : "secondary"
+                                    ? "destructive"
+                                    : "secondary"
                               }
                               className="text-xs"
                             >
@@ -531,29 +536,29 @@ export default function MembersPage() {
                         </div>
                       </div>
 
-                    {/* Member Details */}
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <CreditCard className="h-4 w-4 shrink-0" />
-                        <span className="font-medium">
-                          {member.planName || "No Plan"}
-                        </span>
-                      </div>
-                      {member.membershipEnd && (
+                      {/* Member Details */}
+                      <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2 text-muted-foreground">
-                          <Calendar className="h-4 w-4 shrink-0" />
-                          <span className="text-xs">
-                            Expires:{" "}
-                            {format(
-                              new Date(member.membershipEnd),
-                              "MMM dd, yyyy"
-                            )}
+                          <CreditCard className="h-4 w-4 shrink-0" />
+                          <span className="font-medium">
+                            {member.planName || "No Plan"}
                           </span>
                         </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                        {member.membershipEnd && (
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Calendar className="h-4 w-4 shrink-0" />
+                            <span className="text-xs">
+                              Expires:{" "}
+                              {format(
+                                new Date(member.membershipEnd),
+                                "MMM dd, yyyy"
+                              )}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
                 );
               })
             ) : (
@@ -563,7 +568,7 @@ export default function MembersPage() {
                 </CardContent>
               </Card>
             )}
-            
+
             {/* Mobile Pagination Controls */}
             {mobileData.totalPages > 1 && (
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-card rounded-lg border">
@@ -575,7 +580,7 @@ export default function MembersPage() {
                   )}{" "}
                   of {mobileData.totalCount} members
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   <Button
                     variant="outline"
@@ -593,13 +598,13 @@ export default function MembersPage() {
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  
+
                   <div className="flex items-center gap-1">
                     <span className="text-sm font-medium">
                       Page {mobilePageIndex + 1} of {mobileData.totalPages}
                     </span>
                   </div>
-                  
+
                   <Button
                     variant="outline"
                     size="sm"
