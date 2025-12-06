@@ -157,6 +157,7 @@ export function RenewPlanDialog({
             month: format(start, 'yyyy-MM'),
             transactionId: `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
             handledBy: adminUser?.name || adminUser?.email || "Admin",
+            type: "renewal", // Mark as renewal payment
           });
         }
 

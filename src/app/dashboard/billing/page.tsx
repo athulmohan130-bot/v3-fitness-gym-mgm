@@ -42,6 +42,7 @@ interface Payment {
   month: string;
   transactionId: string;
   handledBy: string;
+  type?: "registration" | "renewal"; // Payment type
 }
 
 interface GymUser {
@@ -70,7 +71,7 @@ export default function PaymentHistoryPage() {
 
   // State for filters
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterMode, setFilterMode] = useState<string>("all");
+  const [filterType, setFilterType] = useState<string>("all");
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [dateRangeFilter, setDateRangeFilter] = useState<{ from: Date; to: Date } | null>(null);
@@ -87,14 +88,14 @@ export default function PaymentHistoryPage() {
   // Clear all filters
   const clearAllFilters = () => {
     setSearchQuery("");
-    setFilterMode("all");
+    setFilterType("all");
     setSelectedMonth("all");
     setSelectedDate(undefined);
     setDateRangeFilter(null);
   };
 
   // Check if any filters are active
-  const hasActiveFilters = searchQuery !== "" || filterMode !== "all" || selectedMonth !== "all" || selectedDate !== undefined || dateRangeFilter !== null;
+  const hasActiveFilters = searchQuery !== "" || filterType !== "all" || selectedMonth !== "all" || selectedDate !== undefined || dateRangeFilter !== null;
 
   // Query all payments
   const paymentsQuery = useMemoFirebase(() => {
@@ -148,9 +149,12 @@ export default function PaymentHistoryPage() {
       });
     }
 
-    // Filter by payment mode
-    if (filterMode !== "all") {
-      filtered = filtered.filter(payment => payment.mode.toLowerCase() === filterMode);
+    // Filter by payment type
+    if (filterType !== "all") {
+      filtered = filtered.filter(payment => {
+        const paymentType = payment.type || "renewal"; // Default to renewal if type is missing
+        return paymentType === filterType;
+      });
     }
 
     // Filter by month
@@ -198,7 +202,7 @@ export default function PaymentHistoryPage() {
     }
 
     return filtered;
-  }, [payments, searchQuery, filterMode, selectedMonth, selectedDate, dateRangeFilter, userMap, sortBy, sortOrder]);
+  }, [payments, searchQuery, filterType, selectedMonth, selectedDate, dateRangeFilter, userMap, sortBy, sortOrder]);
 
   // Paginate payments
   const totalPages = Math.ceil(filteredPayments.length / pageSize);
@@ -211,7 +215,7 @@ export default function PaymentHistoryPage() {
   // Reset to page 1 when filters change
   useMemo(() => {
     setCurrentPage(1);
-  }, [searchQuery, filterMode, selectedMonth]);
+  }, [searchQuery, filterType, selectedMonth]);
 
   // Calculate summary statistics
   const stats = useMemo(() => {
@@ -253,7 +257,7 @@ export default function PaymentHistoryPage() {
   const handleExport = () => {
     if (!filteredPayments.length) return;
 
-    const headers = ["Date", "Time", "Member Name", "Email", "Amount", "Mode", "Status", "Month"];
+    const headers = ["Date", "Time", "Member Name", "Email", "Amount", "Mode", "Type", "Status", "Month"];
     const rows = filteredPayments.map(payment => {
       const user = userMap.get(payment.userId);
       const date = parsePaymentDate(payment.paymentDate);
@@ -264,6 +268,7 @@ export default function PaymentHistoryPage() {
         user?.email || "N/A",
         payment.amount,
         payment.mode,
+        payment.type || "Renewal",
         payment.status,
         payment.month,
       ];
@@ -536,16 +541,15 @@ export default function PaymentHistoryPage() {
                 </PopoverContent>
               </Popover>
 
-              {/* Payment Mode Filter */}
-              <Select value={filterMode} onValueChange={setFilterMode}>
+              {/* Payment Type Filter */}
+              <Select value={filterType} onValueChange={setFilterType}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Payment Mode" />
+                  <SelectValue placeholder="Payment Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Modes</SelectItem>
-                  <SelectItem value="upi">UPI</SelectItem>
-                  <SelectItem value="card">Card</SelectItem>
-                  <SelectItem value="cash">Cash</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="registration">Registration</SelectItem>
+                  <SelectItem value="renewal">Renewal</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -608,14 +612,14 @@ export default function PaymentHistoryPage() {
                     </Button>
                   </Badge>
                 )}
-                {filterMode !== "all" && (
+                {filterType !== "all" && (
                   <Badge variant="secondary" className="gap-1 pr-1">
-                    Mode: {filterMode.toUpperCase()}
+                    Type: {filterType.charAt(0).toUpperCase() + filterType.slice(1)}
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-4 w-4 p-0 hover:bg-transparent"
-                      onClick={() => setFilterMode("all")}
+                      onClick={() => setFilterType("all")}
                     >
                       <X className="h-3 w-3" />
                     </Button>
@@ -731,6 +735,15 @@ export default function PaymentHistoryPage() {
                               {payment.mode}
                             </Badge>
                           </div>
+                          <div>
+                            <div className="text-muted-foreground text-xs mb-1">Type</div>
+                            <Badge 
+                              variant={(payment.type || "renewal") === "registration" ? "default" : "secondary"} 
+                              className="font-medium"
+                            >
+                              {(payment.type || "renewal").charAt(0).toUpperCase() + (payment.type || "renewal").slice(1)}
+                            </Badge>
+                          </div>
                         </div>
 
                         {/* Action Buttons */}
@@ -801,6 +814,7 @@ export default function PaymentHistoryPage() {
                       </Button>
                     </TableHead>
                     <TableHead>Mode</TableHead>
+                    <TableHead>Type</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -845,6 +859,16 @@ export default function PaymentHistoryPage() {
                         <TableCell>
                           <Badge variant="outline" className="font-medium">
                             {payment.mode}
+                          </Badge>
+                        </TableCell>
+
+                        {/* Payment Type */}
+                        <TableCell>
+                          <Badge 
+                            variant={(payment.type || "renewal") === "registration" ? "default" : "secondary"} 
+                            className="font-medium"
+                          >
+                            {(payment.type || "renewal").charAt(0).toUpperCase() + (payment.type || "renewal").slice(1)}
                           </Badge>
                         </TableCell>
 
