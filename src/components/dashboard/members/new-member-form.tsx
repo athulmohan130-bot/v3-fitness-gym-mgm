@@ -46,6 +46,7 @@ import { format, add } from "date-fns";
 import { useNotificationToast } from "@/hooks/use-notification-toast";
 import { logMemberAdded } from "@/lib/activity-logger";
 import { useRouter } from "next/navigation";
+import { compressImage, compressCanvas, getImageSize } from "@/lib/image-compression";
 import type { MembershipPlan } from "@/lib/types";
 import {
   Card,
@@ -256,18 +257,48 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
     };
   }, [stream]);
 
-  const capturePhoto = () => {
+  const capturePhoto = async () => {
     if (!videoRef.current || !canvasRef.current || !stream) return;
-    const canvas = canvasRef.current;
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    const ctx = canvas.getContext("2d");
-    ctx?.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-    const dataUri = canvas.toDataURL("image/png");
-    form.setValue("profilePicture", dataUri, { shouldValidate: true });
+    
+    try {
+      const canvas = canvasRef.current;
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext("2d");
+      ctx?.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
 
-    stream.getTracks().forEach((track) => track.stop());
-    setStream(null);
+      // Show compression progress
+      toast({
+        title: "Processing photo...",
+        description: "Optimizing your captured image.",
+      });
+
+      // Compress the canvas image
+      const compressedDataUrl = await compressCanvas(canvas, {
+        maxSizeMB: 0.3, // 300KB max
+        maxWidthOrHeight: 600, // Profile picture size
+        quality: 0.8,
+      });
+
+      // Show compression result
+      const compressedSize = getImageSize(compressedDataUrl);
+      toast({
+        title: "Photo captured!",
+        description: `Image optimized to ${compressedSize}`,
+      });
+
+      form.setValue("profilePicture", compressedDataUrl, { shouldValidate: true });
+      
+      stream.getTracks().forEach((track) => track.stop());
+      setStream(null);
+    } catch (error) {
+      console.error('Photo capture compression failed:', error);
+      toast({
+        variant: "destructive",
+        title: "Capture failed",
+        description: "Failed to process photo. Please try again.",
+      });
+    }
   };
 
   const recapturePhoto = () => {
@@ -275,16 +306,16 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
     getCameraPermission();
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Check file size (max 10MB for original file)
+    if (file.size > 10 * 1024 * 1024) {
       toast({
         variant: "destructive",
         title: "File too large",
-        description: "Please upload an image smaller than 5MB.",
+        description: "Please upload an image smaller than 10MB.",
       });
       return;
     }
@@ -299,12 +330,38 @@ export function NewMemberForm({ plans }: NewMemberFormProps) {
       return;
     }
 
-    // Convert to data URL
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      form.setValue("profilePicture", reader.result as string, { shouldValidate: true });
-    };
-    reader.readAsDataURL(file);
+    try {
+      // Show loading state
+      toast({
+        title: "Compressing image...",
+        description: "Please wait while we optimize your image.",
+      });
+
+      // Compress the image
+      const compressedDataUrl = await compressImage(file, {
+        maxSizeMB: 0.3, // 300KB max
+        maxWidthOrHeight: 600, // Profile picture size
+        quality: 0.8,
+      });
+
+      // Show compression result
+      const originalSize = (file.size / 1024).toFixed(0);
+      const compressedSize = getImageSize(compressedDataUrl);
+      
+      toast({
+        title: "Image optimized!",
+        description: `Reduced from ${originalSize} KB to ${compressedSize}`,
+      });
+
+      form.setValue("profilePicture", compressedDataUrl, { shouldValidate: true });
+    } catch (error) {
+      console.error('Image compression failed:', error);
+      toast({
+        variant: "destructive",
+        title: "Compression failed",
+        description: "Failed to optimize image. Please try a different image.",
+      });
+    }
   };
 
   // Duplicate detection

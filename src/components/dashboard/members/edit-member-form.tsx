@@ -45,6 +45,7 @@ import { useNotificationToast } from "@/hooks/use-notification-toast";
 import { logMemberUpdated } from "@/lib/activity-logger";
 import { useAuth } from "@/lib/auth-provider";
 import { useRouter } from "next/navigation";
+import { compressImage, compressCanvas, getImageSize } from "@/lib/image-compression";
 import type { MembershipPlan, GymUser, latestPlan } from "@/lib/types";
 import {
   Card,
@@ -131,6 +132,7 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState<
     boolean | null
   >(null);
@@ -177,18 +179,48 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
     };
   }, [stream]);
 
-  const capturePhoto = () => {
+  const capturePhoto = async () => {
     if (!videoRef.current || !canvasRef.current || !stream) return;
-    const canvas = canvasRef.current;
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    const ctx = canvas.getContext("2d");
-    ctx?.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-    const dataUri = canvas.toDataURL("image/png");
-    form.setValue("profilePicture", dataUri, { shouldValidate: true });
+    
+    try {
+      const canvas = canvasRef.current;
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext("2d");
+      ctx?.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
 
-    stream.getTracks().forEach((track) => track.stop());
-    setStream(null);
+      // Show compression progress
+      toast({
+        title: "Processing photo...",
+        description: "Optimizing your captured image.",
+      });
+
+      // Compress the canvas image
+      const compressedDataUrl = await compressCanvas(canvas, {
+        maxSizeMB: 0.3, // 300KB max
+        maxWidthOrHeight: 600, // Profile picture size
+        quality: 0.8,
+      });
+
+      // Show compression result
+      const compressedSize = getImageSize(compressedDataUrl);
+      toast({
+        title: "Photo captured!",
+        description: `Image optimized to ${compressedSize}`,
+      });
+
+      form.setValue("profilePicture", compressedDataUrl, { shouldValidate: true });
+      
+      stream.getTracks().forEach((track) => track.stop());
+      setStream(null);
+    } catch (error) {
+      console.error('Photo capture compression failed:', error);
+      toast({
+        variant: "destructive",
+        title: "Capture failed",
+        description: "Failed to process photo. Please try again.",
+      });
+    }
   };
 
   const revertPhoto = () => {
@@ -201,16 +233,21 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('🔧 File upload handler triggered', event);
     const file = event.target.files?.[0];
-    if (!file) return;
+    console.log('🔧 Selected file:', file);
+    if (!file) {
+      console.log('🔧 No file selected');
+      return;
+    }
 
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Check file size (max 10MB for original file)
+    if (file.size > 10 * 1024 * 1024) {
       toast({
         variant: "destructive",
         title: "File too large",
-        description: "Please upload an image smaller than 5MB.",
+        description: "Please upload an image smaller than 10MB.",
       });
       return;
     }
@@ -225,12 +262,58 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
       return;
     }
 
-    // Convert to data URL
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      form.setValue("profilePicture", reader.result as string, { shouldValidate: true });
-    };
-    reader.readAsDataURL(file);
+    try {
+      // Show loading state
+      toast({
+        title: "Compressing image...",
+        description: "Please wait while we optimize your image.",
+      });
+
+      // Compress the image with aggressive settings
+      const compressedDataUrl = await compressImage(file, {
+        maxSizeMB: 0.2, // 200KB max (more aggressive)
+        maxWidthOrHeight: 500, // Smaller dimensions
+        quality: 0.7, // Lower quality for more compression
+        useWebWorker: true,
+      });
+
+      // Show compression result
+      const originalSize = (file.size / 1024).toFixed(0);
+      const compressedSize = getImageSize(compressedDataUrl);
+      
+      // Debug logging
+      console.log('🔧 Edit Form Compression:', {
+        originalSize: `${originalSize} KB`,
+        compressedSize,
+        compressionRatio: `${((1 - (compressedDataUrl.length * 0.75) / file.size) * 100).toFixed(1)}%`,
+        dataUrlLength: compressedDataUrl.length
+      });
+      
+      // Verify compression worked
+      const compressedBytes = compressedDataUrl.length * 0.75; // Approximate bytes from base64
+      if (compressedBytes >= file.size * 0.8) {
+        console.warn('⚠️ Compression may not be working effectively');
+        toast({
+          variant: "destructive",
+          title: "Compression Warning",
+          description: "Image compression may not be working properly. Please try a different image.",
+        });
+      } else {
+        toast({
+          title: "Image optimized!",
+          description: `Reduced from ${originalSize} KB to ${compressedSize}`,
+        });
+      }
+
+      form.setValue("profilePicture", compressedDataUrl, { shouldValidate: true });
+    } catch (error) {
+      console.error('Image compression failed:', error);
+      toast({
+        variant: "destructive",
+        title: "Compression failed",
+        description: "Failed to optimize image. Please try a different image.",
+      });
+    }
   };
 
   const { mutate: updateMember, isPending } = useMutation({
@@ -239,6 +322,14 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
 
       let profileImageUrl = member.profileImageUrl;
       if (values.profilePicture && values.profilePicture.startsWith("data:image")) {
+        // Debug: Check what we're about to upload
+        const uploadSize = getImageSize(values.profilePicture);
+        console.log('🔧 Edit Form Upload:', {
+          uploadingSize: uploadSize,
+          dataUrlLength: values.profilePicture.length,
+          isCompressed: values.profilePicture.includes('jpeg') || uploadSize.includes('KB')
+        });
+        
         if (member.profileImageUrl && !member.profileImageUrl.includes("picsum.photos")) {
           try {
             const oldImageRef = ref(storage, member.profileImageUrl);
@@ -249,9 +340,11 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
             }
           }
         }
-        const newImageRef = ref(storage, `profile_images/${member.id}_${new Date().getTime()}.png`);
+        const newImageRef = ref(storage, `profile_images/${member.id}_${new Date().getTime()}.jpg`);
         await uploadString(newImageRef, values.profilePicture, "data_url");
         profileImageUrl = await getDownloadURL(newImageRef);
+        
+        console.log('✅ Edit Form Upload Complete:', { finalUrl: profileImageUrl });
       }
 
       const updatedUserData = {
@@ -667,7 +760,16 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => document.getElementById('photo-upload-edit')?.click()}
+                          onClick={() => {
+                            console.log('🔧 Upload button clicked');
+                            console.log('🔧 File input ref:', fileInputRef.current);
+                            if (fileInputRef.current) {
+                              fileInputRef.current.click();
+                              console.log('🔧 File input clicked via ref');
+                            } else {
+                              console.error('❌ File input ref not found');
+                            }
+                          }}
                           className="flex-1"
                         >
                           <Upload className="mr-2 h-4 w-4" />
@@ -692,6 +794,7 @@ export function EditMemberForm({ plans, member }: EditMemberFormProps) {
 
                 {/* Hidden file input */}
                 <input
+                  ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   onChange={handleFileUpload}
