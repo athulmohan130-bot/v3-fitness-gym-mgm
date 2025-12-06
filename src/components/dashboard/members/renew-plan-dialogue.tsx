@@ -299,15 +299,15 @@ export function RenewPlanDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+      <DialogContent className="max-w-md sm:max-w-lg lg:max-w-xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Renew Membership</DialogTitle>
           <DialogDescription>
             Select a plan, start date, and confirm renewal for this member.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-4 py-4 overflow-y-auto flex-1 px-1 pr-3">
           {/* Plan selection */}
           <div className="space-y-2">
             <Label>Select Plan</Label>
@@ -355,36 +355,36 @@ export function RenewPlanDialog({
           {/* Proration Breakdown */}
           {prorationCalc && prorationCalc.isEarlyUpgrade && (
             <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-900">
-              <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <AlertDescription className="text-sm space-y-3 ml-1">
+              <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+              <AlertDescription className="text-sm space-y-2 ml-1">
                 <div>
-                  <p className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                  <p className="font-semibold text-blue-900 dark:text-blue-100 mb-1 text-sm">
                     Early Upgrade Discount Applied! 🎉
                   </p>
-                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                  <p className="text-xs text-blue-700 dark:text-blue-300 line-clamp-2">
                     {prorationCalc.upgradeMessage}
                   </p>
                 </div>
                 
                 <Separator className="bg-blue-200 dark:bg-blue-800" />
                 
-                <div className="space-y-2 text-xs">
+                <div className="space-y-1 text-xs">
                   <div className="flex justify-between items-center">
-                    <span className="text-blue-700 dark:text-blue-300">New Plan Price:</span>
+                    <span className="text-blue-700 dark:text-blue-300 truncate pr-2">New Plan:</span>
                     <span className="font-semibold text-blue-900 dark:text-blue-100">₹{prorationCalc.newPlanPrice}</span>
                   </div>
                   <div className="flex justify-between items-center text-green-700 dark:text-green-400">
-                    <span>Unused Value Discount:</span>
+                    <span className="truncate pr-2">Discount:</span>
                     <span className="font-semibold">- ₹{prorationCalc.proratedDiscount}</span>
                   </div>
                   <Separator className="bg-blue-200 dark:bg-blue-800" />
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-blue-900 dark:text-blue-100">You Pay:</span>
-                    <span className="font-bold text-lg text-blue-900 dark:text-blue-100">₹{prorationCalc.finalPayableAmount}</span>
+                    <span className="font-bold text-base text-blue-900 dark:text-blue-100">₹{prorationCalc.finalPayableAmount}</span>
                   </div>
                   {prorationCalc.savingsPercentage > 0 && (
-                    <p className="text-center text-green-600 dark:text-green-400 font-medium pt-1">
-                      You save {prorationCalc.savingsPercentage}% on this upgrade!
+                    <p className="text-center text-green-600 dark:text-green-400 font-medium text-xs">
+                      Save {prorationCalc.savingsPercentage}%!
                     </p>
                   )}
                 </div>
@@ -392,7 +392,7 @@ export function RenewPlanDialog({
             </Alert>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Paid Amount</Label>
               <Input type="number" value={paidAmount} onChange={(e) => setPaidAmount(Number(e.target.value))} placeholder="Enter amount paid" />
@@ -456,10 +456,11 @@ export function RenewPlanDialog({
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
           <Button
             onClick={handleSubmit}
             disabled={!selectedPlan || !startDate || isPending}
+            className="w-full sm:w-auto"
           >
             {isPending ? "Renewing..." : "Confirm Renewal"}
           </Button>
