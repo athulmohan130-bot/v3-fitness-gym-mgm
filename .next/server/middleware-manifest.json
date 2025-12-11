@@ -3,39 +3,38 @@
   "middleware": {
     "/": {
       "files": [
-        "server/edge/chunks/_0d3699dc._.js",
-        "server/edge/chunks/[root-of-the-server]__dc15d093._.js",
-        "server/edge/chunks/edge-wrapper_594fdf6a.js"
+        "server/edge-runtime-webpack.js",
+        "server/src/middleware.js"
       ],
-      "name": "middleware",
+      "name": "src/middleware",
       "page": "/",
       "matchers": [
         {
-          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/(\\/?index|\\/?index\\\\.json))?[\\/#\\?]?$",
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/(\\/?index|\\/?index\\.json))?[\\/#\\?]?$",
           "originalSource": "/"
         },
         {
-          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/dashboard(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(\\\\.json)?[\\/#\\?]?$",
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/dashboard(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(\\.json)?[\\/#\\?]?$",
           "originalSource": "/dashboard/:path*"
         },
         {
-          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/login(\\\\.json)?[\\/#\\?]?$",
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/login(\\.json)?[\\/#\\?]?$",
           "originalSource": "/login"
         }
       ],
       "wasm": [],
       "assets": [],
       "env": {
-        "__NEXT_BUILD_ID": "development",
-        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "ZQnU0hGdzmmHCsw57lP1HQGz305uJ43E9XPlJic77no=",
-        "__NEXT_PREVIEW_MODE_ID": "75f21810e17b06bcb739719613a37f20",
-        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "57edb6236cc64e1a9b19d270c191c72ca3da02530829458da53679c6d587c74b",
-        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "b1f05e96f2bf3feedf94328330925e04ad42453b50bb18146bc680086689bf13"
+        "__NEXT_BUILD_ID": "7H-5lysO1tIcYHw8vDlMY",
+        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "MhK56jFhBGKBhuLuZ3sliZYP+UFR/yELXleJr4essLA=",
+        "__NEXT_PREVIEW_MODE_ID": "f2478673e501cf85caed4dde31ababf3",
+        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "a156f84394454b9006aea9c25d25c4e33bae199243ad559337d57d97a1474db3",
+        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "39b5194a82d1fe308011f0aac1a10b1fe81973f0f95074aa14122642bb6ab691"
       }
     }
   },
+  "functions": {},
   "sortedMiddleware": [
     "/"
-  ],
-  "functions": {}
+  ]
 }
