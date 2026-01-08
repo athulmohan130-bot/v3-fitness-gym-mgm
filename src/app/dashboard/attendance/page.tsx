@@ -1,28 +1,22 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { flushSync } from "react-dom";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { MemberCardGridSkeleton, SearchBarSkeleton } from "@/components/ui/loading-skeletons";
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { useFirestore } from "@/firebase";
 import { collection, query, orderBy, limit, getDocs, where } from "firebase/firestore";
 import { format, differenceInDays } from "date-fns";
-import { useGymSettings } from "@/hooks/use-gym-settings";
-import { Search, Users, Volume2, VolumeX, Settings, Home, Grid3x3, List, LayoutList, CheckCircle, BarChart, Clock, TrendingUp, CalendarIcon, RefreshCw, Loader2 } from "lucide-react";
+import { Search, Users, Home, Grid3x3, List, LayoutList, CheckCircle, BarChart, Clock, TrendingUp, CalendarIcon, RefreshCw, Loader2 } from "lucide-react";
 import type { AttendanceRecord, MembershipPlan } from "@/lib/types";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import Link from "next/link";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Slider } from "@/components/ui/slider";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import {
@@ -32,30 +26,25 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import {
-  AttendanceNotificationHandler,
   getMembershipAlertType,
-  type NotificationConfig
 } from "@/lib/attendance-notifications";
 import { RenewPlanDialog } from "@/components/dashboard/members/renew-plan-dialogue";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 // View mode type
 type ViewMode = "grid" | "list" | "compact";
+
+// Helper type for attendance records with ID
+type WithId<T> = T & { id: string };
 
 export default function AttendancePage() {
   const firestore = useFirestore();
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { settings, updateSettings } = useGymSettings();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterTimeSlot, setFilterTimeSlot] = useState("all");
-  const [isDateChanging, setIsDateChanging] = useState(false);
-  const [newRecordIds, setNewRecordIds] = useState<Set<string>>(new Set());
-  const prevRecordsRef = useRef<AttendanceRecord[]>([]);
-  const isInitialLoadRef = useRef(true); // Track if this is the first data load
-  const prevSelectedDateRef = useRef<Date>(selectedDate); // Track previous selected date
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
 
@@ -65,7 +54,7 @@ export default function AttendancePage() {
     id: string;
     name: string;
     currentEndDate: string;
-    currentPlanId?: string; // Will be populated by useEffect after fetching from Firestore
+    currentPlanId?: string;
   } | null>(null);
   const [currentPlanDetails, setCurrentPlanDetails] = useState<{
     price: number;
@@ -73,37 +62,16 @@ export default function AttendancePage() {
   } | null>(null);
   const [isFetchingPlanDetails, setIsFetchingPlanDetails] = useState(false);
 
-  // Loading state for button actions - track both member ID and action type
+  // Loading state for button actions
   const [loadingState, setLoadingState] = useState<{ memberId: string; action: 'view' | 'renew' } | null>(null);
 
   // View mode state with localStorage persistence
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('attendance-view-mode');
-      // Default to compact view for better space utilization
       return (saved as ViewMode) || 'compact';
     }
     return 'compact';
-  });
-
-  // Notification settings - using global gym settings
-  const notificationConfig: NotificationConfig = useMemo(() => ({
-    playSound: settings?.notifications?.playSound ?? true,
-    volume: settings?.notifications?.volume ?? 0.7,
-  }), [
-    settings?.notifications?.playSound,
-    settings?.notifications?.volume
-  ]);
-
-  const notificationHandlerRef = useRef<AttendanceNotificationHandler | null>(null);
-  const prevNotificationConfigRef = useRef<NotificationConfig | null>(null);
-
-  // Audio initialization state - persist in localStorage
-  const [audioInitialized] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('audio-initialized') === 'true';
-    }
-    return false;
   });
 
   // Save view mode to localStorage
@@ -111,56 +79,95 @@ export default function AttendancePage() {
     localStorage.setItem('attendance-view-mode', viewMode);
   }, [viewMode]);
 
-  // NAVIGATION SAFETY: Add pathname monitoring
-  const pathname = usePathname();
-  const [queriesEnabled, setQueriesEnabled] = useState(false);
+  // Fetch function for attendance data
+  const fetchAttendanceRecords = useCallback(async () => {
+    if (!firestore) return [];
 
-  // Enable queries only when on attendance page
-  useEffect(() => {
-    if (pathname === '/dashboard/attendance') {
-      setQueriesEnabled(true);
-    } else {
-      setQueriesEnabled(false);
-    }
-  }, [pathname]);
-
-  // Real-time query for today's attendance - NAVIGATION SAFE
-  const attendanceQuery = useMemoFirebase(() => {
-    if (!firestore || !queriesEnabled) return null;
-    const dateString = format(selectedDate, "yyyy-MM-dd");
-    return query(
-      collection(firestore, `attendance_logs/${dateString}/records`),
+    const date = format(selectedDate, "yyyy-MM-dd");
+    const attendanceQuery = query(
+      collection(firestore, `attendance_logs/${date}/records`),
       orderBy("checkInTime", "desc")
     );
-  }, [firestore, selectedDate, queriesEnabled]);
 
-  const { data: attendanceRecords, isLoading, error } = useCollection<AttendanceRecord>(attendanceQuery);
+    const snapshot = await getDocs(attendanceQuery);
+    const records: WithId<AttendanceRecord>[] = [];
+    snapshot.forEach((doc) => {
+      records.push({ ...doc.data() as AttendanceRecord, id: doc.id });
+    });
+    return records;
+  }, [firestore, selectedDate]);
 
-  // Query for total active members count - NAVIGATION SAFE
-  // Only query active members to reduce data transfer
-  // ONLY enable when stats are expanded to avoid unnecessary queries
-  const usersQuery = useMemoFirebase(() => {
-    if (!firestore || !queriesEnabled || !isStatsOpen) return null;
-    return query(
+  // React Query for attendance data with caching
+  const dateString = format(selectedDate, "yyyy-MM-dd");
+  const {
+    data: attendanceRecords,
+    isLoading,
+    isFetching: isRefreshing,
+    error,
+    refetch
+  } = useQuery({
+    queryKey: ['attendance', dateString],
+    queryFn: fetchAttendanceRecords,
+    staleTime: 5 * 60 * 1000, // Data is fresh for 5 minutes
+    gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
+    refetchOnMount: false, // Use cached data on mount if available
+    enabled: !!firestore, // Only run when firestore is available
+  });
+
+  // Fetch active users count when stats panel is open
+  const fetchActiveUsersCountFn = useCallback(async () => {
+    if (!firestore) return 0;
+
+    const usersQuery = query(
       collection(firestore, "users"),
       where("membershipStatus", "==", "active")
     );
-  }, [firestore, queriesEnabled, isStatsOpen]);
+    const snapshot = await getDocs(usersQuery);
+    return snapshot.size;
+  }, [firestore]);
 
-  const { data: activeUsers } = useCollection(usersQuery);
+  // React Query for active users count with caching
+  const { data: activeUsersCount = 0 } = useQuery({
+    queryKey: ['activeUsersCount'],
+    queryFn: fetchActiveUsersCountFn,
+    staleTime: 10 * 60 * 1000, // Active users count is fresh for 10 minutes
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    enabled: !!firestore && isStatsOpen, // Only fetch when stats panel is open
+  });
 
-  // Query for membership plans - NAVIGATION SAFE
-  // ONLY fetch when renewal dialog is open to avoid unnecessary queries
-  const plansQuery = useMemoFirebase(() => {
-    if (!firestore || !queriesEnabled || !renewOpen) return null;
-    return collection(firestore, "membershipPlans");
-  }, [firestore, queriesEnabled, renewOpen]);
+  // Fetch membership plans when renewal dialog opens
+  const fetchMembershipPlansFn = useCallback(async () => {
+    if (!firestore) return [];
 
-  const { data: plansData } = useCollection<MembershipPlan>(plansQuery);
+    const plansRef = collection(firestore, "membershipPlans");
+    const snapshot = await getDocs(plansRef);
+    const plans: WithId<MembershipPlan>[] = [];
+    snapshot.forEach((doc) => {
+      plans.push({ ...doc.data() as MembershipPlan, id: doc.id });
+    });
+    return plans;
+  }, [firestore]);
 
-  // Fetch current plan details from user's membership history when member is selected for renewal - NAVIGATION SAFE
+  // React Query for membership plans with caching
+  const { data: plansData } = useQuery({
+    queryKey: ['membershipPlans'],
+    queryFn: fetchMembershipPlansFn,
+    staleTime: 30 * 60 * 1000, // Plans rarely change, cache for 30 minutes
+    gcTime: 60 * 60 * 1000, // Keep in cache for 1 hour
+    refetchOnWindowFocus: false,
+    enabled: !!firestore && renewOpen, // Only fetch when renewal dialog is open
+  });
+
+  // Manual refresh function - invalidates cache and refetches
+  const handleRefresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  // Fetch current plan details from user's membership history when member is selected for renewal
   useEffect(() => {
-    if (!selectedMember?.id || !firestore || !plansData || !queriesEnabled) {
+    if (!selectedMember?.id || !firestore || !plansData) {
       setCurrentPlanDetails(null);
       setIsFetchingPlanDetails(false);
       return;
@@ -210,12 +217,12 @@ export default function AttendancePage() {
     };
 
     fetchCurrentPlanDetails();
-  }, [selectedMember?.id, firestore, plansData, queriesEnabled]);
+  }, [selectedMember?.id, firestore, plansData]);
 
   // Calculate attendance stats
   const attendanceStats = useMemo(() => {
     const totalCheckedIn = attendanceRecords?.length || 0;
-    const totalActiveMembers = activeUsers?.length || 0;
+    const totalActiveMembers = activeUsersCount;
     const percentage = totalActiveMembers > 0 ? Math.round((totalCheckedIn / totalActiveMembers) * 100) : 0;
 
     // Calculate peak hour (hour with most check-ins)
@@ -236,114 +243,7 @@ export default function AttendancePage() {
     });
 
     return { totalCheckedIn, totalActiveMembers, percentage, peakHour };
-  }, [attendanceRecords, activeUsers]);
-
-  // Initialize notification handler
-  useEffect(() => {
-    // Check if config actually changed
-    const configChanged = !prevNotificationConfigRef.current ||
-      prevNotificationConfigRef.current.playSound !== notificationConfig.playSound ||
-      prevNotificationConfigRef.current.volume !== notificationConfig.volume;
-
-    if (!configChanged) return;
-
-    if (!notificationHandlerRef.current) {
-      notificationHandlerRef.current = new AttendanceNotificationHandler(notificationConfig);
-    } else {
-      notificationHandlerRef.current.updateConfig(notificationConfig);
-    }
-
-    prevNotificationConfigRef.current = notificationConfig;
-  }, [notificationConfig]);
-
-  // Reset loading state when data arrives after date change
-  useEffect(() => {
-    if (!isLoading && isDateChanging) {
-      setIsDateChanging(false);
-    }
-  }, [isLoading, isDateChanging]);
-
-  // Detect new records and trigger animation + notifications
-  useEffect(() => {
-    // Check if the selected date has changed
-    const dateChanged = format(prevSelectedDateRef.current, "yyyy-MM-dd") !== format(selectedDate, "yyyy-MM-dd");
-
-    if (dateChanged) {
-      // Set date changing flag
-      setIsDateChanging(true);
-      // Reset initial load flag when date changes
-      isInitialLoadRef.current = true;
-      prevSelectedDateRef.current = selectedDate;
-      prevRecordsRef.current = [];
-    }
-
-    if (!attendanceRecords || attendanceRecords.length === 0) {
-      prevRecordsRef.current = [];
-      // Don't reset isInitialLoadRef here - only reset it when date changes
-      return;
-    }
-
-    const prevIds = new Set(prevRecordsRef.current.map(r => r.id));
-    const currentIds = attendanceRecords.map(r => r.id);
-    const newIds = currentIds.filter(id => !prevIds.has(id));
-
-    // Check if selected date is today (both are Date objects, so compare formatted strings)
-    const isToday = format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
-
-    // Debug: Log notification trigger conditions
-    if (newIds.length > 0) {
-      console.log('🔔 New check-in detected!', {
-        newCheckIns: newIds.length,
-        isInitialLoad: isInitialLoadRef.current,
-        isToday,
-        audioInitialized,
-        hasNotificationHandler: !!notificationHandlerRef.current,
-        willTriggerNotification: !isInitialLoadRef.current && isToday && audioInitialized
-      });
-    }
-
-    // Trigger notifications if:
-    // 1. There are new IDs
-    // 2. This is NOT the initial load (prevents notifications on page load)
-    // 3. The selected date is today
-    // 4. Audio has been initialized
-    if (newIds.length > 0 && !isInitialLoadRef.current && isToday && audioInitialized) {
-      console.log('✅ Triggering notifications for', newIds.length, 'new records');
-      setNewRecordIds(new Set(newIds));
-
-      // Trigger notifications for new records
-      newIds.forEach(id => {
-        const record = attendanceRecords.find(r => r.id === id);
-        if (record && notificationHandlerRef.current) {
-          // Support both membershipEnd and membershipEndDate for compatibility
-          const membershipEndDate = record.membershipEnd || (record as any).membershipEndDate;
-          const alertInfo = getMembershipAlertType(
-            record.membershipStatus || 'active',
-            membershipEndDate
-          );
-
-          notificationHandlerRef.current.notify({
-            memberName: record.name,
-            alertType: alertInfo.alertType,
-            daysRemaining: alertInfo.daysRemaining,
-            membershipEndDate: membershipEndDate
-          });
-        }
-      });
-
-      // Remove animation after 3 seconds
-      setTimeout(() => {
-        setNewRecordIds(new Set());
-      }, 3000);
-    }
-
-    // Mark that we've completed the initial load
-    if (isInitialLoadRef.current) {
-      isInitialLoadRef.current = false;
-    }
-
-    prevRecordsRef.current = attendanceRecords;
-  }, [attendanceRecords, selectedDate, audioInitialized]);
+  }, [attendanceRecords, activeUsersCount]);
 
   // Filter and sort records
   const filteredRecords = useMemo(() => {
@@ -463,142 +363,17 @@ export default function AttendancePage() {
           </BreadcrumbList>
         </Breadcrumb>
 
-        {/* Notification Settings */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" className="h-8 w-8">
-              {notificationConfig.playSound ? (
-                <Volume2 className="h-4 w-4" />
-              ) : (
-                <VolumeX className="h-4 w-4" />
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80" align="end">
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-semibold text-sm mb-3">Notification Settings</h4>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="play-sound" className="flex flex-col gap-1">
-                  <span>Sound Effects</span>
-                  <span className="text-xs text-muted-foreground font-normal">
-                    Play beep sounds for check-ins
-                  </span>
-                </Label>
-                <Switch
-                  id="play-sound"
-                  checked={notificationConfig.playSound}
-                  onCheckedChange={async (checked) => {
-                    await updateSettings({
-                      notifications: {
-                        ...settings?.notifications,
-                        playSound: checked,
-                      }
-                    });
-                  }}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="volume">Volume: {Math.round(notificationConfig.volume * 100)}%</Label>
-                <Slider
-                  id="volume"
-                  min={0}
-                  max={100}
-                  step={10}
-                  value={[notificationConfig.volume * 100]}
-                  onValueChange={async (value) => {
-                    await updateSettings({
-                      notifications: {
-                        ...settings?.notifications,
-                        volume: value[0] / 100,
-                      }
-                    });
-                  }}
-                />
-              </div>
-
-
-              <div className="pt-2 border-t space-y-2">
-                <Label className="text-xs font-semibold">Test Sounds</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (notificationHandlerRef.current) {
-                        notificationHandlerRef.current.notify({
-                          memberName: 'John',
-                          alertType: 'active'
-                        });
-                      }
-                    }}
-                  >
-                    Active
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (notificationHandlerRef.current) {
-                        notificationHandlerRef.current.notify({
-                          memberName: 'Sarah',
-                          alertType: 'expiring-soon',
-                          daysRemaining: 3
-                        });
-                      }
-                    }}
-                  >
-                    Expiring
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (notificationHandlerRef.current) {
-                        notificationHandlerRef.current.notify({
-                          memberName: 'Mike',
-                          alertType: 'expired'
-                        });
-                      }
-                    }}
-                  >
-                    Expired
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (notificationHandlerRef.current) {
-                        notificationHandlerRef.current.notify({
-                          memberName: 'Emma',
-                          alertType: 'pending'
-                        });
-                      }
-                    }}
-                  >
-                    Pending
-                  </Button>
-                </div>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => {
-                    // Stop speech synthesis
-                    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-                      window.speechSynthesis.cancel();
-                    }
-                  }}
-                >
-                  Stop Speech
-                </Button>
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
+        {/* Refresh Button */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleRefresh()}
+          disabled={isRefreshing || isLoading}
+          className="h-8 gap-2"
+        >
+          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <span className="hidden sm:inline">Refresh</span>
+        </Button>
       </div>
 
       {/* Compact Search, Filters, and View Toggle */}
@@ -659,9 +434,9 @@ export default function AttendancePage() {
                       "h-9 justify-start text-left font-normal",
                       !selectedDate && "text-muted-foreground"
                     )}
-                    disabled={isDateChanging}
+                    disabled={isLoading}
                   >
-                    {isDateChanging ? (
+                    {isLoading ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
                       <CalendarIcon className="mr-2 h-4 w-4" />
@@ -758,9 +533,9 @@ export default function AttendancePage() {
                     className={cn(
                       "w-full sm:w-auto h-8 text-sm justify-start text-left font-normal rounded-lg border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 shadow-sm px-3"
                     )}
-                    disabled={isDateChanging}
+                    disabled={isLoading}
                   >
-                    {isDateChanging ? (
+                    {isLoading ? (
                       <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
                     ) : (
                       <CalendarIcon className="mr-2 h-3.5 w-3.5" />
@@ -935,7 +710,7 @@ export default function AttendancePage() {
       )}
 
       {/* Attendance Records - Dynamic View */}
-      {(isLoading || isDateChanging) ? (
+      {isLoading ? (
         <>
           <Card>
             <CardContent className="pt-6">
@@ -961,7 +736,6 @@ export default function AttendancePage() {
           {viewMode === "grid" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 animate-in fade-in-50 duration-300">
               {filteredRecords.map((record) => {
-                const isNew = newRecordIds.has(record.id);
                 const isActive = record.membershipStatus === "active";
                 const isViewLoading = loadingState?.memberId === record.userId && loadingState?.action === 'view';
                 const isRenewLoading = loadingState?.memberId === record.userId && loadingState?.action === 'renew';
@@ -970,39 +744,33 @@ export default function AttendancePage() {
                 return (
                   <Card
                     key={record.id}
-                    className={`group relative overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer ${
-                      isActive
-                        ? "bg-white border-t-4 border-t-green-500 dark:bg-gray-800 dark:border-t-green-500"
-                        : "bg-gray-50 border border-gray-200 opacity-70 dark:bg-gray-900 dark:border-gray-700"
-                    } ${isNew ? "ring-2 ring-green-500 ring-offset-2" : ""}`}
+                    className={`group relative overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer ${isActive
+                      ? "bg-white border-t-4 border-t-green-500 dark:bg-gray-800 dark:border-t-green-500"
+                      : "bg-gray-50 border border-gray-200 opacity-70 dark:bg-gray-900 dark:border-gray-700"
+                      }`}
                     onClick={() => {
-                      window.location.href = `/dashboard/members/view/${record.userId}`;
+                      router.push(`/dashboard/members/view/${record.userId}`);
                     }}
                   >
-                      <CardContent className="p-6">
+                    <CardContent className="p-6">
                       {/* Avatar */}
                       <div className="relative mx-auto w-fit mb-5">
-                        <Avatar className={`h-40 w-40 transition-all ${
-                          isActive
-                            ? "border-[6px] border-green-500 shadow-xl shadow-green-500/30"
-                            : "border-[3px] border-gray-300 grayscale"
-                        }`}>
+                        <Avatar className={`h-40 w-40 transition-all ${isActive
+                          ? "border-[6px] border-green-500 shadow-xl shadow-green-500/30"
+                          : "border-[3px] border-gray-300 grayscale"
+                          }`}>
                           <AvatarImage
                             src={record.profileImageUrl}
                             alt={record.name}
                             className={!isActive ? "grayscale" : ""}
                           />
-                          <AvatarFallback className={`text-3xl font-bold ${
-                            isActive
-                              ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
-                              : "bg-gray-100 text-gray-500"
-                          }`}>
+                          <AvatarFallback className={`text-3xl font-bold ${isActive
+                            ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
+                            : "bg-gray-100 text-gray-500"
+                            }`}>
                             {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
                           </AvatarFallback>
                         </Avatar>
-                        {isNew && (
-                          <div className="absolute -top-1 -right-1 h-7 w-7 bg-green-500 rounded-full animate-pulse ring-2 ring-white dark:ring-gray-900" />
-                        )}
                         {isActive && (
                           <div className="absolute -bottom-2 -right-2">
                             <CheckCircle className="h-10 w-10 text-green-500 bg-white dark:bg-gray-800 rounded-full shadow-lg" />
@@ -1011,11 +779,10 @@ export default function AttendancePage() {
                       </div>
 
                       {/* Name - HERO */}
-                      <h3 className={`font-semibold text-center truncate mb-2 ${
-                        isActive
-                          ? "text-lg text-gray-900 dark:text-gray-100"
-                          : "text-base text-gray-500 dark:text-gray-500"
-                      }`}>
+                      <h3 className={`font-semibold text-center truncate mb-2 ${isActive
+                        ? "text-lg text-gray-900 dark:text-gray-100"
+                        : "text-base text-gray-500 dark:text-gray-500"
+                        }`}>
                         {record.name}
                       </h3>
 
@@ -1113,40 +880,32 @@ export default function AttendancePage() {
                 <div className="divide-y">
                   {filteredRecords.map((record) => {
                     const membershipInfo = getMembershipInfo(record);
-                    const isNew = newRecordIds.has(record.id);
                     const isActive = record.membershipStatus === "active";
 
                     return (
                       <div key={record.id} className="relative">
                         <Link href={`/dashboard/members/view/${record.userId}`}>
                           <div
-                            className={`flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer ${
-                              isNew ? "bg-green-50 border-l-4 border-l-green-500" : ""
-                            }`}
+                            className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer"
                           >
                             {/* Avatar */}
                             <div className="relative flex-shrink-0">
-                              <Avatar className={`h-16 w-16 transition-all ${
-                                isActive
-                                  ? "border-[4px] border-green-500 shadow-md shadow-green-500/20"
-                                  : "border-2 border-gray-300 opacity-60"
-                              }`}>
+                              <Avatar className={`h-16 w-16 transition-all ${isActive
+                                ? "border-[4px] border-green-500 shadow-md shadow-green-500/20"
+                                : "border-2 border-gray-300 opacity-60"
+                                }`}>
                                 <AvatarImage
                                   src={record.profileImageUrl}
                                   alt={record.name}
                                   className={!isActive ? "grayscale" : ""}
                                 />
-                                <AvatarFallback className={`text-base font-semibold ${
-                                  isActive
-                                    ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
-                                    : "bg-gray-100 text-gray-500"
-                                }`}>
+                                <AvatarFallback className={`text-base font-semibold ${isActive
+                                  ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
+                                  : "bg-gray-100 text-gray-500"
+                                  }`}>
                                   {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
                                 </AvatarFallback>
                               </Avatar>
-                              {isNew && (
-                                <div className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full animate-pulse ring-2 ring-white dark:ring-gray-900" />
-                              )}
                               {isActive && (
                                 <div className="absolute -bottom-1 -right-1">
                                   <CheckCircle className="h-6 w-6 text-green-500 bg-white dark:bg-gray-800 rounded-full shadow-sm" />
@@ -1154,113 +913,113 @@ export default function AttendancePage() {
                               )}
                             </div>
 
-                          {/* Name and Email */}
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-sm truncate">{record.name}</h3>
-                            <p className="text-xs text-muted-foreground truncate">{record.email || "No email"}</p>
-                          </div>
+                            {/* Name and Email */}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-sm truncate">{record.name}</h3>
+                              <p className="text-xs text-muted-foreground truncate">{record.email || "No email"}</p>
+                            </div>
 
-                          {/* Check-in Time */}
-                          <div className="hidden sm:flex flex-col items-end">
-                            <p className="text-xs text-muted-foreground">Check-in</p>
-                            <p className="font-semibold text-sm">
-                              {format(new Date(record.checkInTime), "hh:mm a")}
-                            </p>
-                          </div>
+                            {/* Check-in Time */}
+                            <div className="hidden sm:flex flex-col items-end">
+                              <p className="text-xs text-muted-foreground">Check-in</p>
+                              <p className="font-semibold text-sm">
+                                {format(new Date(record.checkInTime), "hh:mm a")}
+                              </p>
+                            </div>
 
-                          {/* ESSL ID */}
-                          <div className="hidden md:block">
-                            {record.biometricDeviceId && (
-                              <Badge variant="outline" className="text-xs">
-                                {record.biometricDeviceId}
-                              </Badge>
-                            )}
-                          </div>
-
-                          {/* Membership Status */}
-                          <div className="hidden lg:block">
-                            {membershipInfo && (
-                              <Badge
-                                variant={
-                                  record.membershipStatus === "active"
-                                    ? "default"
-                                    : record.membershipStatus === "expired"
-                                    ? "destructive"
-                                    : "secondary"
-                                }
-                                className="text-xs"
-                              >
-                                {record.membershipStatus?.charAt(0).toUpperCase() + record.membershipStatus?.slice(1)}
-                              </Badge>
-                            )}
-                          </div>
-
-                          {/* Days Remaining / Expired */}
-                          <div className="hidden xl:block">
-                            {(() => {
-                              // Support both membershipEnd and membershipEndDate for compatibility
-                              const membershipEndDate = record.membershipEnd || (record as any).membershipEndDate;
-                              const alertInfo = getMembershipAlertType(
-                                record.membershipStatus || 'active',
-                                membershipEndDate
-                              );
-                              const { daysRemaining } = alertInfo;
-
-                              if (daysRemaining === undefined) return null;
-
-                              let badgeText = '';
-                              let badgeVariant: 'default' | 'destructive' | 'secondary' | 'outline' = 'secondary';
-
-                              if (daysRemaining < 0) {
-                                const daysExpired = Math.abs(daysRemaining);
-                                badgeText = `Expired ${daysExpired}d ago`;
-                                badgeVariant = 'destructive';
-                              } else if (daysRemaining === 0) {
-                                badgeText = 'Expires today';
-                                badgeVariant = 'destructive';
-                              } else if (daysRemaining <= 3) {
-                                badgeText = `${daysRemaining}d left`;
-                                badgeVariant = 'outline';
-                              } else {
-                                badgeText = `${daysRemaining}d left`;
-                                badgeVariant = 'secondary';
-                              }
-
-                              return (
-                                <Badge variant={badgeVariant} className="text-xs">
-                                  {badgeText}
+                            {/* ESSL ID */}
+                            <div className="hidden md:block">
+                              {record.biometricDeviceId && (
+                                <Badge variant="outline" className="text-xs">
+                                  {record.biometricDeviceId}
                                 </Badge>
-                              );
-                            })()}
-                          </div>
+                              )}
+                            </div>
 
-                          {/* Mobile Check-in (visible on mobile) */}
-                          <div className="sm:hidden text-right">
-                            <p className="font-semibold text-xs">
-                              {format(new Date(record.checkInTime), "hh:mm a")}
-                            </p>
-                          </div>
+                            {/* Membership Status */}
+                            <div className="hidden lg:block">
+                              {membershipInfo && (
+                                <Badge
+                                  variant={
+                                    record.membershipStatus === "active"
+                                      ? "default"
+                                      : record.membershipStatus === "expired"
+                                        ? "destructive"
+                                        : "secondary"
+                                  }
+                                  className="text-xs"
+                                >
+                                  {record.membershipStatus ? record.membershipStatus.charAt(0).toUpperCase() + record.membershipStatus.slice(1) : 'Unknown'}
+                                </Badge>
+                              )}
+                            </div>
 
-                          {/* Renew Plan Button */}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-shrink-0 gap-2 hover:bg-green-50 hover:border-green-500 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setSelectedMember({
-                                id: record.userId,
-                                name: record.name,
-                                currentEndDate: record.membershipEnd || new Date().toISOString(),
-                              });
-                              setRenewOpen(true);
-                            }}
-                          >
-                            <RefreshCw className="h-3 w-3" />
-                            <span className="hidden xl:inline">Renew</span>
-                          </Button>
-                        </div>
+                            {/* Days Remaining / Expired */}
+                            <div className="hidden xl:block">
+                              {(() => {
+                                // Support both membershipEnd and membershipEndDate for compatibility
+                                const membershipEndDate = record.membershipEnd || (record as any).membershipEndDate;
+                                const alertInfo = getMembershipAlertType(
+                                  record.membershipStatus || 'active',
+                                  membershipEndDate
+                                );
+                                const { daysRemaining } = alertInfo;
+
+                                if (daysRemaining === undefined) return null;
+
+                                let badgeText = '';
+                                let badgeVariant: 'default' | 'destructive' | 'secondary' | 'outline' = 'secondary';
+
+                                if (daysRemaining < 0) {
+                                  const daysExpired = Math.abs(daysRemaining);
+                                  badgeText = `Expired ${daysExpired}d ago`;
+                                  badgeVariant = 'destructive';
+                                } else if (daysRemaining === 0) {
+                                  badgeText = 'Expires today';
+                                  badgeVariant = 'destructive';
+                                } else if (daysRemaining <= 3) {
+                                  badgeText = `${daysRemaining}d left`;
+                                  badgeVariant = 'outline';
+                                } else {
+                                  badgeText = `${daysRemaining}d left`;
+                                  badgeVariant = 'secondary';
+                                }
+
+                                return (
+                                  <Badge variant={badgeVariant} className="text-xs">
+                                    {badgeText}
+                                  </Badge>
+                                );
+                              })()}
+                            </div>
+
+                            {/* Mobile Check-in (visible on mobile) */}
+                            <div className="sm:hidden text-right">
+                              <p className="font-semibold text-xs">
+                                {format(new Date(record.checkInTime), "hh:mm a")}
+                              </p>
+                            </div>
+
+                            {/* Renew Plan Button */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-shrink-0 gap-2 hover:bg-green-50 hover:border-green-500 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setSelectedMember({
+                                  id: record.userId,
+                                  name: record.name,
+                                  currentEndDate: record.membershipEnd || new Date().toISOString(),
+                                });
+                                setRenewOpen(true);
+                              }}
+                            >
+                              <RefreshCw className="h-3 w-3" />
+                              <span className="hidden xl:inline">Renew</span>
+                            </Button>
+                          </div>
                         </Link>
                       </div>
                     );
@@ -1276,7 +1035,6 @@ export default function AttendancePage() {
               <CardContent className="p-0">
                 <div className="divide-y divide-gray-100 dark:divide-gray-800">
                   {filteredRecords.map((record) => {
-                    const isNew = newRecordIds.has(record.id);
                     const isActive = record.membershipStatus === "active";
                     const membershipInfo = getMembershipInfo(record);
                     const isViewLoading = loadingState?.memberId === record.userId && loadingState?.action === 'view';
@@ -1286,47 +1044,37 @@ export default function AttendancePage() {
                     return (
                       <div
                         key={record.id}
-                        className={`group relative ${
-                          isNew
-                            ? "bg-green-50/50 dark:bg-green-950/20 border-l-2 border-l-green-500"
-                            : ""
-                        }`}
+                        className="group relative"
                       >
                         <div className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/30 transition-colors">
                           {/* Avatar - Small and compact */}
                           <div className="relative flex-shrink-0">
-                            <Avatar className={`h-12 w-12 transition-all ${
-                              isActive
-                                ? "border-[3px] border-green-500 shadow-md shadow-green-500/20"
-                                : "border-2 border-gray-200 dark:border-gray-700 opacity-60"
-                            }`}>
+                            <Avatar className={`h-12 w-12 transition-all ${isActive
+                              ? "border-[3px] border-green-500 shadow-md shadow-green-500/20"
+                              : "border-2 border-gray-200 dark:border-gray-700 opacity-60"
+                              }`}>
                               <AvatarImage
                                 src={record.profileImageUrl}
                                 alt={record.name}
                                 className={!isActive ? "grayscale" : ""}
                               />
-                              <AvatarFallback className={`text-sm font-bold ${
-                                isActive
-                                  ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
-                                  : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500"
-                              }`}>
+                              <AvatarFallback className={`text-sm font-bold ${isActive
+                                ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
+                                : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500"
+                                }`}>
                                 {record.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
                               </AvatarFallback>
                             </Avatar>
-                            {isNew && (
-                              <div className="absolute -top-0.5 -right-0.5 h-3 w-3 bg-green-500 rounded-full animate-pulse ring-2 ring-white dark:ring-gray-900" />
-                            )}
                           </div>
 
                           {/* Member Info - Name is HERO element */}
                           <div className="flex-1 min-w-0">
                             <Link href={`/dashboard/members/view/${record.userId}`} className="block">
                               <div className="flex items-center gap-2">
-                                <h3 className={`font-semibold truncate ${
-                                  isActive
-                                    ? "text-base text-gray-900 dark:text-gray-100"
-                                    : "text-sm text-gray-500 dark:text-gray-500"
-                                }`}>
+                                <h3 className={`font-semibold truncate ${isActive
+                                  ? "text-base text-gray-900 dark:text-gray-100"
+                                  : "text-sm text-gray-500 dark:text-gray-500"
+                                  }`}>
                                   {record.name}
                                 </h3>
                                 {isActive && (
@@ -1411,12 +1159,9 @@ export default function AttendancePage() {
                               variant="ghost"
                               className="h-7 px-2 text-xs hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-950 dark:hover:text-blue-400"
                               disabled={isAnyLoading}
-                              onClick={async (e) => {
+                              onClick={(e) => {
                                 e.stopPropagation();
                                 setLoadingState({ memberId: record.userId, action: 'view' });
-                                // Disable queries before navigation to release Firebase connections
-                                setQueriesEnabled(false);
-                                await new Promise(resolve => setTimeout(resolve, 100));
                                 router.push(`/dashboard/members/view/${record.userId}`);
                               }}
                             >

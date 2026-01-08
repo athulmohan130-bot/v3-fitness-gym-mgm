@@ -51,11 +51,6 @@ export function MobileNav() {
               onClick={() => {
                 if (pathname !== item.href) {
                   startNavigation(item.href);
-                  // If on attendance page, use hard navigation to force Firebase cleanup
-                  if (pathname === '/dashboard/attendance') {
-                    window.location.href = item.href;
-                    return;
-                  }
                   router.push(item.href);
                 }
               }}

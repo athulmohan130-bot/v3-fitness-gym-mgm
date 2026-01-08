@@ -112,47 +112,44 @@ export function AppSidebar() {
     >
       {/* --- Header --- */}
       {/* --- Header --- */}
-{/* --- Header --- */}
-{/* --- Header --- */}
-<SidebarHeader className="p-4 w-full">
-  <Link
-    href="/dashboard/overview"
-    className={`flex items-center font-bold font-headline text-xl transition-all duration-300 ease-in-out ${
-      collapsed ? "justify-center" : "justify-start"
-    }`}
-  >
-    {/* Logo Wrapper */}
-    <div
-      className={`flex items-center justify-center transition-all duration-300 ${
-        collapsed ? "" : "mr-2"
-      }`}
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        className="h-6 w-6 text-primary shrink-0"
-      >
-        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-      </svg>
-    </div>
+      {/* --- Header --- */}
+      {/* --- Header --- */}
+      <SidebarHeader className="p-4 w-full">
+        <Link
+          href="/dashboard/overview"
+          className={`flex items-center font-bold font-headline text-xl transition-all duration-300 ease-in-out ${collapsed ? "justify-center" : "justify-start"
+            }`}
+        >
+          {/* Logo Wrapper */}
+          <div
+            className={`flex items-center justify-center transition-all duration-300 ${collapsed ? "" : "mr-2"
+              }`}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              viewBox="0 0 24 24"
+              className="h-6 w-6 text-primary shrink-0"
+            >
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+          </div>
 
-    {/* Logo Text */}
-    <span
-      className={`whitespace-nowrap transition-all duration-300 ease-in-out transform origin-left font-semibold text-lg ${
-        collapsed
-          ? "opacity-0 scale-95 w-0 overflow-hidden"
-          : "opacity-100 scale-100 w-auto"
-      }`}
-    >
-      V3 Fitness
-    </span>
-  </Link>
-</SidebarHeader>
+          {/* Logo Text */}
+          <span
+            className={`whitespace-nowrap transition-all duration-300 ease-in-out transform origin-left font-semibold text-lg ${collapsed
+                ? "opacity-0 scale-95 w-0 overflow-hidden"
+                : "opacity-100 scale-100 w-auto"
+              }`}
+          >
+            V3 Fitness
+          </span>
+        </Link>
+      </SidebarHeader>
       {/* --- Menu --- */}
       <SidebarContent className="flex-1 px-2 py-3 overflow-y-auto">
         {menuGroups.map((group) => {
@@ -181,29 +178,22 @@ export function AppSidebar() {
                       onClick={() => {
                         if (pathname !== item.href) {
                           startNavigation(item.href);
-                          // If on attendance page, use hard navigation to force Firebase cleanup
-                          if (pathname === '/dashboard/attendance') {
-                            window.location.href = item.href;
-                            return;
-                          }
                           router.push(item.href);
                         }
                       }}
                       className={`w-full flex items-center rounded-xl px-3 py-2.5 transition-all duration-200 group cursor-pointer
-                      ${
-                        active
+                      ${active
                           ? "bg-primary text-primary-foreground font-medium shadow-sm"
                           : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-                      }
+                        }
                       ${isLoading ? "opacity-70 cursor-wait" : ""}`}
                     >
                       {isLoading ? (
                         <Loader2 className="h-5 w-5 animate-spin text-primary" />
                       ) : (
                         <item.icon
-                          className={`h-5 w-5 shrink-0 ${
-                            active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
-                          }`}
+                          className={`h-5 w-5 shrink-0 ${active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
+                            }`}
                         />
                       )}
                       {!collapsed && (
@@ -221,9 +211,8 @@ export function AppSidebar() {
       {/* --- Footer (Collapse + Logout) --- */}
       <SidebarFooter className="border-t border-border px-3 py-3 w-full">
         <div
-          className={`flex items-center ${
-            collapsed ? "flex-col gap-2 justify-center" : "flex-row justify-between"
-          }`}
+          className={`flex items-center ${collapsed ? "flex-col gap-2 justify-center" : "flex-row justify-between"
+            }`}
         >
           {/* Logout Button */}
           <button
