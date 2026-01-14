@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { MemberCardGridSkeleton, SearchBarSkeleton } from "@/components/ui/loading-skeletons";
 import { useFirestore } from "@/firebase";
-import { collection, query, orderBy, limit, getDocs, where } from "firebase/firestore";
+import { collection, query, orderBy, limit, getDocs, where, documentId } from "firebase/firestore";
 import { format, differenceInDays } from "date-fns";
 import { Search, Users, Home, Grid3x3, List, LayoutList, CheckCircle, BarChart, Clock, TrendingUp, CalendarIcon, RefreshCw, Loader2 } from "lucide-react";
 import type { AttendanceRecord, MembershipPlan } from "@/lib/types";
@@ -91,9 +91,60 @@ export default function AttendancePage() {
 
     const snapshot = await getDocs(attendanceQuery);
     const records: WithId<AttendanceRecord>[] = [];
+    const userIds = new Set<string>();
+
     snapshot.forEach((doc) => {
-      records.push({ ...doc.data() as AttendanceRecord, id: doc.id });
+      const data = doc.data() as AttendanceRecord;
+      records.push({ ...data, id: doc.id });
+      if (data.userId) {
+        userIds.add(data.userId);
+      }
     });
+
+    // Fetch user profiles for profile images
+    if (userIds.size > 0) {
+      const userIdsArray = Array.from(userIds);
+      const userBatches = [];
+      const batchSize = 30; // Firestore 'in' query limit is 30
+
+      for (let i = 0; i < userIdsArray.length; i += batchSize) {
+        userBatches.push(userIdsArray.slice(i, i + batchSize));
+      }
+
+      const usersMap = new Map<string, any>();
+
+      await Promise.all(userBatches.map(async (batch) => {
+        try {
+          // Identify if we need to query by document ID or a field 'id'
+          // Standard practice is often to query by document ID using documentId()
+          // But here we'll assume document ID matches userId
+          const usersQuery = query(
+            collection(firestore, "users"),
+            where(documentId(), "in", batch)
+          );
+
+          const userSnapshot = await getDocs(usersQuery);
+          userSnapshot.forEach(doc => {
+            usersMap.set(doc.id, doc.data());
+          });
+        } catch (err) {
+          console.error("Error fetching user profiles:", err);
+        }
+      }));
+
+      // Merge profile data
+      return records.map(record => {
+        const user = usersMap.get(record.userId);
+        if (user && user.profileImageUrl) {
+          return {
+            ...record,
+            profileImageUrl: user.profileImageUrl
+          };
+        }
+        return record;
+      });
+    }
+
     return records;
   }, [firestore, selectedDate]);
 
