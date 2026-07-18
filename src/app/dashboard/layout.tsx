@@ -4,10 +4,12 @@ import { AppHeader } from "@/components/layout/header";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { NavigationLoadingProvider } from "@/hooks/use-navigation-loading";
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { RoleGuard } from "@/components/auth/role-guard";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <ProtectedRoute>
+      <RoleGuard>
       <NavigationLoadingProvider>
         <SidebarProvider defaultOpen={true}>
           <AppSidebar />
@@ -23,6 +25,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </SidebarInset>
         </SidebarProvider>
       </NavigationLoadingProvider>
+      </RoleGuard>
     </ProtectedRoute>
   );
 }

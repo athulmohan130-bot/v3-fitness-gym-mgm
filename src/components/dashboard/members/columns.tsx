@@ -195,183 +195,186 @@ export const getColumns = (
   setRenewOpen: React.Dispatch<React.SetStateAction<boolean>>,
   setSelectedMember: React.Dispatch<React.SetStateAction<UserWithPlan | null>>,
   availablePlans: any[],
-  onPaymentSubmit: (memberId: string, historyId: string, amount: number, paymentDate: Date) => void
+  onPaymentSubmit: (memberId: string, historyId: string, amount: number, paymentDate: Date) => void,
+  userRole?: string
 ): ColumnDef<UserWithPlan>[] => [
-  {
-    accessorKey: "biometricDeviceId",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Member ID
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => <span>{row.getValue("biometricDeviceId") || "—"}</span>,
-    sortingFn: (rowA, rowB) => {
-      const a = parseInt(rowA.getValue("biometricDeviceId") || "0", 10);
-      const b = parseInt(rowB.getValue("biometricDeviceId") || "0", 10);
-      return a - b;
+    {
+      accessorKey: "biometricDeviceId",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Member ID
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => <span>{row.getValue("biometricDeviceId") || "—"}</span>,
+      sortingFn: (rowA, rowB) => {
+        const a = parseInt(rowA.getValue("biometricDeviceId") || "0", 10);
+        const b = parseInt(rowB.getValue("biometricDeviceId") || "0", 10);
+        return a - b;
+      },
     },
-  },
-  {
-    accessorKey: "name",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Member
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => {
-      const user = row.original;
-      const initials = getInitials(user.name);
-      const avatarStyle = getAvatarStyle(user.name);
-      const displayName = capitalizeName(user.name);
+    {
+      accessorKey: "name",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Member
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const user = row.original;
+        const initials = getInitials(user.name);
+        const avatarStyle = getAvatarStyle(user.name);
+        const displayName = capitalizeName(user.name);
 
-      return (
-        <div className="flex items-center gap-3">
-          <div
-            className="h-10 w-10 rounded-full flex items-center justify-center font-semibold shrink-0"
-            style={{
-              ...avatarStyle,
-              minWidth: '40px',
-              minHeight: '40px'
-            }}
-          >
-            {initials}
+        return (
+          <div className="flex items-center gap-3">
+            <div
+              className="h-10 w-10 rounded-full flex items-center justify-center font-semibold shrink-0"
+              style={{
+                ...avatarStyle,
+                minWidth: '40px',
+                minHeight: '40px'
+              }}
+            >
+              {initials}
+            </div>
+            <div className="flex flex-col">
+              <span className="font-medium">{displayName}</span>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="font-medium">{displayName}</span>
+        );
+      },
+    },
+    {
+      accessorKey: "membershipStatus",
+      header: "Membership Status",
+      cell: ({ row }) => <MembershipStatusBadge user={row.original} />,
+    },
+    {
+      accessorKey: "planName",
+      header: "Plan",
+    },
+    {
+      accessorKey: "membershipEnd",
+      header: "Expiry Date",
+      cell: ({ row }) => {
+        const membershipEnd = row.getValue("membershipEnd") as string;
+        if (!membershipEnd) return <span className="text-muted-foreground">—</span>;
+
+        const endDate = new Date(membershipEnd);
+        return <span className="font-medium">{format(endDate, "dd MMM yyyy")}</span>;
+      },
+    },
+    {
+      accessorKey: "daysRemaining",
+      header: "Days Remaining",
+      cell: ({ row }) => {
+        const membershipEnd = row.original.membershipEnd;
+        if (!membershipEnd) return <span className="text-muted-foreground">—</span>;
+
+        const endDate = new Date(membershipEnd);
+        const today = new Date();
+        const daysRemaining = differenceInDays(endDate, today);
+
+        // Determine badge color and style based on days remaining
+        let badgeClass = "";
+        let badgeText = "";
+
+        if (daysRemaining < 0) {
+          // Expired - Red
+          badgeClass = "bg-red-100 text-red-800 border-red-200";
+          badgeText = `Expired (${Math.abs(daysRemaining)}d ago)`;
+        } else if (daysRemaining === 0) {
+          // Expires today - Red
+          badgeClass = "bg-red-100 text-red-800 border-red-200";
+          badgeText = "Expires today";
+        } else if (daysRemaining < 3) {
+          // Less than 3 days - Darker Amber (more urgent)
+          badgeClass = "bg-amber-200 text-amber-900 border-amber-300";
+          badgeText = `${daysRemaining}d left`;
+        } else if (daysRemaining < 10) {
+          // Less than 10 days - Amber
+          badgeClass = "bg-amber-100 text-amber-800 border-amber-200";
+          badgeText = `${daysRemaining}d left`;
+        } else {
+          // 10 days or more - Green
+          badgeClass = "bg-green-100 text-green-800 border-green-200";
+          badgeText = `${daysRemaining}d left`;
+        }
+
+        return (
+          <Badge className={cn("font-medium", badgeClass)}>
+            {badgeText}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "joinDate",
+      header: "Join Date",
+      cell: ({ row }) => (
+        <span>{format(new Date(row.getValue("joinDate")), "dd MMM yyyy")}</span>
+      ),
+    },
+    // {
+    //   accessorKey: "renewalDate",
+    //   header: "Renewal Date",
+    //   cell: ({ row }) => (
+    //     <span>
+    //       {format(new Date(row.getValue("renewalDate")), "dd MMM yyyy")}
+    //     </span>
+    //   ),
+    // },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => {
+        const user = row.original;
+
+        return (
+          <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    onClick={() => {
+                      setSelectedMember(user);
+                      setRenewOpen(true);
+                    }}
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Renew Plan</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            {userRole === 'admin' && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DeleteMemberButton user={user} />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Delete Member</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
-        </div>
-      );
+        );
+      },
     },
-  },
-  {
-    accessorKey: "membershipStatus",
-    header: "Membership Status",
-    cell: ({ row }) => <MembershipStatusBadge user={row.original} />,
-  },
-  {
-    accessorKey: "planName",
-    header: "Plan",
-  },
-  {
-    accessorKey: "membershipEnd",
-    header: "Expiry Date",
-    cell: ({ row }) => {
-      const membershipEnd = row.getValue("membershipEnd") as string;
-      if (!membershipEnd) return <span className="text-muted-foreground">—</span>;
-
-      const endDate = new Date(membershipEnd);
-      return <span className="font-medium">{format(endDate, "dd MMM yyyy")}</span>;
-    },
-  },
-  {
-    accessorKey: "daysRemaining",
-    header: "Days Remaining",
-    cell: ({ row }) => {
-      const membershipEnd = row.original.membershipEnd;
-      if (!membershipEnd) return <span className="text-muted-foreground">—</span>;
-
-      const endDate = new Date(membershipEnd);
-      const today = new Date();
-      const daysRemaining = differenceInDays(endDate, today);
-
-      // Determine badge color and style based on days remaining
-      let badgeClass = "";
-      let badgeText = "";
-
-      if (daysRemaining < 0) {
-        // Expired - Red
-        badgeClass = "bg-red-100 text-red-800 border-red-200";
-        badgeText = `Expired (${Math.abs(daysRemaining)}d ago)`;
-      } else if (daysRemaining === 0) {
-        // Expires today - Red
-        badgeClass = "bg-red-100 text-red-800 border-red-200";
-        badgeText = "Expires today";
-      } else if (daysRemaining < 3) {
-        // Less than 3 days - Darker Amber (more urgent)
-        badgeClass = "bg-amber-200 text-amber-900 border-amber-300";
-        badgeText = `${daysRemaining}d left`;
-      } else if (daysRemaining < 10) {
-        // Less than 10 days - Amber
-        badgeClass = "bg-amber-100 text-amber-800 border-amber-200";
-        badgeText = `${daysRemaining}d left`;
-      } else {
-        // 10 days or more - Green
-        badgeClass = "bg-green-100 text-green-800 border-green-200";
-        badgeText = `${daysRemaining}d left`;
-      }
-
-      return (
-        <Badge className={cn("font-medium", badgeClass)}>
-          {badgeText}
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "joinDate",
-    header: "Join Date",
-    cell: ({ row }) => (
-      <span>{format(new Date(row.getValue("joinDate")), "dd MMM yyyy")}</span>
-    ),
-  },
-  // {
-  //   accessorKey: "renewalDate",
-  //   header: "Renewal Date",
-  //   cell: ({ row }) => (
-  //     <span>
-  //       {format(new Date(row.getValue("renewalDate")), "dd MMM yyyy")}
-  //     </span>
-  //   ),
-  // },
-  {
-    id: "actions",
-    header: "Actions",
-    cell: ({ row }) => {
-      const user = row.original;
-
-      return (
-        <div className="flex items-center gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                  onClick={() => {
-                    setSelectedMember(user);
-                    setRenewOpen(true);
-                  }}
-                >
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Renew Plan</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <DeleteMemberButton user={user} />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Delete Member</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      );
-    },
-  },
-];
+  ];

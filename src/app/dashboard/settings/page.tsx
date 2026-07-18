@@ -27,8 +27,11 @@ import { Home } from "lucide-react";
 import Link from "next/link";
 import { AddStaffDialog } from "@/components/dashboard/settings/add-staff-dialog";
 import { StaffList } from "@/components/dashboard/settings/staff-list";
+import { useAuth } from "@/lib/auth-provider";
 
 export default function SettingsPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const [isSaving, setIsSaving] = useState(false);
 
   // Payment Methods
@@ -93,10 +96,12 @@ export default function SettingsPage() {
           </BreadcrumbList>
         </Breadcrumb>
 
-        <Button onClick={handleSave} disabled={isSaving} variant="outline" className="w-auto">
-          <Save className="h-4 w-4 mr-2" />
-          {isSaving ? "Saving..." : "Save Settings"}
-        </Button>
+        {isAdmin && (
+          <Button onClick={handleSave} disabled={isSaving} variant="outline" className="w-auto">
+            <Save className="h-4 w-4 mr-2" />
+            {isSaving ? "Saving..." : "Save Settings"}
+          </Button>
+        )}
       </div>
 
       {/* Mobile header - Just description, no redundant title */}
@@ -106,7 +111,7 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="billing" className="space-y-3 sm:space-y-4">
+      <Tabs defaultValue={isAdmin ? "billing" : "profile"} className="space-y-3 sm:space-y-4">
         {/* Tab Navigation with Scroll Indicators */}
         <div className="relative w-full sm:mx-0">
           {/* Left fade gradient indicator - mobile only */}
@@ -114,7 +119,11 @@ export default function SettingsPage() {
 
           {/* Scrollable tabs container */}
           <div className="overflow-x-auto overflow-y-visible sm:overflow-visible snap-x snap-mandatory scrollbar-hide">
-            <TabsList className="inline-flex sm:grid sm:w-full grid-cols-4 lg:grid-cols-7 gap-1 w-max sm:w-full min-w-full sm:min-w-0 px-2 sm:px-0">
+            <TabsList className={isAdmin
+              ? "inline-flex sm:grid sm:w-full grid-cols-4 lg:grid-cols-7 gap-1 w-max sm:w-full min-w-full sm:min-w-0 px-2 sm:px-0"
+              : "inline-flex gap-1 px-2 sm:px-0"}>
+              {isAdmin && (
+              <>
               <TabsTrigger value="billing" className="whitespace-nowrap flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 snap-start">
                 <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 hidden sm:inline" />
                 Billing
@@ -139,6 +148,8 @@ export default function SettingsPage() {
                 <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 hidden sm:inline" />
                 Reports
               </TabsTrigger>
+              </>
+              )}
               <TabsTrigger value="profile" className="whitespace-nowrap flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 snap-start">
                 <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 hidden sm:inline" />
                 Profile
@@ -150,6 +161,8 @@ export default function SettingsPage() {
           <div className="sm:hidden absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
         </div>
 
+        {isAdmin && (
+        <>
         {/* Billing & Payments */}
         <TabsContent value="billing" className="space-y-3 sm:space-y-4">
           <Card>
@@ -609,11 +622,14 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
+        </>
+        )}
+
         {/* Profile */}
         <TabsContent value="profile" className="space-y-3 sm:space-y-4">
           <Card>
             <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
-              <CardTitle className="text-sm sm:text-lg font-semibold">Admin Profile</CardTitle>
+              <CardTitle className="text-sm sm:text-lg font-semibold">{isAdmin ? "Admin Profile" : "My Profile"}</CardTitle>
               <CardDescription className="text-xs sm:text-sm leading-snug">
                 Personal information and account
               </CardDescription>
@@ -625,7 +641,7 @@ export default function SettingsPage() {
                   <Input
                     id="admin-name"
                     placeholder="John Doe"
-                    defaultValue="Admin User"
+                    defaultValue={user?.name || ""}
                     className="h-9 text-base"
                   />
                 </div>
@@ -636,7 +652,7 @@ export default function SettingsPage() {
                     id="admin-email"
                     type="email"
                     placeholder="admin@gym.com"
-                    defaultValue=""
+                    defaultValue={user?.email || ""}
                     className="h-9 text-base"
                   />
                 </div>
@@ -656,7 +672,7 @@ export default function SettingsPage() {
                   <Label htmlFor="admin-role" className="text-xs sm:text-sm font-medium">Role</Label>
                   <Input
                     id="admin-role"
-                    defaultValue="Administrator"
+                    defaultValue={isAdmin ? "Administrator" : "Trainer"}
                     disabled
                     className="h-9 text-base bg-muted"
                   />

@@ -38,7 +38,10 @@ import { getStorage, ref, deleteObject } from "firebase/storage";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Home } from "lucide-react";
 
+import { useAuth } from "@/lib/auth-provider";
+
 export default function ViewMemberPage() {
+  const { user } = useAuth();
   const params = useParams();
   const id = params.id as string;
   const firestore = useFirestore();
@@ -83,22 +86,22 @@ export default function ViewMemberPage() {
 
   // Use the first active membership (most recently created) or fall back to latest
   const currentMembership = activeMemberships[0] || membershipHistory?.[0] || null;
-  
+
   // Find the actual last expiry date by checking for future/consecutive plans
   const getEffectiveExpiryDate = () => {
     if (!membershipHistory || membershipHistory.length === 0) return null;
-    
+
     // Get all plans sorted by end date descending
     const sortedPlans = [...membershipHistory].sort((a, b) => {
       const endA = new Date(a.membershipEnd);
       const endB = new Date(b.membershipEnd);
       return endB.getTime() - endA.getTime();
     });
-    
+
     // Return the latest end date
     return sortedPlans[0];
   };
-  
+
   // Use the plan with the latest expiry for display purposes
   const activeMembership = getEffectiveExpiryDate() || currentMembership;
 
@@ -112,7 +115,7 @@ export default function ViewMemberPage() {
       await runTransaction(firestore, async (transaction) => {
         const revenueSummaryDoc = await transaction.get(revenueSummaryRef);
 
-        transaction.update(historyDocRef, { 
+        transaction.update(historyDocRef, {
           paidAmount: increment(amount),
           updatedAt: new Date(),
         });
@@ -161,7 +164,7 @@ export default function ViewMemberPage() {
     await updateDoc(planRef, {
       membershipEnd: new Date(
         new Date(planToFreeze.membershipEnd).getTime() +
-          freezeDuration * 24 * 60 * 60 * 1000
+        freezeDuration * 24 * 60 * 60 * 1000
       ).toISOString(),
       freezeHistory: arrayUnion({
         freezeStart,
@@ -347,6 +350,7 @@ export default function ViewMemberPage() {
         selectedHistoryForPayment={selectedHistoryForPayment}
         setSelectedHistoryForPayment={setSelectedHistoryForPayment}
         onUpdateMember={handleUpdateMember}
+        userRole={user?.role}
       />
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>

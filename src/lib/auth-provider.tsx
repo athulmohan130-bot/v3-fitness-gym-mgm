@@ -7,6 +7,7 @@ import { useFirebase } from '@/firebase/provider';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import type { GymUser, UserRole } from './types';
+import { roleHome } from './route-access';
 
 interface AuthUser {
   id: string;
@@ -181,8 +182,8 @@ useEffect(() => {
         sessionStorage.removeItem('returnUrl'); // Clear it
         router.replace(returnUrl);
       } else {
-        console.log('[AuthProvider] REDIRECTING from login to dashboard/overview');
-        router.replace('/dashboard/overview');
+        console.log('[AuthProvider] REDIRECTING from login to role home');
+        router.replace(roleHome(user.role));
       }
     }
   }, [user, loading, hasInitialized, initialPath, pathname, hasCheckedInitialRedirect, router]);

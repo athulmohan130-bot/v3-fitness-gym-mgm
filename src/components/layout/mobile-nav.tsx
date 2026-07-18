@@ -18,7 +18,7 @@ const mobileMenuItems = [
     href: "/dashboard/overview",
     label: "Overview",
     icon: LayoutDashboard,
-    roles: ["admin", "trainer", "member"],
+    roles: ["admin", "member"],
   },
   {
     href: "/dashboard/members",

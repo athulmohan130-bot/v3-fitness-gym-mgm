@@ -67,7 +67,10 @@ const safeParseDate = (date: any): Date | null => {
   return null;
 };
 
+import { useAuth } from "@/lib/auth-provider";
+
 export default function MembersPage() {
+  const { user } = useAuth();
   const firestore = useFirestore();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -116,7 +119,8 @@ export default function MembersPage() {
     []
   );
 
-  const { data: processedData, isLoading: isMembersLoading } = useQuery<
+  // Main query to fetch and process members data
+  const { data: processedData, isLoading: isMembersLoading, isError, error } = useQuery<
     UserWithMembership[]
   >({
     queryKey: ["processedMembers"],
@@ -149,7 +153,6 @@ export default function MembersPage() {
           const latestHistory = historySnap.docs[0]?.data();
 
           // For display purposes, find the plan with the latest end date
-          // This ensures we show the actual expiry date considering future plans
           const now = new Date();
           const activePlan = historySnap.docs.find((doc) => {
             const data = doc.data();
@@ -159,7 +162,7 @@ export default function MembersPage() {
             return now >= start && now <= end;
           });
 
-          // Find the plan with the latest expiry date (could be current, future, or past)
+          // Find the plan with the latest expiry date
           const planWithLatestExpiry = historySnap.docs.reduce(
             (latest, current) => {
               if (!latest) return current;
@@ -172,33 +175,26 @@ export default function MembersPage() {
             historySnap.docs[0]
           );
 
-          // Use the plan with latest expiry for display
           const displayPlan = planWithLatestExpiry;
           const planData = displayPlan?.data();
-
-          // For start date, use the active plan's start if available, otherwise use latest plan's start
           const activePlanData = activePlan?.data();
           const startDate = safeParseDate(
             activePlanData?.membershipStart || planData?.membershipStart
           );
           const endDate = safeParseDate(planData?.membershipEnd);
 
-          // Update main user document with latest membershipEnd if it's different
-          // Update main user document with latest membershipEnd and status if different
+          // Sync logic
           const latestMembershipEnd = planData?.membershipEnd;
           if (
             (latestMembershipEnd && user.membershipEnd !== latestMembershipEnd) ||
             user.membershipStatus !== membershipStatus
           ) {
-            // Async update to main user document - don't await to avoid blocking
             updateDoc(doc(firestore, "users", user.id), {
               membershipEnd: latestMembershipEnd || user.membershipEnd,
               membershipStart: planData?.membershipStart || user.membershipStart,
               membershipPlanId: planData?.membershipPlanId || user.membershipPlanId,
               membershipStatus: membershipStatus,
-            }).catch((error: any) => {
-              console.warn('Failed to sync membership data to main user document:', error);
-            });
+            }).catch((e) => console.warn('Sync failed:', e));
           }
 
           return {
@@ -297,9 +293,10 @@ export default function MembersPage() {
         setRenewOpen,
         setSelectedMember,
         plansData || [],
-        handlePaymentSubmit
+        handlePaymentSubmit,
+        user?.role
       ),
-    [plansData]
+    [plansData, user?.role]
   );
 
   useEffect(() => {
@@ -394,12 +391,14 @@ export default function MembersPage() {
             Manage all members of V3 Fitness.
           </p>
         </div>
-        <Button asChild disabled={showSkeleton} className="w-full sm:w-auto">
-          <Link href="/dashboard/members/new">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Member
-          </Link>
-        </Button>
+        {(user?.role === 'admin' || user?.role === 'trainer') && (
+          <Button asChild disabled={showSkeleton} className="w-full sm:w-auto">
+            <Link href="/dashboard/members/new">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Member
+            </Link>
+          </Button>
+        )}
       </div>
 
       {/* Show enhanced skeleton or actual data */}

@@ -2,9 +2,15 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { getDatabase } from 'firebase/database';
+import { getAuth, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getDatabase, connectDatabaseEmulator } from 'firebase/database';
+import { getStorage, connectStorageEmulator } from 'firebase/storage';
+
+// Set NEXT_PUBLIC_USE_FIREBASE_EMULATOR=true (see `npm run dev:emulator`) to
+// point every Firebase SDK at the local Emulator Suite instead of production.
+const useEmulators = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === 'true';
+let emulatorsConnected = false;
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
@@ -34,11 +40,26 @@ export function initializeFirebase() {
 }
 
 export function getSdks(firebaseApp: FirebaseApp) {
+  const auth = getAuth(firebaseApp);
+  const firestore = getFirestore(firebaseApp);
+  const realtimeDb = getDatabase(firebaseApp);
+
+  if (useEmulators && !emulatorsConnected) {
+    emulatorsConnected = true;
+    connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+    connectFirestoreEmulator(firestore, '127.0.0.1', 8080);
+    connectDatabaseEmulator(realtimeDb, '127.0.0.1', 9000);
+    // Components call getStorage() on the default app, which returns this
+    // same instance, so connecting it once here covers all of them.
+    connectStorageEmulator(getStorage(firebaseApp), '127.0.0.1', 9199);
+    console.log('[Firebase] Connected to local emulators (auth:9099, firestore:8080, rtdb:9000, storage:9199)');
+  }
+
   return {
     firebaseApp,
-    auth: getAuth(firebaseApp),
-    firestore: getFirestore(firebaseApp),
-    realtimeDb: getDatabase(firebaseApp)
+    auth,
+    firestore,
+    realtimeDb
   };
 }
 

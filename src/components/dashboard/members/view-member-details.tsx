@@ -62,6 +62,7 @@ interface ViewMemberDetailsProps {
   selectedHistoryForPayment: any;
   setSelectedHistoryForPayment: (history: any) => void;
   onUpdateMember: (updates: Partial<GymUser>) => Promise<void>;
+  userRole?: string;
 }
 
 const DetailItem = ({
@@ -147,6 +148,7 @@ export function ViewMemberDetails({
   selectedHistoryForPayment,
   setSelectedHistoryForPayment,
   onUpdateMember,
+  userRole,
 }: ViewMemberDetailsProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [historyOpen, setHistoryOpen] = React.useState(false);
@@ -1069,14 +1071,16 @@ export function ViewMemberDetails({
                                         </TooltipTrigger>
                                         <TooltipContent><p>Freeze Plan</p></TooltipContent>
                                       </Tooltip>
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onHandleDelete(history.id)}>
-                                            <Trash2 className="h-4 w-4 text-red-600" />
-                                          </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent><p>Delete Plan</p></TooltipContent>
-                                      </Tooltip>
+                                      {userRole === 'admin' && (
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onHandleDelete(history.id)}>
+                                              <Trash2 className="h-4 w-4 text-red-600" />
+                                            </Button>
+                                          </TooltipTrigger>
+                                          <TooltipContent><p>Delete Plan</p></TooltipContent>
+                                        </Tooltip>
+                                      )}
                                     </TooltipProvider>
                                   </div>
                                 </div>

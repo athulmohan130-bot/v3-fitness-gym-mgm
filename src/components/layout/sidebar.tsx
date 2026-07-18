@@ -28,6 +28,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/lib/auth-provider";
+import { roleHome } from "@/lib/route-access";
 import { useNavigationLoading } from "@/hooks/use-navigation-loading";
 
 const menuGroups = [
@@ -38,7 +39,7 @@ const menuGroups = [
         href: "/dashboard/overview",
         label: "Overview",
         icon: LayoutDashboard,
-        roles: ["admin", "trainer", "member"],
+        roles: ["admin", "member"],
       },
       {
         href: "/dashboard/members",
@@ -73,7 +74,7 @@ const menuGroups = [
         href: "/dashboard/activity",
         label: "Activity Log",
         icon: Activity,
-        roles: ["admin", "trainer"],
+        roles: ["admin"],
       },
       {
         href: "/dashboard/settings",
@@ -116,7 +117,7 @@ export function AppSidebar() {
       {/* --- Header --- */}
       <SidebarHeader className="p-4 w-full">
         <Link
-          href="/dashboard/overview"
+          href={roleHome(user?.role)}
           className={`flex items-center font-bold font-headline text-xl transition-all duration-300 ease-in-out ${collapsed ? "justify-center" : "justify-start"
             }`}
         >
@@ -142,8 +143,8 @@ export function AppSidebar() {
           {/* Logo Text */}
           <span
             className={`whitespace-nowrap transition-all duration-300 ease-in-out transform origin-left font-semibold text-lg ${collapsed
-                ? "opacity-0 scale-95 w-0 overflow-hidden"
-                : "opacity-100 scale-100 w-auto"
+              ? "opacity-0 scale-95 w-0 overflow-hidden"
+              : "opacity-100 scale-100 w-auto"
               }`}
           >
             V3 Fitness

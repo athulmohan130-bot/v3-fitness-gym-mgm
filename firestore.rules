@@ -27,14 +27,15 @@ service cloud.firestore {
     // User Collection
     match /users/{userId} {
       allow read: if isAuth() && (isOwner(userId) || isAdmin() || isTrainer());
-      allow create: if isAuth() && isAdmin();
-      allow update: if isAuth() && (isOwner(userId) || isAdmin());
+      allow create: if isAuth() && (isAdmin() || isTrainer());
+      allow update: if isAuth() && (isOwner(userId) || isAdmin() || isTrainer());
       allow delete: if isAuth() && isAdmin();
     }
 
     // User Subcollections (e.g., Payments, membershipHistory)
     match /users/{userId}/{collection}/{docId} {
-      allow read, write: if isAuth() && (isOwner(userId) || isAdmin());
+      allow read: if isAuth() && (isOwner(userId) || isAdmin() || isTrainer());
+      allow write: if isAuth() && (isOwner(userId) || isAdmin() || isTrainer());
     }
 
     // Membership Plans
@@ -56,22 +57,36 @@ service cloud.firestore {
     }
 
     // Payment Records
+    // Trainers may create payment records (initial payment taken while
+    // registering a member) but only admins can view or modify billing data.
     match /payments/{paymentId} {
       allow read: if isAuth() && isAdmin();
-      allow create, update: if isAuth() && isAdmin();
+      allow create: if isAuth() && (isAdmin() || isTrainer());
+      allow update: if isAuth() && isAdmin();
       allow delete: if isAuth() && isAdmin();
     }
 
     // Stats collection - FIXED
+    // Trainer write access is required because member add/edit updates
+    // stats/userSummary and stats/revenueSummary in the same transaction.
     match /stats/{document} {
-      allow read: if isAuth() && isAdmin();
-      allow write: if isAuth() && isAdmin();
+      allow read: if isAuth() && (isAdmin() || isTrainer());
+      allow write: if isAuth() && (isAdmin() || isTrainer());
     }
 
     // System collection - NEW (for biometric counter)
+    // Trainers need the biometric counter to register new members.
     match /system/{document} {
-      allow read: if isAuth() && isAdmin();
-      allow write: if isAuth() && isAdmin();
+      allow read: if isAuth() && (isAdmin() || isTrainer());
+      allow write: if isAuth() && (isAdmin() || isTrainer());
+    }
+
+    // Activity Logs - written after member add/edit/renewal actions
+    match /activityLogs/{logId} {
+      allow read: if isAuth() && (isAdmin() || isTrainer());
+      allow create: if isAuth() && (isAdmin() || isTrainer());
+      allow update: if false;
+      allow delete: if isAuth() && isAdmin();
     }
 
     // Settings collection - for gym settings

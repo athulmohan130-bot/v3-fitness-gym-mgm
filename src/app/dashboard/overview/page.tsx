@@ -17,7 +17,7 @@ import { format } from "date-fns";
 const Page = () => {
   const { user: authUser, loading: authLoading } = useAuth();
   const firestore = useFirestore();
-  
+
   const userRef = useMemo(() => {
     if (!firestore || !authUser) return null;
     return doc(firestore, 'users', authUser.id);
@@ -52,7 +52,7 @@ const Page = () => {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <h1 className="text-4xl font-bold font-headline tracking-tight mb-2">
-              Welcome back, {user.name.split(' ')[0]}!
+              Welcome back, {user.role === 'trainer' ? 'Trainer!' : `${user.name.split(' ')[0]}!`}
             </h1>
             <p className="text-muted-foreground text-sm">
               Here's what's happening with your gym today.

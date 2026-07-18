@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:emulator": "NEXT_PUBLIC_USE_FIREBASE_EMULATOR=true FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIREBASE_DATABASE_EMULATOR_HOST=127.0.0.1:9000 FIREBASE_STORAGE_EMULATOR_HOST=127.0.0.1:9199 next dev --turbopack",
+    "emulators": "npx -y firebase-tools emulators:start --project studio-7778498060-d5b43",
+    "emulators:seed": "node scripts/seed-emulator.js",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
     "build": "NODE_ENV=production next build",

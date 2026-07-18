@@ -103,6 +103,7 @@ export interface UserSummary {
   totalMembers: number;
   activeMembers: number;
   lastUpdated: string;
+  newMembersThisMonth: number;
 }
 
 export type UserWithPlan = GymUser & { planName: string };

@@ -55,19 +55,33 @@ interface GymUser {
 // Helper to safely parse payment date
 function parsePaymentDate(paymentDate: any): Date {
   if (!paymentDate) return new Date();
-  
+
   // Handle Firestore Timestamp
   if (paymentDate.toDate && typeof paymentDate.toDate === 'function') {
     return paymentDate.toDate();
   }
-  
+
   // Handle ISO string or number
   const date = new Date(paymentDate);
   return isNaN(date.getTime()) ? new Date() : date;
 }
 
+import { useAuth } from "@/lib/auth-provider";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
 export default function PaymentHistoryPage() {
+  const { user } = useAuth();
+  const router = useRouter();
   const firestore = useFirestore();
+
+  useEffect(() => {
+    if (user && user.role !== 'admin') {
+      router.push('/dashboard/overview');
+    }
+  }, [user, router]);
+
+  if (user?.role !== 'admin') return null;
 
   // State for filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -704,8 +718,8 @@ export default function PaymentHistoryPage() {
                               payment.status === "success"
                                 ? "default"
                                 : payment.status === "failed"
-                                ? "destructive"
-                                : "secondary"
+                                  ? "destructive"
+                                  : "secondary"
                             }
                             className="font-semibold shrink-0"
                           >
@@ -737,8 +751,8 @@ export default function PaymentHistoryPage() {
                           </div>
                           <div>
                             <div className="text-muted-foreground text-xs mb-1">Type</div>
-                            <Badge 
-                              variant={(payment.type || "renewal") === "registration" ? "default" : "secondary"} 
+                            <Badge
+                              variant={(payment.type || "renewal") === "registration" ? "default" : "secondary"}
                               className="font-medium"
                             >
                               {(payment.type || "renewal").charAt(0).toUpperCase() + (payment.type || "renewal").slice(1)}
@@ -766,147 +780,147 @@ export default function PaymentHistoryPage() {
               {/* Desktop Table View */}
               <div className="hidden md:block border rounded-lg overflow-hidden">
                 <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Member</TableHead>
-                    <TableHead>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          if (sortBy === "date") {
-                            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-                          } else {
-                            setSortBy("date");
-                            setSortOrder("desc");
-                          }
-                        }}
-                        className="h-8 px-2 -ml-2"
-                      >
-                        Date & Time
-                        {sortBy === "date" ? (
-                          sortOrder === "asc" ? <ArrowUp className="ml-1 h-4 w-4" /> : <ArrowDown className="ml-1 h-4 w-4" />
-                        ) : (
-                          <ArrowUpDown className="ml-1 h-4 w-4 opacity-50" />
-                        )}
-                      </Button>
-                    </TableHead>
-                    <TableHead>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          if (sortBy === "amount") {
-                            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-                          } else {
-                            setSortBy("amount");
-                            setSortOrder("desc");
-                          }
-                        }}
-                        className="h-8 px-2 -ml-2"
-                      >
-                        Amount
-                        {sortBy === "amount" ? (
-                          sortOrder === "asc" ? <ArrowUp className="ml-1 h-4 w-4" /> : <ArrowDown className="ml-1 h-4 w-4" />
-                        ) : (
-                          <ArrowUpDown className="ml-1 h-4 w-4 opacity-50" />
-                        )}
-                      </Button>
-                    </TableHead>
-                    <TableHead>Mode</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedPayments.map((payment) => {
-                    const user = userMap.get(payment.userId);
-                    const paymentDate = parsePaymentDate(payment.paymentDate);
-
-                    return (
-                      <TableRow key={payment.id} className="hover:bg-muted/50">
-                        {/* Member Info */}
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={user?.profileImageUrl} alt={user?.name} />
-                              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                                {user?.name.charAt(0).toUpperCase() || "?"}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="font-medium">{user?.name || "Unknown Member"}</div>
-                              <div className="text-xs text-muted-foreground">{user?.email || "N/A"}</div>
-                            </div>
-                          </div>
-                        </TableCell>
-
-                        {/* Date & Time */}
-                        <TableCell>
-                          <div className="text-sm">{format(paymentDate, "dd MMM, yyyy")}</div>
-                          <div className="text-xs text-muted-foreground">{format(paymentDate, "hh:mm a")}</div>
-                        </TableCell>
-
-                        {/* Amount */}
-                        <TableCell>
-                          <div className="font-semibold">
-                            <Currency value={payment.amount} />
-                          </div>
-                        </TableCell>
-
-                        {/* Payment Mode */}
-                        <TableCell>
-                          <Badge variant="outline" className="font-medium">
-                            {payment.mode}
-                          </Badge>
-                        </TableCell>
-
-                        {/* Payment Type */}
-                        <TableCell>
-                          <Badge 
-                            variant={(payment.type || "renewal") === "registration" ? "default" : "secondary"} 
-                            className="font-medium"
-                          >
-                            {(payment.type || "renewal").charAt(0).toUpperCase() + (payment.type || "renewal").slice(1)}
-                          </Badge>
-                        </TableCell>
-
-                        {/* Status */}
-                        <TableCell>
-                          <Badge
-                            variant={
-                              payment.status === "success"
-                                ? "default"
-                                : payment.status === "failed"
-                                ? "destructive"
-                                : "secondary"
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Member</TableHead>
+                      <TableHead>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (sortBy === "date") {
+                              setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                            } else {
+                              setSortBy("date");
+                              setSortOrder("desc");
                             }
-                            className="font-semibold"
-                          >
-                            {payment.status === "success" && "✓ "}
-                            {payment.status === "failed" && "✗ "}
-                            {payment.status === "pending" && "⏳ "}
-                            {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
-                          </Badge>
-                        </TableCell>
-
-                        {/* Actions */}
-                        <TableCell className="text-right">
-                          {user && (
-                            <Button asChild variant="ghost" size="sm">
-                              <Link href={`/dashboard/members/view/${payment.userId}`}>
-                                <ExternalLink className="h-4 w-4 mr-1" />
-                                View
-                              </Link>
-                            </Button>
+                          }}
+                          className="h-8 px-2 -ml-2"
+                        >
+                          Date & Time
+                          {sortBy === "date" ? (
+                            sortOrder === "asc" ? <ArrowUp className="ml-1 h-4 w-4" /> : <ArrowDown className="ml-1 h-4 w-4" />
+                          ) : (
+                            <ArrowUpDown className="ml-1 h-4 w-4 opacity-50" />
                           )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                        </Button>
+                      </TableHead>
+                      <TableHead>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (sortBy === "amount") {
+                              setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                            } else {
+                              setSortBy("amount");
+                              setSortOrder("desc");
+                            }
+                          }}
+                          className="h-8 px-2 -ml-2"
+                        >
+                          Amount
+                          {sortBy === "amount" ? (
+                            sortOrder === "asc" ? <ArrowUp className="ml-1 h-4 w-4" /> : <ArrowDown className="ml-1 h-4 w-4" />
+                          ) : (
+                            <ArrowUpDown className="ml-1 h-4 w-4 opacity-50" />
+                          )}
+                        </Button>
+                      </TableHead>
+                      <TableHead>Mode</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedPayments.map((payment) => {
+                      const user = userMap.get(payment.userId);
+                      const paymentDate = parsePaymentDate(payment.paymentDate);
+
+                      return (
+                        <TableRow key={payment.id} className="hover:bg-muted/50">
+                          {/* Member Info */}
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-10 w-10">
+                                <AvatarImage src={user?.profileImageUrl} alt={user?.name} />
+                                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                                  {user?.name.charAt(0).toUpperCase() || "?"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="font-medium">{user?.name || "Unknown Member"}</div>
+                                <div className="text-xs text-muted-foreground">{user?.email || "N/A"}</div>
+                              </div>
+                            </div>
+                          </TableCell>
+
+                          {/* Date & Time */}
+                          <TableCell>
+                            <div className="text-sm">{format(paymentDate, "dd MMM, yyyy")}</div>
+                            <div className="text-xs text-muted-foreground">{format(paymentDate, "hh:mm a")}</div>
+                          </TableCell>
+
+                          {/* Amount */}
+                          <TableCell>
+                            <div className="font-semibold">
+                              <Currency value={payment.amount} />
+                            </div>
+                          </TableCell>
+
+                          {/* Payment Mode */}
+                          <TableCell>
+                            <Badge variant="outline" className="font-medium">
+                              {payment.mode}
+                            </Badge>
+                          </TableCell>
+
+                          {/* Payment Type */}
+                          <TableCell>
+                            <Badge
+                              variant={(payment.type || "renewal") === "registration" ? "default" : "secondary"}
+                              className="font-medium"
+                            >
+                              {(payment.type || "renewal").charAt(0).toUpperCase() + (payment.type || "renewal").slice(1)}
+                            </Badge>
+                          </TableCell>
+
+                          {/* Status */}
+                          <TableCell>
+                            <Badge
+                              variant={
+                                payment.status === "success"
+                                  ? "default"
+                                  : payment.status === "failed"
+                                    ? "destructive"
+                                    : "secondary"
+                              }
+                              className="font-semibold"
+                            >
+                              {payment.status === "success" && "✓ "}
+                              {payment.status === "failed" && "✗ "}
+                              {payment.status === "pending" && "⏳ "}
+                              {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                            </Badge>
+                          </TableCell>
+
+                          {/* Actions */}
+                          <TableCell className="text-right">
+                            {user && (
+                              <Button asChild variant="ghost" size="sm">
+                                <Link href={`/dashboard/members/view/${payment.userId}`}>
+                                  <ExternalLink className="h-4 w-4 mr-1" />
+                                  View
+                                </Link>
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
               </div>
             </>
           )}
